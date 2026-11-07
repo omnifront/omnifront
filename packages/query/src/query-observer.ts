@@ -1,11 +1,12 @@
 import { BaseSubscribable, type TimerHandle } from "@unicore/core"
 import { hashKey, type QueryKey } from "./hash-key"
-import type { Query, QueryState } from "./query"
+import type { Query, QueryFn, QueryState } from "./query"
+import type { RetryOptions } from "./retry"
 import type { QueryClient } from "./query-client"
 
-export interface QueryObserverOptions<TData> {
+export interface QueryObserverOptions<TData> extends RetryOptions {
 	queryKey: QueryKey
-	queryFn: () => Promise<TData>
+	queryFn: QueryFn<TData>
 	/** Ms data counts as fresh. Default 0 (stale immediately). Infinity = never stale. */
 	staleTime?: number
 	/** Ms to keep the entry after the last observer leaves. */
@@ -48,9 +49,15 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 		return this.result
 	}
 
+	/** Observers retry failed fetches 3 times by default (unlike imperative fetchQuery). */
+	private fetchQuery(): Promise<TData> {
+		const { queryFn, retry, retryDelay } = this.options
+		return this.query.fetch(queryFn, { retry: retry ?? 3, retryDelay })
+	}
+
 	/** Manual refetch. Joins a request already in flight. Rejects on failure. */
 	refetch(): Promise<TData> {
-		return this.query.fetch(this.options.queryFn)
+		return this.fetchQuery()
 	}
 
 	/** Update options (e.g. a reactive key changed). Switches queries when the key differs. */
@@ -102,7 +109,7 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	private maybeFetch(): void {
 		if (this.options.enabled === false || !this.isStale(this.query.getSnapshot())) return
 		// Errors live in the query state; don't leave an unhandled rejection behind.
-		this.query.fetch(this.options.queryFn).catch(noop)
+		this.fetchQuery().catch(noop)
 	}
 
 	/** Arm a timer for the moment fresh data turns stale, so listeners hear about it. */

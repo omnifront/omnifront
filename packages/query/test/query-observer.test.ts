@@ -104,7 +104,7 @@ describe("QueryObserver", () => {
 
 	it("exposes errors in state without an unhandled rejection", async () => {
 		const { client } = setup()
-		const o = new QueryObserver(client, { queryKey: ["k"], queryFn: () => Promise.reject(new Error("bad")) })
+		const o = new QueryObserver(client, { queryKey: ["k"], queryFn: () => Promise.reject(new Error("bad")), retry: false })
 		o.subscribe(() => {})
 		await flush()
 		expect(o.getSnapshot()).toMatchObject({ status: "error", isFetching: false })
@@ -117,6 +117,7 @@ describe("QueryObserver", () => {
 			queryKey: ["k"],
 			queryFn: () => (++n === 2 ? Promise.reject(new Error("2")) : Promise.resolve(n)),
 			staleTime: Infinity,
+			retry: false,
 		})
 		o.subscribe(() => {})
 		await flush()
@@ -187,5 +188,72 @@ describe("QueryObserver.setOptions", () => {
 		expect(fn).not.toHaveBeenCalled()
 		o.setOptions({ queryKey: ["k"], queryFn: fn, enabled: true })
 		expect(fn).toHaveBeenCalledTimes(1)
+	})
+})
+
+describe("QueryObserver retry", () => {
+	it("retries 3 times by default with exponential backoff, then shows the error", async () => {
+		const { client, scheduler } = setup()
+		const fn = vi.fn(() => Promise.reject(new Error("down")))
+		const o = new QueryObserver(client, { queryKey: ["k"], queryFn: fn })
+		o.subscribe(() => {})
+		await flush()
+		expect(o.getSnapshot()).toMatchObject({ status: "loading", isFetching: true, failureCount: 1 })
+		for (const wait of [1000, 2000, 4000]) {
+			scheduler.advance(wait)
+			await flush()
+		}
+		expect(fn).toHaveBeenCalledTimes(4)
+		expect(o.getSnapshot()).toMatchObject({ status: "error", isFetching: false })
+	})
+
+	it("honours retry and retryDelay options", async () => {
+		const { client, scheduler } = setup()
+		const fn = vi.fn(() => Promise.reject(new Error("down")))
+		new QueryObserver(client, { queryKey: ["k"], queryFn: fn, retry: 1, retryDelay: 50 }).subscribe(() => {})
+		await flush()
+		scheduler.advance(49)
+		await flush()
+		expect(fn).toHaveBeenCalledTimes(1)
+		scheduler.advance(1)
+		await flush()
+		expect(fn).toHaveBeenCalledTimes(2)
+		scheduler.advance(10_000)
+		await flush()
+		expect(fn).toHaveBeenCalledTimes(2)
+	})
+
+	it("passes an AbortSignal to the query function", async () => {
+		const { client } = setup()
+		let signal: AbortSignal | undefined
+		new QueryObserver(client, {
+			queryKey: ["k"],
+			queryFn: (ctx) => {
+				signal = ctx.signal
+				return Promise.resolve(1)
+			},
+		}).subscribe(() => {})
+		await flush()
+		expect(signal?.aborted).toBe(false)
+	})
+})
+
+describe("cancel", () => {
+	it("client.cancelQuery aborts the observer's fetch and restores the state", async () => {
+		const { client } = setup()
+		let signal: AbortSignal | undefined
+		const o = new QueryObserver(client, {
+			queryKey: ["k"],
+			queryFn: (ctx) => {
+				signal = ctx.signal
+				return new Promise<number>(() => {})
+			},
+		})
+		o.subscribe(() => {})
+		expect(o.getSnapshot().isFetching).toBe(true)
+		client.cancelQuery(["k"])
+		await flush() // the swallowed CancelledError must not surface as unhandled
+		expect(signal?.aborted).toBe(true)
+		expect(o.getSnapshot()).toMatchObject({ status: "idle", isFetching: false })
 	})
 })

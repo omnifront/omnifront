@@ -78,3 +78,14 @@ describe("QueryClient gc", () => {
 		expect(c.getQueryState(["a"])).toBeUndefined()
 	})
 })
+
+describe("QueryClient cancel", () => {
+	it("cancelQuery ignores unknown keys; clear cancels in-flight fetches", async () => {
+		const c = new QueryClient({ scheduler: new FakeScheduler() })
+		c.cancelQuery(["nope"])
+		const p = c.fetchQuery(["a"], () => new Promise<number>(() => {}))
+		const assertion = expect(p).rejects.toThrow("cancelled")
+		c.clear()
+		await assertion
+	})
+})

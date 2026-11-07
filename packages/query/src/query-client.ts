@@ -1,6 +1,7 @@
 import { defaultScheduler, type Scheduler } from "@unicore/core"
 import { hashKey, type QueryKey } from "./hash-key"
-import { DEFAULT_GC_TIME, Query, type QueryState } from "./query"
+import { DEFAULT_GC_TIME, Query, type QueryFn, type QueryState } from "./query"
+import type { RetryOptions } from "./retry"
 
 export interface QueryClientOptions {
 	scheduler?: Scheduler
@@ -37,8 +38,13 @@ export class QueryClient {
 		return query as Query<TData>
 	}
 
-	fetchQuery<TData>(key: QueryKey, fn: () => Promise<TData>): Promise<TData> {
-		return this.getQuery<TData>(key).fetch(fn)
+	fetchQuery<TData>(key: QueryKey, fn: QueryFn<TData>, retry?: RetryOptions): Promise<TData> {
+		return this.getQuery<TData>(key).fetch(fn, retry)
+	}
+
+	/** Abort the in-flight fetch for `key`, if any. */
+	cancelQuery(key: QueryKey): void {
+		this.queries.get(hashKey(key))?.cancel()
 	}
 
 	getQueryState<TData>(key: QueryKey): QueryState<TData> | undefined {
