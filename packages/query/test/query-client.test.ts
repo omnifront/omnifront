@@ -41,3 +41,40 @@ describe("QueryClient", () => {
 		expect(c.getQueryData(["n"])).toBeUndefined()
 	})
 })
+
+describe("QueryClient gc", () => {
+	it("drops unobserved entries after gcTime and uses the client default", () => {
+		const s = new FakeScheduler()
+		const c = new QueryClient({ scheduler: s, gcTime: 1000 })
+		c.setQueryData(["a"], 1)
+		s.advance(999)
+		expect(c.getQueryData(["a"])).toBe(1)
+		s.advance(1)
+		expect(c.getQueryState(["a"])).toBeUndefined()
+	})
+
+	it("a replaced entry's old gc timer does not delete the new one", () => {
+		const s = new FakeScheduler()
+		const c = new QueryClient({ scheduler: s, gcTime: 1000 })
+		c.getQuery(["a"])
+		const old = c.getQuery(["a"])
+		c.clear()
+		const fresh = c.getQuery(["a"])
+		expect(fresh).not.toBe(old)
+		s.advance(1000)
+		expect(c.getQueryState(["a"])).toBeUndefined() // fresh entry itself expired
+	})
+
+	it("lengthens gcTime of an existing entry when asked", () => {
+		const s = new FakeScheduler()
+		const c = new QueryClient({ scheduler: s, gcTime: 100 })
+		const q = c.getQuery(["a"])
+		c.getQuery(["a"], 500)
+		const off = q.subscribe(() => {})
+		off()
+		s.advance(499)
+		expect(c.getQueryState(["a"])).toBeDefined()
+		s.advance(1)
+		expect(c.getQueryState(["a"])).toBeUndefined()
+	})
+})

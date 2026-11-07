@@ -92,3 +92,52 @@ describe("Query", () => {
 		expect(l).toHaveBeenCalledTimes(2) // loading, then success
 	})
 })
+
+describe("Query gc", () => {
+	it("calls onGc after gcTime when nobody observes it", () => {
+		const s = new FakeScheduler()
+		const onGc = vi.fn()
+		new Query(s, { gcTime: 100, onGc })
+		s.advance(99)
+		expect(onGc).not.toHaveBeenCalled()
+		s.advance(1)
+		expect(onGc).toHaveBeenCalledTimes(1)
+	})
+
+	it("subscribing cancels gc; the last unsubscribe restarts it", () => {
+		const s = new FakeScheduler()
+		const onGc = vi.fn()
+		const q = new Query(s, { gcTime: 100, onGc })
+		const off = q.subscribe(() => {})
+		s.advance(500)
+		expect(onGc).not.toHaveBeenCalled()
+		off()
+		s.advance(100)
+		expect(onGc).toHaveBeenCalledTimes(1)
+	})
+
+	it("never collects with gcTime Infinity; the longest gcTime wins", () => {
+		const s = new FakeScheduler()
+		const onGc = vi.fn()
+		const q = new Query(s, { gcTime: Infinity, onGc })
+		s.advance(1e12)
+		expect(onGc).not.toHaveBeenCalled()
+		const q2 = new Query(s, { gcTime: 100, onGc })
+		q2.updateGcTime(50)
+		q2.updateGcTime(300)
+		const off = q2.subscribe(() => {})
+		off()
+		s.advance(299)
+		expect(onGc).not.toHaveBeenCalled()
+		s.advance(1)
+		expect(onGc).toHaveBeenCalledTimes(1)
+		expect(q.getSnapshot().status).toBe("idle")
+	})
+
+	it("destroy cancels the pending gc timer", () => {
+		const s = new FakeScheduler()
+		const q = new Query(s, { gcTime: 100 })
+		q.destroy()
+		expect(s.pendingTimers).toBe(0)
+	})
+})

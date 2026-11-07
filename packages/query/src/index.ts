@@ -1,5 +1,7 @@
 export { QueryClient } from "./query-client"
 export type { QueryClientOptions } from "./query-client"
+export { QueryObserver } from "./query-observer"
+export type { QueryObserverOptions, QueryResult } from "./query-observer"
 export { Query } from "./query"
 export type { QueryState, QueryStatus } from "./query"
 export { hashKey } from "./hash-key"

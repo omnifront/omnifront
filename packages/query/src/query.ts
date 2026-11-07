@@ -1,4 +1,6 @@
-import { BaseSubscribable, type Scheduler } from "@unicore/core"
+import { BaseSubscribable, type Scheduler, type TimerHandle } from "@unicore/core"
+
+export const DEFAULT_GC_TIME = 5 * 60 * 1000
 
 export type QueryStatus = "idle" | "loading" | "success" | "error"
 
@@ -11,6 +13,13 @@ export interface QueryState<TData = unknown> {
 	dataUpdatedAt: number | undefined
 }
 
+export interface QueryInit {
+	/** Ms to keep an unobserved entry before removal. Default 5 minutes. */
+	gcTime?: number
+	/** Called when the entry has been unobserved for `gcTime`. */
+	onGc?: () => void
+}
+
 /** One cache entry. Immutable snapshots; one in-flight request at a time. */
 export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> {
 	private state: QueryState<TData> = {
@@ -21,9 +30,49 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 		dataUpdatedAt: undefined,
 	}
 	private inflight: Promise<TData> | undefined
+	private gcTime: number
+	private gcTimer: TimerHandle | undefined
 
-	constructor(private readonly scheduler: Scheduler) {
+	constructor(
+		private readonly scheduler: Scheduler,
+		private readonly init: QueryInit = {},
+	) {
 		super()
+		this.gcTime = init.gcTime ?? DEFAULT_GC_TIME
+		this.scheduleGc() // entries nobody observes are collected too
+	}
+
+	/** Several observers may ask for different gcTimes; the longest wins. */
+	updateGcTime(gcTime: number): void {
+		this.gcTime = Math.max(this.gcTime, gcTime)
+	}
+
+	/** Cancel pending timers; the entry is being dropped. */
+	destroy(): void {
+		this.clearGc()
+	}
+
+	// ADR-0001 rule 4: first subscriber cancels gc, last one starts it.
+	protected override onSubscribe(): void {
+		this.clearGc()
+	}
+
+	protected override onUnsubscribe(): void {
+		this.scheduleGc()
+	}
+
+	private scheduleGc(): void {
+		this.clearGc()
+		if (this.gcTime === Infinity) return
+		this.gcTimer = this.scheduler.setTimeout(() => {
+			this.gcTimer = undefined
+			this.init.onGc?.()
+		}, this.gcTime)
+	}
+
+	private clearGc(): void {
+		if (this.gcTimer !== undefined) this.scheduler.clearTimeout(this.gcTimer)
+		this.gcTimer = undefined
 	}
 
 	getSnapshot(): QueryState<TData> {
