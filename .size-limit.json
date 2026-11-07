@@ -1,0 +1,4 @@
+[
+	{ "name": "@unicore/core", "path": "packages/core/dist/index.js", "limit": "1 KB", "gzip": true },
+	{ "name": "@unicore/query", "path": "packages/query/dist/index.js", "limit": "3 KB", "gzip": true, "ignore": ["@unicore/core"] }
+]

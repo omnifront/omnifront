@@ -1,0 +1,21 @@
+{
+	"name": "@unicore/core",
+	"version": "0.0.0",
+	"type": "module",
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts --clean",
+		"test": "vitest run --passWithNoTests",
+		"typecheck": "tsc --noEmit"
+	}
+}

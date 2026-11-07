@@ -1,0 +1,29 @@
+{
+	"name": "unicore-monorepo",
+	"private": true,
+	"type": "module",
+	"packageManager": "pnpm@9",
+	"scripts": {
+		"build": "pnpm -r run build",
+		"test": "pnpm -r run test",
+		"typecheck": "pnpm -r run typecheck",
+		"lint": "eslint .",
+		"deps:check": "depcruise packages --config .dependency-cruiser.cjs",
+		"dev": "pnpm -r --parallel run dev",
+		"size": "size-limit",
+		"changeset": "changeset",
+		"release": "pnpm build && changeset publish"
+	},
+	"devDependencies": {
+		"@changesets/cli": "^2",
+		"@eslint/js": "^9",
+		"@size-limit/preset-small-lib": "^11",
+		"dependency-cruiser": "^18.7.2",
+		"eslint": "^9",
+		"size-limit": "^11",
+		"tsup": "^9.0.0",
+		"typescript": "^5.5",
+		"typescript-eslint": "^8.72.1",
+		"vitest": "^2"
+	}
+}
