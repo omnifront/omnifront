@@ -15,7 +15,6 @@ describe("QueryObserver", () => {
 		const { client } = setup()
 		const fn = vi.fn(() => Promise.resolve("x"))
 		const o = new QueryObserver(client, { queryKey: ["k"], queryFn: fn })
-		expect(o.getSnapshot()).toMatchObject({ status: "idle", isStale: true })
 		o.subscribe(() => {})
 		expect(o.getSnapshot()).toMatchObject({ status: "loading", isFetching: true })
 		await flush()
@@ -153,6 +152,35 @@ describe("QueryObserver", () => {
 	})
 })
 
+describe("QueryObserver before mount", () => {
+	it("reports loading/isFetching optimistically, with a stable reference", () => {
+		const { client } = setup()
+		const o = new QueryObserver(client, { queryKey: ["k"], queryFn: () => Promise.resolve(1) })
+		expect(o.getSnapshot()).toMatchObject({ status: "loading", isFetching: true, isStale: true })
+		expect(o.getSnapshot()).toBe(o.getSnapshot())
+	})
+
+	it("stays idle when disabled, and shows isFetching over stale data", () => {
+		const { client } = setup()
+		const off = new QueryObserver(client, { queryKey: ["k"], queryFn: () => Promise.resolve(1), enabled: false })
+		expect(off.getSnapshot()).toMatchObject({ status: "idle", isFetching: false })
+		client.setQueryData(["d"], "cached")
+		const stale = new QueryObserver(client, { queryKey: ["d"], queryFn: () => Promise.resolve("new") })
+		expect(stale.getSnapshot()).toMatchObject({ status: "success", data: "cached", isFetching: true })
+		const fresh = new QueryObserver(client, { queryKey: ["d"], queryFn: () => Promise.resolve("new"), staleTime: Infinity })
+		expect(fresh.getSnapshot()).toMatchObject({ isFetching: false, isStale: false })
+	})
+
+	it("returns to the real state once subscribed", () => {
+		const { client } = setup()
+		const o = new QueryObserver(client, { queryKey: ["k"], queryFn: () => new Promise<number>(() => {}) })
+		const before = o.getSnapshot()
+		o.subscribe(() => {})
+		expect(o.getSnapshot()).toMatchObject({ status: "loading", isFetching: true })
+		expect(o.getSnapshot()).not.toBe(before)
+	})
+})
+
 describe("QueryObserver.setOptions", () => {
 	it("switches to the new key's data, fetches it, and notifies", async () => {
 		const { client } = setup()
@@ -178,6 +206,33 @@ describe("QueryObserver.setOptions", () => {
 		const o = new QueryObserver(client, { queryKey: ["a"], queryFn: () => Promise.resolve("A") })
 		o.setOptions({ queryKey: ["b"], queryFn: () => Promise.resolve("B") })
 		expect(o.getSnapshot().data).toBe("B")
+	})
+
+	it("same options on every render never refetch, even when data is stale (staleTime 0)", async () => {
+		const { client } = setup()
+		const fn = vi.fn(() => Promise.resolve(1))
+		const options = { queryKey: ["k"], queryFn: fn }
+		const o = new QueryObserver(client, options)
+		o.subscribe(() => {})
+		await flush()
+		for (let i = 0; i < 5; i++) o.setOptions({ ...options })
+		await flush()
+		expect(fn).toHaveBeenCalledTimes(1)
+	})
+
+	it("a changed staleTime re-arms the stale timer and notifies", async () => {
+		const { client, scheduler } = setup()
+		const base = { queryKey: ["k"], queryFn: () => Promise.resolve(1) }
+		const o = new QueryObserver(client, { ...base, staleTime: Infinity })
+		const l = vi.fn()
+		o.subscribe(l)
+		await flush()
+		l.mockClear()
+		o.setOptions({ ...base, staleTime: 500 })
+		expect(l).toHaveBeenCalledTimes(1)
+		expect(o.getSnapshot().isStale).toBe(false)
+		scheduler.advance(500)
+		expect(o.getSnapshot().isStale).toBe(true)
 	})
 
 	it("same key: re-evaluates fetching when enabled turns on", () => {

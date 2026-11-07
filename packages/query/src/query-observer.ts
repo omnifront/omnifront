@@ -28,6 +28,7 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	private query: Query<TData>
 	private result: QueryResult<TData> | undefined
 	private source: QueryState<TData> | undefined
+	private wasOptimistic = false
 	private detachQuery: (() => void) | undefined
 	private staleTimer: TimerHandle | undefined
 
@@ -39,13 +40,24 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 		this.query = client.getQuery<TData>(options.queryKey, options.gcTime)
 	}
 
-	/** Same reference until the query state or its staleness changes. */
+	/**
+	 * Same reference until the query state or its staleness changes.
+	 * Before anyone subscribes, an entry that will be fetched on mount already reports
+	 * `isFetching` (and `loading` if empty), so a first render doesn't flash an idle state.
+	 */
 	getSnapshot(): QueryResult<TData> {
 		const state = this.query.getSnapshot()
 		const isStale = this.isStale(state)
-		if (this.result && this.source === state && this.result.isStale === isStale) return this.result
+		const optimistic = isStale && !state.isFetching && !this.hasListeners && this.options.enabled !== false
+		const previous = this.result
+		if (previous && this.source === state && previous.isStale === isStale && this.wasOptimistic === optimistic) {
+			return previous
+		}
 		this.source = state
-		this.result = { ...state, isStale }
+		this.wasOptimistic = optimistic
+		this.result = optimistic
+			? { ...state, status: state.status === "idle" ? "loading" : state.status, isFetching: true, isStale }
+			: { ...state, isStale }
 		return this.result
 	}
 
@@ -62,7 +74,8 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 
 	/** Update options (e.g. a reactive key changed). Switches queries when the key differs. */
 	setOptions(options: QueryObserverOptions<TData>): void {
-		const keyChanged = hashKey(options.queryKey) !== hashKey(this.options.queryKey)
+		const previous = this.options
+		const keyChanged = hashKey(options.queryKey) !== hashKey(previous.queryKey)
 		this.options = options
 		const active = this.hasListeners
 		if (keyChanged) {
@@ -73,8 +86,13 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 				this.notify()
 			}
 		} else if (active) {
-			this.scheduleStale()
-			this.maybeFetch()
+			// UI hooks call this on every render, so only react to changes that matter:
+			// never refetch just because data is stale (with staleTime 0 that would loop forever).
+			if (previous.enabled === false && options.enabled !== false) this.maybeFetch()
+			if (previous.staleTime !== options.staleTime) {
+				this.scheduleStale()
+				this.notify()
+			}
 		}
 	}
 
