@@ -1,6 +1,6 @@
 # ADR-0002: مونوریپو و ابزار بیلد
 
-**وضعیت:** Proposed
+**وضعیت:** Accepted
 **تاریخ:** 2026-11-07
 
 ## زمینه
@@ -9,7 +9,7 @@
 
 ## تصمیم
 
-- مدیریت پکیج و workspace: pnpm 9 (فقط pnpm workspaces)
+- مدیریت پکیج و workspace: pnpm 12 (فقط pnpm workspaces)
 - بیلد: `tsup` برای هر پکیج (ESM + CJS + `.d.ts`)
 - تست: Vitest
 - انتشار: Changesets
