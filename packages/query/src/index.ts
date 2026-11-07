@@ -1,1 +1,6 @@
-export {}
+export { QueryClient } from "./query-client"
+export type { QueryClientOptions } from "./query-client"
+export { Query } from "./query"
+export type { QueryState, QueryStatus } from "./query"
+export { hashKey } from "./hash-key"
+export type { QueryKey } from "./hash-key"
