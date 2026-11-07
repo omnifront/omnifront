@@ -14,3 +14,21 @@ describe("hashKey", () => {
 		expect(hashKey(["todos", null])).toBe('["todos",null]')
 	})
 })
+
+import { matchesKey } from "../src/hash-key"
+
+describe("matchesKey", () => {
+	it("matches prefixes and partial objects", () => {
+		expect(matchesKey(["todos", { page: 1, done: true }], ["todos"])).toBe(true)
+		expect(matchesKey(["todos", { page: 1, done: true }], ["todos", { done: true }])).toBe(true)
+		expect(matchesKey(["todos"], ["todos"])).toBe(true)
+	})
+	it("rejects different or longer filters", () => {
+		expect(matchesKey(["todos"], ["users"])).toBe(false)
+		expect(matchesKey(["todos"], ["todos", 1])).toBe(false)
+		expect(matchesKey(["todos", { page: 1 }], ["todos", { page: 2 }])).toBe(false)
+		expect(matchesKey(["todos", 1], ["todos", { a: 1 }])).toBe(false)
+		expect(matchesKey(["todos", null], ["todos", { a: 1 }])).toBe(false)
+		expect(matchesKey(["todos", { a: 1 }], ["todos", null])).toBe(false)
+	})
+})

@@ -12,3 +12,16 @@ function sortKeys(_: string, value: unknown): unknown {
 export function hashKey(key: QueryKey): string {
 	return JSON.stringify(key, sortKeys)
 }
+
+/** True if `key` starts with / contains everything in `filter` (arrays by position, objects as subsets). */
+export function matchesKey(key: QueryKey, filter: QueryKey): boolean {
+	return partialMatch(key, filter)
+}
+
+function partialMatch(a: unknown, b: unknown): boolean {
+	if (a === b) return true
+	if (typeof a !== "object" || typeof b !== "object" || a === null || b === null) return false
+	const left = a as Record<string, unknown>
+	const right = b as Record<string, unknown>
+	return Object.keys(right).every((k) => partialMatch(left[k], right[k]))
+}

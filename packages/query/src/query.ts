@@ -2,6 +2,7 @@ import { BaseSubscribable, type Scheduler, type TimerHandle } from "@unicore/cor
 import { getRetryDelay, shouldRetry, type RetryOptions } from "./retry"
 
 export const DEFAULT_GC_TIME = 5 * 60 * 1000
+const noop = (): void => {}
 
 export type QueryStatus = "idle" | "loading" | "success" | "error"
 
@@ -10,6 +11,8 @@ export interface QueryState<TData = unknown> {
 	data: TData | undefined
 	error: unknown
 	isFetching: boolean
+	/** Marked outdated by invalidation; cleared when the next fetch starts. */
+	isInvalidated: boolean
 	/** Failures in the current fetch so far (0 once it succeeds or a new one starts). */
 	failureCount: number
 	/** Scheduler time of the last successful data, if any. */
@@ -43,6 +46,7 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 		data: undefined,
 		error: undefined,
 		isFetching: false,
+		isInvalidated: false,
 		failureCount: 0,
 		dataUpdatedAt: undefined,
 	}
@@ -70,8 +74,19 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 			status: "success",
 			data,
 			error: undefined,
+			isInvalidated: false,
 			dataUpdatedAt: this.scheduler.now(),
 		})
+	}
+
+	/** Mark the data outdated. Active observers refetch; others refetch when next mounted. */
+	invalidate(): void {
+		if (!this.state.isInvalidated) this.update({ isInvalidated: true })
+	}
+
+	/** Resolves once the in-flight fetch (if any) has finished, successfully or not. */
+	settled(): Promise<void> {
+		return this.inflight ? this.inflight.then(noop, noop) : Promise.resolve()
 	}
 
 	/**
@@ -86,6 +101,7 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 			status: before.data === undefined ? "loading" : before.status,
 			error: undefined,
 			isFetching: true,
+			isInvalidated: false,
 			failureCount: 0,
 		})
 		const request: Promise<TData> = new Promise<TData>((resolve, reject) => {
@@ -107,7 +123,13 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 				this.clearRetry()
 				this.cancelRequest = undefined
 				this.inflight = undefined
-				this.update({ status: before.status, error: before.error, isFetching: false, failureCount: 0 })
+				this.update({
+					status: before.status,
+					error: before.error,
+					isFetching: false,
+					isInvalidated: before.isInvalidated,
+					failureCount: 0,
+				})
 				reject(new CancelledError())
 			}
 			attempt()

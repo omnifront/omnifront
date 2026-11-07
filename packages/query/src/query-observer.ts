@@ -89,6 +89,9 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	private attach(): void {
 		this.detachQuery = this.query.subscribe(() => {
 			this.scheduleStale()
+			const state = this.query.getSnapshot()
+			// Invalidated while we're watching: refetch now (respects `enabled`).
+			if (state.isInvalidated && !state.isFetching) this.maybeFetch()
 			this.notify()
 		})
 		this.scheduleStale()
@@ -102,7 +105,7 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	}
 
 	private isStale(state: QueryState<TData>): boolean {
-		if (state.dataUpdatedAt === undefined) return true
+		if (state.isInvalidated || state.dataUpdatedAt === undefined) return true
 		return this.client.scheduler.now() - state.dataUpdatedAt >= (this.options.staleTime ?? 0)
 	}
 
