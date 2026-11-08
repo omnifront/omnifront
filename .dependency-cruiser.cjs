@@ -13,6 +13,8 @@ module.exports = {
 		pkgRule("core-imports-nothing", "core", []),
 		pkgRule("query-imports-core-only", "query", ["core"]),
 		pkgRule("store-imports-core-only", "store", ["core"]),
+		pkgRule("persist-imports-query-core-only", "persist", ["query", "core"]),
+		pkgRule("devtools-imports-query-core-only", "devtools", ["query", "core"]),
 		pkgRule("react-no-other-adapters", "react", ["core", "query", "store"]),
 		pkgRule("vue-no-other-adapters", "vue", ["core", "query", "store"]),
 		pkgRule("angular-no-other-adapters", "angular", ["core", "query", "store"]),
@@ -21,7 +23,7 @@ module.exports = {
 			name: "no-framework-outside-adapters",
 			comment: "Only adapter packages may import react, vue or @angular/*",
 			severity: "error",
-			from: { path: "^packages/(core|query|store|conformance)/src" },
+			from: { path: "^packages/(core|query|store|persist|devtools|conformance)/src" },
 			to: { path: FRAMEWORK },
 		},
 		{

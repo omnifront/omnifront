@@ -87,5 +87,41 @@
 			"@unicore/query",
 			"@unicore/react"
 		]
+	},
+	{
+		"name": "@unicore/persist",
+		"path": "packages/persist/dist/index.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@unicore/query",
+			"@unicore/query/hydration"
+		]
+	},
+	{
+		"name": "@unicore/persist/indexeddb",
+		"path": "packages/persist/dist/indexeddb.js",
+		"limit": "1 KB",
+		"gzip": true
+	},
+	{
+		"name": "@unicore/devtools",
+		"path": "packages/devtools/dist/index.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@unicore/core",
+			"@unicore/query"
+		]
+	},
+	{
+		"name": "@unicore/devtools/panel",
+		"path": "packages/devtools/dist/panel.js",
+		"limit": "3 KB",
+		"gzip": true,
+		"ignore": [
+			"@unicore/core",
+			"@unicore/query"
+		]
 	}
 ]

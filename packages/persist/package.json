@@ -1,0 +1,50 @@
+{
+	"name": "@unicore/persist",
+	"version": "0.0.0",
+	"description": "Persist the unicore query cache to localStorage, IndexedDB or any storage, and restore it on startup.",
+	"license": "MIT",
+	"keywords": [
+		"unicore",
+		"persist",
+		"cache",
+		"offline"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"directory": "packages/persist"
+	},
+	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/persist#readme",
+	"bugs": {
+		"url": "https://github.com/AMHB-DEV/unicore/issues"
+	},
+	"type": "module",
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./indexeddb": {
+			"types": "./dist/indexeddb.d.ts",
+			"import": "./dist/indexeddb.js",
+			"require": "./dist/indexeddb.cjs"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup src/index.ts src/indexeddb.ts --format esm,cjs --dts --clean",
+		"test": "vitest run --coverage",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@unicore/query": "workspace:*"
+	},
+	"devDependencies": {
+		"@unicore/core": "workspace:*",
+		"fake-indexeddb": "^6.2.7"
+	}
+}
