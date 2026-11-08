@@ -1,0 +1,44 @@
+{
+	"name": "@unicore/next",
+	"version": "0.0.0",
+	"type": "module",
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./client": {
+			"types": "./dist/client.d.ts",
+			"import": "./dist/client.js",
+			"require": "./dist/client.cjs"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup --config tsup.server.config.ts && tsup --config tsup.client.config.ts",
+		"test": "vitest run --coverage",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@unicore/query": "workspace:*",
+		"@unicore/react": "workspace:*"
+	},
+	"peerDependencies": {
+		"next": ">=14",
+		"react": ">=18"
+	},
+	"devDependencies": {
+		"@testing-library/dom": "^10.4.2",
+		"@testing-library/react": "^16.3.3",
+		"@types/react": "^19.3.0",
+		"@types/react-dom": "^19.3.0",
+		"@unicore/core": "workspace:*",
+		"jsdom": "^31.0.0",
+		"react": ">=18",
+		"react-dom": "^19.3.1"
+	}
+}
