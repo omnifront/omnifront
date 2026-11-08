@@ -10,7 +10,8 @@
 	},
 	"dependencies": {
 		"@unicore/angular": "workspace:*",
-		"@unicore/query": "workspace:*"
+		"@unicore/query": "workspace:*",
+		"@unicore/example-shared": "workspace:*"
 	},
 	"devDependencies": {
 		"@angular/build": "^22.2.6",

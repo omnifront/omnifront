@@ -1,6 +1,6 @@
-import { Component, signal } from "@angular/core"
-import { injectMutation, injectQuery, injectQueryClient } from "@unicore/angular"
-import { addTodo, listTodos, server } from "./api"
+import { Component, computed, signal } from "@angular/core"
+import { addTodoMutation, matchesFilter, server, todoFilter, todosQuery } from "@unicore/example-shared"
+import { injectMutation, injectQuery, injectQueryClient, injectStore } from "@unicore/angular"
 
 @Component({
 	selector: "app-root",
@@ -13,6 +13,7 @@ import { addTodo, listTodos, server } from "./api"
 				<b>{{ todos.isStale() }}</b> · failures: <b>{{ todos.failureCount() }}</b>
 			</p>
 
+			<input placeholder="Filter" [value]="filter()" (input)="setFilter($event)" />
 			@if (todos.status() === 'loading') {
 				<p>Loading…</p>
 			}
@@ -20,7 +21,7 @@ import { addTodo, listTodos, server } from "./api"
 				<p style="color: crimson">{{ errorMessage(todos.error()) }}</p>
 			}
 			<ul>
-				@for (t of todos.data(); track t) {
+				@for (t of visible(); track t) {
 					<li>{{ t }}</li>
 				}
 			</ul>
@@ -50,18 +51,14 @@ export class AppComponent {
 	failing = signal(false)
 
 	// inject* functions work in field initializers, like Angular's own inject().
-	todos = injectQuery({
-		queryKey: ["todos"],
-		queryFn: ({ signal }) => listTodos(signal),
-		staleTime: 5_000,
-		retryDelay: 800,
-	})
+	todos = injectQuery(todosQuery)
+	add = injectMutation(addTodoMutation(this.client))
+	filter = injectStore(todoFilter, (s) => s.filter)
+	visible = computed(() => this.todos.data()?.filter((t) => matchesFilter(t, this.filter())) ?? [])
 
-	add = injectMutation({
-		mutationFn: addTodo,
-		// Stay "pending" until the list has been refetched.
-		onSuccess: () => this.client.invalidateQueries({ queryKey: ["todos"] }),
-	})
+	setFilter(event: Event) {
+		todoFilter.getState().setFilter((event.target as HTMLInputElement).value)
+	}
 
 	submit(event: Event, input: HTMLInputElement) {
 		event.preventDefault()

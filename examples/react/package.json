@@ -10,7 +10,8 @@
 	},
 	"dependencies": {
 		"@unicore/query": "workspace:*",
-		"@unicore/react": "workspace:*"
+		"@unicore/react": "workspace:*",
+		"@unicore/example-shared": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/react": "^19.3.0",
