@@ -128,7 +128,7 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 		delete rest.initialPageParam
 		delete rest.getNextPageParam
 		delete rest.getPreviousPageParam
-		return { ...(rest as QueryObserverOptions<InfiniteData<TPage, TPageParam>>), queryFn: this.loadAll }
+		return { ...(rest as unknown as Omit<QueryObserverOptions<InfiniteData<TPage, TPageParam>>, "queryFn">), queryFn: this.loadAll }
 	}
 
 	private data(): InfiniteData<TPage, TPageParam> | undefined {
