@@ -7,7 +7,7 @@ import { hydrateRoot } from "react-dom/client"
 import { renderToReadableStream } from "react-dom/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { HydrationBoundary, QueryProvider } from "../src"
-import { useSuspenseQuery } from "../src/suspense"
+import { useSuspenseInfiniteQuery, useSuspenseQuery } from "../src/suspense"
 
 const newClient = (clock = 0) => {
 	const scheduler = new FakeScheduler()
@@ -60,6 +60,21 @@ describe("useSuspenseQuery", () => {
 		await flush()
 		expect(screen.getAllByRole("listitem").map((li) => li.textContent)).toEqual(["a", "b"])
 		expect(queryFn).toHaveBeenCalledTimes(1)
+	})
+
+	it("exposes refetch on the result", async () => {
+		const client = newClient()
+		let n = 0
+		let reload: (() => Promise<unknown>) | undefined
+		function Counter() {
+			const q = useSuspenseQuery({ queryKey: ["n"], queryFn: () => Promise.resolve(++n), retry: false })
+			reload = q.refetch
+			return <p>{`n=${q.data}`}</p>
+		}
+		render(app(client, <Counter />))
+		await flush()
+		await act(async () => void (await reload?.()))
+		expect(screen.getByText("n=2")).toBeTruthy()
 	})
 
 	it("does not fetch again right after resolving (default staleTime is 1s)", async () => {
@@ -182,5 +197,52 @@ describe("useSuspenseQuery with streaming SSR", () => {
 			expect(browserFn).toHaveBeenCalledTimes(1) // stale on the browser's clock: refetched after mounting
 		}
 		container.remove()
+	})
+})
+
+describe("useSuspenseInfiniteQuery", () => {
+	it("suspends for the first page, then loads more without suspending again", async () => {
+		const client = newClient()
+		let more: (() => Promise<void>) | undefined
+		let rest: { previous: () => Promise<void>; reload: () => Promise<unknown> } | undefined
+		function Feed() {
+			const feed = useSuspenseInfiniteQuery<number, number>({
+				queryKey: ["feed"],
+				queryFn: ({ pageParam }) => Promise.resolve(pageParam),
+				initialPageParam: 1,
+				getNextPageParam: (last) => (last < 3 ? last + 1 : undefined),
+				retry: false,
+			})
+			more = feed.fetchNextPage
+			rest = { previous: feed.fetchPreviousPage, reload: feed.refetch }
+			return <p>{feed.data.pages.join(",")}</p>
+		}
+		render(app(client, <Feed />))
+		expect(screen.getByText("loading")).toBeTruthy()
+		await flush()
+		expect(screen.getByText("1")).toBeTruthy()
+		await act(async () => void (await more?.()))
+		expect(screen.getByText("1,2")).toBeTruthy()
+		await act(async () => void (await rest?.previous())) // no previous cursor configured: a no-op
+		await act(async () => void (await rest?.reload()))
+		expect(screen.getByText("1,2")).toBeTruthy()
+	})
+
+	it("throws a failure to the error boundary", async () => {
+		const spy = vi.spyOn(console, "error").mockImplementation(() => {})
+		function Feed() {
+			useSuspenseInfiniteQuery<number, number>({
+				queryKey: ["bad-feed"],
+				queryFn: () => Promise.reject(new Error("nope")),
+				initialPageParam: 1,
+				getNextPageParam: () => undefined,
+				retry: false,
+			})
+			return null
+		}
+		render(app(newClient(), <Feed />))
+		await flush()
+		expect(screen.getByText("failed: nope")).toBeTruthy()
+		spy.mockRestore()
 	})
 })

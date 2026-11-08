@@ -57,3 +57,21 @@ Re-exported from `@unicore/query-infinite` ([options](/api/query-infinite#infini
 ### `UseSuspenseQueryResult`
 
 Like `UseQueryResult` but `data` is always defined and `status` is `"success" | "error"`.
+
+## Several queries (`@unicore/react/queries`)
+
+### `useQueries`
+
+`useQueries([options, ...])` runs several queries at once and returns an array of [`UseQueryResult`](/api/react#usequeryresult)s in the same order. With a tuple each result keeps its own data type. A changed set of keys creates new observers. See [Queries](/guide/queries#several-queries-at-once).
+
+### `UseQueriesResults`
+
+The mapped result type of `useQueries`: one `UseQueryResult` per query.
+
+### `useSuspenseInfiniteQuery`
+
+`useSuspenseInfiniteQuery(options)` is [`useInfiniteQuery`](/api/react#useinfinitequery) for Suspense and error boundaries (same rules as `useSuspenseQuery`), exported from `@unicore/react/suspense`.
+
+### `UseSuspenseInfiniteQueryResult`
+
+Like `UseInfiniteQueryResult` with `data` always defined and `status` `"success" | "error"`.

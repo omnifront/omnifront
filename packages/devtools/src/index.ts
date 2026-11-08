@@ -32,7 +32,7 @@ export class DevtoolsModel extends BaseSubscribable<DevtoolsSnapshot> {
 
 	/** The same object until some entry's state, observed flag or membership changes. */
 	getSnapshot(): DevtoolsSnapshot {
-		const next: DevtoolsQuery[] = this.client.getQueries().map(({ queryKey, query }) => ({
+		const next: DevtoolsQuery[] = this.client.getQueries().map(({ key: queryKey, query }) => ({
 			hash: JSON.stringify(queryKey),
 			queryKey,
 			state: query.getSnapshot(),

@@ -35,6 +35,12 @@ export interface InfiniteHandle<TPage, TPageParam> {
 	unmount(): void
 }
 
+export interface QueriesHandle {
+	current(): ReadonlyArray<QueryResult<unknown>>
+	update(options: ReadonlyArray<QueryObserverOptions<unknown>>): void
+	unmount(): void
+}
+
 export interface StoreHandle<TSelected> {
 	current(): TSelected
 	unmount(): void
@@ -46,6 +52,7 @@ export interface Harness {
 	mountMutation<TData, TVariables, TContext = unknown>(
 		options: MutationOptions<TData, TVariables, TContext>,
 	): MutationHandle<TData, TVariables>
+	mountQueries(client: QueryClient, options: ReadonlyArray<QueryObserverOptions<unknown>>): QueriesHandle
 	mountInfiniteQuery<TPage, TPageParam>(
 		client: QueryClient,
 		options: InfiniteQueryObserverOptions<TPage, TPageParam>,
@@ -250,6 +257,51 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 			await settle()
 			expect(q.current()).toMatchObject({ data: "page-2", isPlaceholderData: false })
 			q.unmount()
+		})
+	})
+
+	describe(`${adapterName}: multiple queries conformance`, () => {
+		const one = (key: string, value: unknown, extra: Partial<QueryObserverOptions<unknown>> = {}): QueryObserverOptions<unknown> => ({
+			queryKey: [key],
+			queryFn: () => Promise.resolve(value),
+			staleTime: Infinity,
+			...extra,
+		})
+
+		it("runs every query and returns the results in order", async () => {
+			const { client } = setup()
+			const q = h.mountQueries(client, [one("a", 1), one("b", "two")])
+			expect(q.current().map((r) => r.status)).toEqual(["loading", "loading"])
+			await settle()
+			expect(q.current().map((r) => r.data)).toEqual([1, "two"])
+			q.unmount()
+		})
+
+		it("supports dependent queries through enabled", async () => {
+			const { client } = setup()
+			const dependent = vi.fn(() => Promise.resolve("posts"))
+			const q = h.mountQueries(client, [one("user", { id: 1 }), one("posts", "posts", { queryFn: dependent, enabled: false })])
+			await settle()
+			expect(dependent).not.toHaveBeenCalled()
+			q.update([one("user", { id: 1 }), one("posts", "posts", { queryFn: dependent, enabled: true })])
+			await settle()
+			expect(dependent).toHaveBeenCalledTimes(1)
+			expect(q.current()[1]?.data).toBe("posts")
+			q.unmount()
+		})
+
+		it("follows a list that grows and shrinks, and stops observing on unmount", async () => {
+			const { client } = setup()
+			const q = h.mountQueries(client, [one("a", 1)])
+			await settle()
+			q.update([one("a", 1), one("b", 2), one("c", 3)])
+			await settle()
+			expect(q.current().map((r) => r.data)).toEqual([1, 2, 3])
+			q.update([one("c", 3)])
+			await settle()
+			expect(q.current().map((r) => r.data)).toEqual([3])
+			q.unmount()
+			expect(client.getQuery(["c"]).hasListeners).toBe(false)
 		})
 	})
 

@@ -8,6 +8,7 @@ import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicor
 import { nextTick, shallowRef } from "vue"
 import { useMutation, useQuery, useStore } from "../src"
 import { useInfiniteQuery } from "../src/infinite"
+import { useQueries } from "../src/queries"
 import { mountComposable } from "./mount"
 
 const harness: Harness = {
@@ -36,6 +37,18 @@ const harness: Harness = {
 				current.value = next
 			},
 			refetch: () => r.refetch(),
+			unmount,
+		}
+	},
+
+	mountQueries(client, options) {
+		const current = shallowRef(options)
+		const { result: r, unmount } = mountComposable(() => useQueries(current), client)
+		return {
+			current: () => r.value as never,
+			update: (next) => {
+				current.value = next
+			},
 			unmount,
 		}
 	},

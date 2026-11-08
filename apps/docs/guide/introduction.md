@@ -24,7 +24,7 @@ The hard rule: only the adapters may import `react`, `vue` or `@angular/*`. It i
 
 ## What it does not have (yet)
 
-`useQueries`/dependent-query helpers, structural sharing of results, a Suspense variant for infinite queries, and Nuxt/Angular SSR verified in a real framework app (the building blocks are tested; see [SSR](/guide/ssr)). If you need these today, use TanStack Query; see [migrating](/guide/migrating-from-tanstack) for how the APIs line up.
+`useIsFetching`, a `combine` option for `useQueries`, and Nuxt/Angular SSR verified in a real framework app (the building blocks are tested; see [SSR](/guide/ssr)). If you need these today, use TanStack Query; see [migrating](/guide/migrating-from-tanstack) for how the APIs line up.
 
 ## Next steps
 

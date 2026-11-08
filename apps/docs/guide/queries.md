@@ -100,6 +100,34 @@ const { data, isPlaceholderData } = useQuery(() => ({
 }))
 ```
 
+## Several queries at once
+
+`useQueries` (React), `useQueries` (Vue) and `injectQueries` (Angular) run a list of queries in parallel and give back their results in order. The list can be built at run time and can grow and shrink.
+
+```tsx
+import { useQueries } from "@unicore/react/queries"
+
+const [user, posts] = useQueries([
+	{ queryKey: ["user", id], queryFn: () => loadUser(id) },
+	{ queryKey: ["posts", id], queryFn: () => loadPosts(id), enabled: user.data !== undefined }, // dependent
+])
+```
+
+Vue: `import { useQueries } from "@unicore/vue/queries"` (one array of plain results). Angular: `injectQueries` from `@unicore/angular/queries` (one signal of an array). **Dependent queries** need no special API: set `enabled` on the later query. (The `user` above is the previous render's result, so the second query starts once the first has data.)
+
+## Stable references: structural sharing
+
+By default a refetch that returns equal data still produces a new object, so anything memoized on it re-runs. Opt in to keep the old references for the parts that did not change:
+
+```ts
+import { QueryClient } from "@unicore/query"
+import { replaceEqualDeep } from "@unicore/query/structural"
+
+const client = new QueryClient({ structuralSharing: replaceEqualDeep })
+```
+
+A refetch returning the same list with one item changed keeps the identity of every other item (and of the list, if nothing changed). It works on plain objects and arrays (JSON-like data) and costs a deep comparison per fetch, so it is off by default. It also applies to `setQueryData`.
+
 ## Turning a query off
 
 `enabled: false` means no automatic fetch; the entry stays `"idle"`. Flipping it to `true` fetches.

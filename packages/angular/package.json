@@ -34,13 +34,18 @@
 			"types": "./dist/ssr.d.ts",
 			"import": "./dist/ssr.js",
 			"require": "./dist/ssr.cjs"
+		},
+		"./queries": {
+			"types": "./dist/queries.d.ts",
+			"import": "./dist/queries.js",
+			"require": "./dist/queries.cjs"
 		}
 	},
 	"files": [
 		"dist"
 	],
 	"scripts": {
-		"build": "tsup src/index.ts src/infinite.ts src/ssr.ts --format esm,cjs --dts --clean",
+		"build": "tsup src/index.ts src/infinite.ts src/queries.ts src/ssr.ts --format esm,cjs --dts --clean",
 		"test": "vitest run --coverage",
 		"typecheck": "tsc --noEmit"
 	},

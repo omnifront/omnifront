@@ -9,6 +9,7 @@ import { act, renderHook } from "@testing-library/react"
 import { createElement, type ReactNode } from "react"
 import { QueryProvider, useMutation, useQuery, useStore } from "../src"
 import { useInfiniteQuery } from "../src/infinite"
+import { useQueries } from "../src/queries"
 
 const harness: Harness = {
 	act: async (fn) => {
@@ -27,6 +28,16 @@ const harness: Harness = {
 			current: () => hook.result.current,
 			update: (next: QueryObserverOptions<TData>) => hook.rerender(next),
 			refetch: () => hook.result.current.refetch(),
+			unmount: () => hook.unmount(),
+		}
+	},
+
+	mountQueries(client, options) {
+		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
+		const hook = renderHook((props: typeof options) => useQueries<unknown[]>(props as never), { wrapper, initialProps: options })
+		return {
+			current: () => hook.result.current as never,
+			update: (next) => hook.rerender(next),
 			unmount: () => hook.unmount(),
 		}
 	},

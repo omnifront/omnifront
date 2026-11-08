@@ -42,6 +42,10 @@ Vue: `useInfiniteQuery` from `@unicore/vue/infinite` (refs). Angular: `injectInf
 
 Add `getPreviousPageParam(firstPage, allPages, firstPageParam, allPageParams)` and use `fetchPreviousPage()` / `hasPreviousPage` / `isFetchingPreviousPage` for chat-style feeds that grow upward.
 
+## Long lists: `maxPages`
+
+`maxPages: 5` keeps at most five pages in the cache. Loading a page past the limit drops one from the opposite end, which also keeps a refetch cheap (it only reloads the pages kept). With `getPreviousPageParam` configured, going back reloads what was dropped.
+
 ## Plain pagination
 
 If you show one page at a time (page 1, 2, 3 buttons), you do not need this package: use a normal query keyed by the page with `placeholderData: keepPreviousData` (see [Queries](/guide/queries#pagination-without-flicker)).

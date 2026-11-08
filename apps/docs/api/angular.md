@@ -49,3 +49,13 @@ Re-exported from `@unicore/query-infinite` ([options](/api/query-infinite#infini
 ### `provideUnicoreSsr`
 
 Environment providers: on the server, wait for started queries and write the cache into `TransferState`; in the browser, load it. Add next to `provideUnicore`. See [Server-side rendering](/guide/ssr#angular).
+
+## Several queries (`@unicore/angular/queries`)
+
+### `injectQueries`
+
+`injectQueries(queries)`; `queries` may be an array or a function reading signals. Returns one `Signal` of an array of results, each with `refetch()`.
+
+### `QueriesResult`
+
+A [query result](/api/query#queryresult) plus `refetch`.

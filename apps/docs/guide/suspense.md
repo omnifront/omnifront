@@ -21,6 +21,10 @@ function Todos() {
 - If loading fails (after the usual retries), the error is **thrown** to the nearest error boundary.
 - When it renders, `data` is typed as defined and `status` is `"success"` (or `"error"` if a later background refetch failed; the old data stays).
 
+## Infinite lists
+
+`useSuspenseInfiniteQuery` (same entry) is `useInfiniteQuery` with the same rules: it suspends for the first page, throws a failure, and `data` is always defined. Loading more pages afterwards does not suspend; use `isFetchingNextPage`.
+
 ## Retrying after an error
 
 An errored query stays in the cache, so remounting would throw the same error. To retry, invalidate it from the boundary's reset handler; an invalidated failed query loads again (and suspends) instead of throwing:

@@ -8,6 +8,7 @@ import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicor
 import { signal } from "@angular/core"
 import { injectMutation, injectQuery, injectStore, provideUnicore } from "../src"
 import { injectInfiniteQuery } from "../src/infinite"
+import { injectQueries } from "../src/queries"
 import { flushEffects, mountInjectable } from "./mount"
 
 const harness: Harness = {
@@ -26,6 +27,19 @@ const harness: Harness = {
 				flushEffects() // the effect applies the new options
 			},
 			refetch: () => r.refetch(),
+			unmount,
+		}
+	},
+
+	mountQueries(client, options) {
+		const current = signal(options)
+		const { result: r, unmount } = mountInjectable(() => injectQueries(() => current()), [provideUnicore(client)])
+		return {
+			current: () => r() as never,
+			update: (next) => {
+				current.set(next)
+				flushEffects()
+			},
 			unmount,
 		}
 	},

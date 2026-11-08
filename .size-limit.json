@@ -190,7 +190,47 @@
 		"ignore": [
 			"react",
 			"@unicore/query",
+			"@unicore/core",
+			"@unicore/query-infinite"
+		]
+	},
+	{
+		"name": "@unicore/react/queries",
+		"path": "packages/react/dist/queries.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"react",
+			"@unicore/query",
 			"@unicore/core"
 		]
+	},
+	{
+		"name": "@unicore/vue/queries",
+		"path": "packages/vue/dist/queries.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"vue",
+			"@unicore/query",
+			"@unicore/core"
+		]
+	},
+	{
+		"name": "@unicore/angular/queries",
+		"path": "packages/angular/dist/queries.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@angular/core",
+			"@unicore/query",
+			"@unicore/core"
+		]
+	},
+	{
+		"name": "@unicore/query/structural",
+		"path": "packages/query/dist/structural.js",
+		"limit": "1 KB",
+		"gzip": true
 	}
 ]

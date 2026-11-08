@@ -62,7 +62,7 @@ Start with the Introduction, the guide for your framework, then Queries. The API
 
 ## What is not here yet
 
-`useQueries`, structural sharing, `maxPages` for infinite queries, and a runnable Nuxt / `@angular/ssr` example (Vue and Angular SSR are tested with real server renderers, Vue also in a Vite SSR demo). See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
+`useIsFetching`, and a runnable Nuxt / `@angular/ssr` example (Vue and Angular SSR are tested with real server renderers, Vue also in a Vite SSR demo). See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
 
 ## Examples
 

@@ -10,7 +10,7 @@ Query client, observers, mutations. About 2.4 KB gzipped (excluding `@unicore/co
 new QueryClient({ scheduler?, gcTime? })
 ```
 
-Options type: `QueryClientOptions`. `gcTime` is the default for new entries (5 minutes if omitted); `scheduler` replaces the real clock, mostly for tests.
+Options type: `QueryClientOptions`. `gcTime` is the default for new entries (5 minutes if omitted); `scheduler` replaces the real clock, mostly for tests; `structuralSharing` is an opt-in function (see below).
 
 | Method | |
 |---|---|
@@ -20,7 +20,7 @@ Options type: `QueryClientOptions`. `gcTime` is the default for new entries (5 m
 | `invalidateQueries({ queryKey?, exact? })` | Mark entries outdated; active observers refetch. Resolves when those refetches finish. Filter type: `InvalidateFilter`. |
 | `cancelQuery(key)` | Abort the in-flight fetch and retry; rejects it with `CancelledError`. |
 | `getQuery(key, gcTime?)` | The cache entry (a `Query`), created if missing. |
-| `getQueries()` | All entries with their keys (used by `dehydrate`). |
+| `getQueries()` | All entries as `{ key, query }` (used by `dehydrate` and the devtools). |
 | `clear()` | Drop every entry and cancel in-flight fetches. |
 | `scheduler` | The `Scheduler` in use. |
 
@@ -127,3 +127,9 @@ A `Subscribable<MutationState>` (type parameters: data, variables, context). Mem
 ### `DehydratedState`
 
 `{ queries: Array<{ queryKey, data, dataUpdatedAt }> }`. `DehydrateOptions` is `{ shouldDehydrate?({ queryKey, state }) => boolean }`.
+
+## Structural sharing (`@unicore/query/structural`)
+
+### `replaceEqualDeep`
+
+`replaceEqualDeep(previous, next)` returns `next`, but with every part that is deeply equal to the same part of `previous` replaced by the previous reference (the whole thing if nothing changed). Plain objects and arrays only; everything else is compared by reference. Enable it with `new QueryClient({ structuralSharing: replaceEqualDeep })`; see [Queries](/guide/queries#stable-references-structural-sharing).

@@ -21,7 +21,7 @@ A `Subscribable<InfiniteQueryResult>` built on a `QueryObserver`.
 
 ### `InfiniteQueryObserverOptions`
 
-Every [query option](/guide/queries#options-reference) except `queryFn`, plus `queryFn` (loads one page), `initialPageParam`, `getNextPageParam` and the optional `getPreviousPageParam`.
+Every [query option](/guide/queries#options-reference) except `queryFn`, plus `queryFn` (loads one page), `initialPageParam`, `getNextPageParam` and the optional `getPreviousPageParam` and `maxPages`.
 
 ### `InfiniteQueryFnContext`
 

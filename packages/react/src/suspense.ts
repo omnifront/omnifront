@@ -1,5 +1,8 @@
 import type { QueryObserverOptions } from "@unicore/query"
 import { useMemo } from "react"
+import type { UseInfiniteQueryResult } from "./infinite"
+import { useObservedInfinite } from "./observed-infinite"
+import type { InfiniteData, InfiniteQueryObserverOptions } from "@unicore/query-infinite"
 import { useObservedQuery, type UseQueryResult } from "./use-query"
 
 export interface UseSuspenseQueryResult<TData> extends Omit<UseQueryResult<TData>, "data" | "status"> {
@@ -42,5 +45,39 @@ export function useSuspenseQuery<TData>(options: QueryObserverOptions<TData>): U
 	if (snapshot.status === "error" && !snapshot.isInvalidated) throw snapshot.error
 	// Otherwise wait for the fetch. refetch() joins a request already in flight, so every render
 	// of every component waiting on this key waits on the same one.
+	throw observer.refetch().then(noop, noop)
+}
+
+export interface UseSuspenseInfiniteQueryResult<TPage, TPageParam = unknown>
+	extends Omit<UseInfiniteQueryResult<TPage, TPageParam>, "data" | "status"> {
+	data: InfiniteData<TPage, TPageParam>
+	status: "success" | "error"
+}
+
+/** `useInfiniteQuery` for `<Suspense>` and error boundaries; same rules as {@link useSuspenseQuery}. */
+export function useSuspenseInfiniteQuery<TPage, TPageParam = unknown>(
+	options: InfiniteQueryObserverOptions<TPage, TPageParam>,
+): UseSuspenseInfiniteQueryResult<TPage, TPageParam> {
+	const [observer, snapshot] = useObservedInfinite<TPage, TPageParam>({
+		...options,
+		enabled: true,
+		staleTime: options.staleTime ?? 1000,
+		placeholderData: undefined,
+	})
+	const hasData = snapshot.data !== undefined && !snapshot.isPlaceholderData
+	const result = useMemo(
+		() =>
+			hasData
+				? {
+						...snapshot,
+						fetchNextPage: () => observer.fetchNextPage(),
+						fetchPreviousPage: () => observer.fetchPreviousPage(),
+						refetch: () => observer.refetch(),
+					}
+				: undefined,
+		[hasData, snapshot, observer],
+	)
+	if (result) return result as unknown as UseSuspenseInfiniteQueryResult<TPage, TPageParam>
+	if (snapshot.status === "error" && !snapshot.isInvalidated) throw snapshot.error
 	throw observer.refetch().then(noop, noop)
 }

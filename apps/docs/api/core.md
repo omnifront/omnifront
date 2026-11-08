@@ -58,3 +58,7 @@ Import from `@unicore/core/testing`.
 ### `FakeScheduler`
 
 A `Scheduler` where time moves only through `advance(ms)`. Also has `now()` and `pendingTimers`. See [Testing](/guide/testing).
+
+### `combine`
+
+`combine(sources)` returns a `Subscribable` of the array of the sources' snapshots. The array keeps its identity until one source's snapshot changes; each source is listened to only while the combined one has listeners; changes made in one batch notify once. `useQueries` is built on it, and it works for stores too.
