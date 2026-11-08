@@ -11,6 +11,7 @@
 	},
 	"dependencies": {
 		"@unicore/core": "workspace:*",
-		"@unicore/query": "workspace:*"
+		"@unicore/query": "workspace:*",
+		"@unicore/store": "workspace:*"
 	}
 }

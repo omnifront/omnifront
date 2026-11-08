@@ -19,15 +19,16 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/query": "workspace:*"
+		"@unicore/query": "workspace:*",
+		"@unicore/core": "workspace:*"
 	},
 	"peerDependencies": {
 		"vue": ">=3.3"
 	},
 	"devDependencies": {
 		"@unicore/conformance": "workspace:*",
-		"@unicore/core": "workspace:*",
 		"jsdom": "^31.0.0",
-		"vue": ">=3.3"
+		"vue": ">=3.3",
+		"@unicore/store": "workspace:*"
 	}
 }

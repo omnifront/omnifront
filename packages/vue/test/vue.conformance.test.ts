@@ -6,7 +6,7 @@ import {
 } from "@unicore/conformance"
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicore/query"
 import { nextTick, shallowRef } from "vue"
-import { useMutation, useQuery } from "../src"
+import { useMutation, useQuery, useStore } from "../src"
 import { mountComposable } from "./mount"
 
 const harness: Harness = {
@@ -36,6 +36,11 @@ const harness: Harness = {
 			refetch: () => r.refetch(),
 			unmount,
 		}
+	},
+
+	mountStore(source, selector, equals) {
+		const { result, unmount } = mountComposable(() => useStore(source, selector, equals))
+		return { current: () => result.value, unmount }
 	},
 
 	mountMutation<TData, TVariables>(options: MutationOptions<TData, TVariables>): MutationHandle<TData, TVariables> {

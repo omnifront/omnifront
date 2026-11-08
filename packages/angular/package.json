@@ -19,7 +19,8 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/query": "workspace:*"
+		"@unicore/query": "workspace:*",
+		"@unicore/core": "workspace:*"
 	},
 	"peerDependencies": {
 		"@angular/core": ">=17"
@@ -30,8 +31,8 @@
 		"@angular/core": ">=17",
 		"@angular/platform-browser": "^22.2.5",
 		"@unicore/conformance": "workspace:*",
-		"@unicore/core": "workspace:*",
 		"jsdom": "^31.0.0",
-		"rxjs": "^7.8.2"
+		"rxjs": "^7.8.2",
+		"@unicore/store": "workspace:*"
 	}
 }

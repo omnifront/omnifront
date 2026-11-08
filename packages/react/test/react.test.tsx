@@ -4,7 +4,8 @@ import { act, render, renderHook, screen } from "@testing-library/react"
 import { createElement, StrictMode, type ReactNode } from "react"
 import { renderToString } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
-import { QueryProvider, useQuery, useQueryClient } from "../src"
+import { createStore } from "@unicore/store"
+import { QueryProvider, useQuery, useQueryClient, useStore } from "../src"
 
 const newClient = () => new QueryClient({ scheduler: new FakeScheduler() })
 const flush = () => act(async () => void (await new Promise((r) => setTimeout(r, 0))))
@@ -101,5 +102,20 @@ describe("useQuery in components", () => {
 		const before = result.current
 		rerender()
 		expect(result.current).toBe(before)
+	})
+})
+
+describe("useStore", () => {
+	function Count({ store }: { store: ReturnType<typeof createStore<{ n: number }>> }) {
+		const state = useStore(store) // no selector: the whole state
+		return <p>{`n=${state.n}`}</p>
+	}
+
+	it("renders the whole state without a selector, and the server snapshot (initial state) during SSR", () => {
+		const store = createStore({ n: 1 })
+		store.setState({ n: 2 })
+		expect(renderToString(<Count store={store} />)).toContain("n=1") // what the server rendered
+		render(<Count store={store} />)
+		expect(screen.getByText("n=2")).toBeTruthy() // the live state on the client
 	})
 })

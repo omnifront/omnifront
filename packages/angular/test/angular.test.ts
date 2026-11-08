@@ -3,7 +3,8 @@ import { TestBed } from "@angular/core/testing"
 import { FakeScheduler } from "@unicore/core/testing"
 import { QueryClient } from "@unicore/query"
 import { describe, expect, it, vi } from "vitest"
-import { injectMutation, injectQuery, injectQueryClient, provideUnicore } from "../src"
+import { createStore } from "@unicore/store"
+import { injectMutation, injectQuery, injectQueryClient, injectStore, provideUnicore } from "../src"
 import { flushEffects, mountInjectable } from "./mount"
 
 const newClient = () => new QueryClient({ scheduler: new FakeScheduler() })
@@ -96,5 +97,17 @@ describe("in a real component", () => {
 		await settle()
 		fixture.detectChanges()
 		expect(text()).toBe("item-2")
+	})
+})
+
+describe("injectStore", () => {
+	it("returns a read-only signal of the whole state without a selector", () => {
+		const store = createStore({ n: 1 })
+		const { result, unmount } = mountInjectable(() => injectStore(store))
+		expect(result().n).toBe(1)
+		store.setState({ n: 2 })
+		expect(result().n).toBe(2)
+		expect("set" in result).toBe(false)
+		unmount()
 	})
 })

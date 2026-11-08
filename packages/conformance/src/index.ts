@@ -1,3 +1,4 @@
+import { notifyManager, shallowEqual, type Subscribable } from "@unicore/core"
 import { FakeScheduler } from "@unicore/core/testing"
 import {
 	QueryClient,
@@ -6,6 +7,8 @@ import {
 	type QueryObserverOptions,
 	type QueryResult,
 } from "@unicore/query"
+import { QueryObserver } from "@unicore/query"
+import { createStore } from "@unicore/store"
 import { describe, expect, it, vi } from "vitest"
 
 export interface QueryHandle<TData> {
@@ -24,10 +27,21 @@ export interface MutationHandle<TData, TVariables> {
 	unmount(): void
 }
 
+export interface StoreHandle<TSelected> {
+	current(): TSelected
+	unmount(): void
+}
+
 /** What an adapter package must provide so the shared behaviour tests can drive it. */
 export interface Harness {
 	mountQuery<TData>(client: QueryClient, options: QueryObserverOptions<TData>): QueryHandle<TData>
 	mountMutation<TData, TVariables>(options: MutationOptions<TData, TVariables>): MutationHandle<TData, TVariables>
+	/** Bind a slice of any Subscribable (store, query observer, ...) to the framework's reactivity. */
+	mountStore<TState, TSelected>(
+		source: Subscribable<TState>,
+		selector: (state: TState) => TSelected,
+		equals?: (a: TSelected, b: TSelected) => boolean,
+	): StoreHandle<TSelected>
 	/** Run `fn`, then let the framework process the resulting updates (React: act). */
 	act(fn: () => void | Promise<unknown>): Promise<void>
 }
@@ -205,6 +219,69 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 		})
 	})
 
-	// keep `expect` referenced for adapters that extend this file
-	void expect
+	describe(`${adapterName}: store conformance`, () => {
+		it("shows the selected state and follows changes", async () => {
+			const store = createStore({ count: 0, other: 0 })
+			const view = h.mountStore(store, (s) => s.count)
+			expect(view.current()).toBe(0)
+			await h.act(() => store.setState({ count: 2 }))
+			expect(view.current()).toBe(2)
+			view.unmount()
+		})
+
+		it("keeps the same selected object while unrelated state changes", async () => {
+			const store = createStore({ count: 0, other: 0 })
+			const view = h.mountStore(store, (s) => ({ count: s.count }), shallowEqual)
+			const before = view.current()
+			await h.act(() => store.setState({ other: 1 }))
+			expect(view.current()).toBe(before)
+			await h.act(() => store.setState({ count: 1 }))
+			expect(view.current()).toEqual({ count: 1 })
+			expect(view.current()).not.toBe(before)
+			view.unmount()
+		})
+
+		it("applies a batch of updates and shows the final state", async () => {
+			const store = createStore({ a: 0, b: 0 })
+			const view = h.mountStore(store, (s) => s.a + s.b)
+			await h.act(() =>
+				notifyManager.batch(() => {
+					store.setState({ a: 1 })
+					store.setState({ b: 2 })
+				}),
+			)
+			expect(view.current()).toBe(3)
+			view.unmount()
+		})
+
+		it("stops listening on unmount", async () => {
+			const store = createStore({ n: 0 })
+			let active = 0
+			const spy: Subscribable<{ n: number }> = {
+				getSnapshot: () => store.getSnapshot(),
+				subscribe: (listener) => {
+					active++
+					const off = store.subscribe(listener)
+					return () => {
+						active--
+						off()
+					}
+				},
+			}
+			const view = h.mountStore(spy, (s) => s.n)
+			await settle()
+			expect(active).toBe(1)
+			view.unmount()
+			expect(active).toBe(0)
+		})
+
+		it("works the same on a query observer: one mental model for query and store", async () => {
+			const { client } = setup()
+			const observer = new QueryObserver(client, { queryKey: ["k"], queryFn: () => Promise.resolve("x") })
+			const view = h.mountStore(observer, (r) => r.data)
+			await settle()
+			expect(view.current()).toBe("x")
+			view.unmount()
+		})
+	})
 }

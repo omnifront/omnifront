@@ -3,7 +3,8 @@ import { QueryClient } from "@unicore/query"
 import { computed, createApp, defineComponent, h, nextTick, ref } from "vue"
 import { renderToString } from "vue/server-renderer"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { provideQueryClient, QueryPlugin, useMutation, useQuery, useQueryClient } from "../src"
+import { createStore } from "@unicore/store"
+import { provideQueryClient, QueryPlugin, useMutation, useQuery, useQueryClient, useStore } from "../src"
 import { mountComposable } from "./mount"
 
 const newClient = () => new QueryClient({ scheduler: new FakeScheduler() })
@@ -142,5 +143,40 @@ describe("useMutation in a component", () => {
 		expect(a).not.toHaveBeenCalled()
 		expect(b).toHaveBeenCalledWith(8, 4)
 		unmount()
+	})
+})
+
+describe("useStore", () => {
+	it("returns the whole state without a selector, and updates a template", async () => {
+		const store = createStore({ n: 1 })
+		const Comp = defineComponent({
+			setup() {
+				const state = useStore(store)
+				return () => h("p", `n=${state.value.n}`)
+			},
+		})
+		const el = document.createElement("div")
+		const app = createApp(Comp)
+		app.mount(el)
+		expect(el.textContent).toBe("n=1")
+		store.setState({ n: 2 })
+		await nextTick()
+		expect(el.textContent).toBe("n=2")
+		app.unmount()
+	})
+
+	it("does not subscribe on the server", async () => {
+		const store = createStore({ n: 1 })
+		let subscribed = false
+		const spy = { getSnapshot: () => store.getSnapshot(), subscribe: () => ((subscribed = true), () => {}) }
+		vi.stubGlobal("window", undefined)
+		const Comp = defineComponent({
+			setup() {
+				const n = useStore(spy, (s) => s.n)
+				return () => h("p", `n=${n.value}`)
+			},
+		})
+		expect(await renderToString(createApp(Comp))).toContain("n=1")
+		expect(subscribed).toBe(false)
 	})
 })

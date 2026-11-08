@@ -6,7 +6,7 @@ import {
 } from "@unicore/conformance"
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicore/query"
 import { signal } from "@angular/core"
-import { injectMutation, injectQuery, provideUnicore } from "../src"
+import { injectMutation, injectQuery, injectStore, provideUnicore } from "../src"
 import { flushEffects, mountInjectable } from "./mount"
 
 const harness: Harness = {
@@ -27,6 +27,11 @@ const harness: Harness = {
 			refetch: () => r.refetch(),
 			unmount,
 		}
+	},
+
+	mountStore(source, selector, equals) {
+		const { result, unmount } = mountInjectable(() => injectStore(source, selector, equals))
+		return { current: () => result(), unmount }
 	},
 
 	mountMutation<TData, TVariables>(options: MutationOptions<TData, TVariables>): MutationHandle<TData, TVariables> {

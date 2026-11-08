@@ -7,7 +7,7 @@ import {
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicore/query"
 import { act, renderHook } from "@testing-library/react"
 import { createElement, type ReactNode } from "react"
-import { QueryProvider, useMutation, useQuery } from "../src"
+import { QueryProvider, useMutation, useQuery, useStore } from "../src"
 
 const harness: Harness = {
 	act: async (fn) => {
@@ -28,6 +28,11 @@ const harness: Harness = {
 			refetch: () => hook.result.current.refetch(),
 			unmount: () => hook.unmount(),
 		}
+	},
+
+	mountStore(source, selector, equals) {
+		const hook = renderHook(() => useStore(source, selector, equals))
+		return { current: () => hook.result.current, unmount: () => hook.unmount() }
 	},
 
 	mountMutation<TData, TVariables>(options: MutationOptions<TData, TVariables>): MutationHandle<TData, TVariables> {
