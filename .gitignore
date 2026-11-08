@@ -11,3 +11,5 @@ graphify-out
 .angular/
 .next/
 next-env.d.ts
+apps/docs/.vitepress/cache/
+apps/docs/.vitepress/dist/

@@ -1,0 +1,79 @@
+# Vue
+
+::: info Pre-release
+Not on npm yet. Once published: `npm install @unicore/vue @unicore/query` (Vue 3.3 or newer).
+:::
+
+## Set up
+
+```ts
+import { QueryClient } from "@unicore/query"
+import { QueryPlugin } from "@unicore/vue"
+import { createApp } from "vue"
+import App from "./App.vue"
+
+createApp(App).use(QueryPlugin, new QueryClient()).mount("#app")
+```
+
+`app.use(QueryPlugin, client)` makes the client injectable everywhere. To give one subtree a different client, call `provideQueryClient(client)` in a component's `setup()`.
+
+## Fetch data
+
+```vue
+<script setup lang="ts">
+import { useQuery } from "@unicore/vue"
+
+// Each field is its own ref, so you can destructure and use them directly in the template.
+const { data, status, error, isFetching, refetch } = useQuery({
+	queryKey: ["todos"],
+	queryFn: ({ signal }) => fetch("/api/todos", { signal }).then((r) => r.json() as Promise<string[]>),
+	staleTime: 5_000,
+})
+</script>
+
+<template>
+	<p v-if="status === 'loading'">Loading…</p>
+	<ul><li v-for="t in data" :key="t">{{ t }}</li></ul>
+	<button @click="refetch()">Refetch</button>
+</template>
+```
+
+### Reactive keys
+
+Pass a getter, a `ref` or a `computed` for the options; when what it reads changes, the query switches.
+
+```ts
+const id = ref(1)
+const { data } = useQuery(() => ({
+	queryKey: ["user", id.value],
+	queryFn: () => fetchUser(id.value),
+}))
+id.value = 2 // fetches (or reads from cache) user 2
+```
+
+## Change data
+
+```ts
+import { useMutation, useQueryClient } from "@unicore/vue"
+
+const client = useQueryClient()
+const add = useMutation({
+	mutationFn: (title: string) => postTodo(title),
+	onSuccess: () => client.invalidateQueries({ queryKey: ["todos"] }),
+})
+add.mutate("Write docs")        // add.status.value, add.error.value, ...
+```
+
+## Shared state
+
+`useStore(store, selector)` returns a read-only `ComputedRef` of the selected slice.
+
+```ts
+import { useStore } from "@unicore/vue"
+const text = useStore(filter, (s) => s.text) // ComputedRef<string>
+```
+
+## Lifecycle notes
+
+- The composables subscribe during `setup()` (not `onMounted`): that is what starts the fetch, and it makes data available to code that runs before mount. The subscription is stopped with `onScopeDispose`, so unmounting the component lets an unused cache entry start its gc timer.
+- On the server (no `window`) they do not subscribe, because there is no unmount to clean up. They just read the current snapshot. Server-side prefetching for Nuxt is not built yet; `dehydrate`/`hydrate` from `@unicore/query/hydration` are framework-free if you want to wire it yourself.

@@ -1,0 +1,23 @@
+{
+	"name": "@unicore/docs",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "vitepress dev",
+		"check": "node check-api.mjs",
+		"build": "node check-api.mjs && vitepress build",
+		"preview": "vitepress preview"
+	},
+	"devDependencies": {
+		"typescript": "~5.9.3",
+		"vitepress": "^1.6.4",
+		"@unicore/core": "workspace:*",
+		"@unicore/query": "workspace:*",
+		"@unicore/store": "workspace:*",
+		"@unicore/react": "workspace:*",
+		"@unicore/vue": "workspace:*",
+		"@unicore/angular": "workspace:*",
+		"@unicore/next": "workspace:*"
+	}
+}
