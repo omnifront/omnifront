@@ -15,6 +15,15 @@
 		]
 	},
 	{
+		"name": "@unicore/store",
+		"path": "packages/store/dist/index.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@unicore/core"
+		]
+	},
+	{
 		"name": "@unicore/react",
 		"path": "packages/react/dist/index.js",
 		"limit": "1 KB",
