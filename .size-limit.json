@@ -169,5 +169,17 @@
 			"@unicore/core",
 			"@unicore/query-infinite"
 		]
+	},
+	{
+		"name": "@unicore/angular/ssr",
+		"path": "packages/angular/dist/ssr.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@angular/core",
+			"@unicore/query",
+			"@unicore/query/hydration",
+			"@unicore/core"
+		]
 	}
 ]
