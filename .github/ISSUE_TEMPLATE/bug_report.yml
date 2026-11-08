@@ -1,0 +1,30 @@
+name: Bug report
+description: Something does not behave as documented
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Minimal reproduction
+      description: A repository, StackBlitz or the smallest code that shows it. For SSR issues say which framework and router.
+    validations:
+      required: true
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: "@unicore/* packages, framework (React/Vue/Angular/Next/Nuxt), Node, browser"
+      placeholder: "@unicore/react 0.1.0, React 19.1, Next 15.3, Node 24"
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Errors or console output
+      render: shell

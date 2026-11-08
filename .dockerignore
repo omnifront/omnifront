@@ -1,0 +1,12 @@
+**/node_modules
+**/dist
+**/coverage
+**/.next
+**/.nuxt
+**/.output
+**/.angular
+**/.vitepress/cache
+**/.vitepress/dist
+.git
+.claude
+graphify-out

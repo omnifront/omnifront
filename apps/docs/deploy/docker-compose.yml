@@ -1,0 +1,12 @@
+# From the repository root:  docker compose -f apps/docs/deploy/docker-compose.yml up -d --build
+services:
+  docs:
+    build:
+      context: ../../..
+      dockerfile: apps/docs/Dockerfile
+      args:
+        DOCS_BASE: ${DOCS_BASE:-/}
+    image: unicore-docs:latest
+    ports:
+      - "${DOCS_PORT:-8080}:80"
+    restart: unless-stopped

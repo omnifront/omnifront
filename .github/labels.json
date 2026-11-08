@@ -1,0 +1,12 @@
+[
+  { "name": "bug", "color": "d73a4a", "description": "Something is not working" },
+  { "name": "enhancement", "color": "a2eeef", "description": "New feature or request" },
+  { "name": "good first issue", "color": "7057ff", "description": "Good for newcomers" },
+  { "name": "help wanted", "color": "008672", "description": "Extra attention is needed" },
+  { "name": "adapter: react", "color": "61dafb", "description": "React or Next.js adapter" },
+  { "name": "adapter: vue", "color": "42b883", "description": "Vue or Nuxt adapter" },
+  { "name": "adapter: angular", "color": "dd0031", "description": "Angular adapter" },
+  { "name": "ssr", "color": "fbca04", "description": "Server-side rendering and hydration" },
+  { "name": "size", "color": "c5def5", "description": "Bundle size budgets" },
+  { "name": "docs", "color": "0075ca", "description": "Documentation" }
+]

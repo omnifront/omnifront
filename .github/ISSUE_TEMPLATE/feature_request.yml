@@ -1,0 +1,20 @@
+name: Feature request
+description: Suggest something unicore should do
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Start with the problem. What do you do today, and what is awkward about it?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like instead?
+  - type: textarea
+    id: size
+    attributes:
+      label: Does it need to be in core?
+      description: Size budgets are tight. Say if this could be an opt-in entry or a separate package.
