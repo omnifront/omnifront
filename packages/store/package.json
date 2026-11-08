@@ -2,6 +2,7 @@
 	"name": "@unicore/store",
 	"version": "0.0.0",
 	"description": "A tiny framework-agnostic store with selectors, for use with unicore adapters.",
+	"license": "MIT",
 	"keywords": [
 		"unicore",
 		"store",

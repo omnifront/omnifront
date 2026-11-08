@@ -88,4 +88,4 @@ Architecture decisions are in [`docs/adr`](docs/adr). Every user-facing change n
 
 ## License
 
-Not chosen yet.
+[MIT](LICENSE).

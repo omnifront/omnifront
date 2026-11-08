@@ -2,6 +2,7 @@
 	"name": "@unicore/vue",
 	"version": "0.0.0",
 	"description": "Vue 3 adapter for unicore: a plugin plus useQuery, useMutation and useStore composables.",
+	"license": "MIT",
 	"keywords": [
 		"unicore",
 		"vue",

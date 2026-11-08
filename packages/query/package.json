@@ -2,6 +2,7 @@
 	"name": "@unicore/query",
 	"version": "0.0.0",
 	"description": "Framework-agnostic query cache: fetching, deduplication, retries, invalidation, mutations and SSR hydration.",
+	"license": "MIT",
 	"keywords": [
 		"unicore",
 		"query",

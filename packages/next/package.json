@@ -2,6 +2,7 @@
 	"name": "@unicore/next",
 	"version": "0.0.0",
 	"description": "Next.js helpers for unicore: per-request query clients, dehydrate/hydrate and a client entry for the App Router and Pages Router.",
+	"license": "MIT",
 	"keywords": [
 		"unicore",
 		"nextjs",

@@ -2,6 +2,7 @@
 	"name": "@unicore/core",
 	"version": "0.0.0",
 	"description": "Framework-free primitives for unicore: the Subscribable contract, notification batching, an injectable scheduler and selectors.",
+	"license": "MIT",
 	"keywords": [
 		"unicore",
 		"subscribable",
