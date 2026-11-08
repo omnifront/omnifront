@@ -1,4 +1,4 @@
-# Contributing to unicore
+# Contributing to omnifront
 
 Thanks for helping. This file is the short version of how the project works; the reasoning behind the big decisions is in [`docs/adr`](docs/adr).
 
@@ -7,7 +7,7 @@ Thanks for helping. This file is the short version of how the project works; the
 Requires Node >= 24 and pnpm >= 12.
 
 ```bash
-git clone https://github.com/AMHB-DEV/unicore.git && cd unicore
+git clone https://github.com/omnifront/omnifront.git && cd omnifront
 pnpm install
 pnpm build          # packages, examples and docs (packages first, in dependency order)
 pnpm test
@@ -52,7 +52,7 @@ scripts/consumer-next.sh 14.2.35 18.3.1   # packed packages installed into a fre
 - **Size is a feature.** Check `pnpm size` after every feature. If a budget is tight, the answer is usually an opt-in subpath entry or a separate package, not a bigger budget. Changing a budget needs an ADR.
 - **No `setTimeout` / `Date.now` in logic.** Use the injected `Scheduler` so tests can use `FakeScheduler`.
 - **Snapshots are immutable and stable.** `getSnapshot()` returns the same reference until something changes; adapters rely on it.
-- **Docs stay true.** The API reference is checked against the built packages (`pnpm --filter @unicore/docs build`). Code in the guides should be code you ran.
+- **Docs stay true.** The API reference is checked against the built packages (`pnpm --filter @omnifront/docs build`). Code in the guides should be code you ran.
 - **Architecture changes get an ADR.** Copy `docs/adr/0000-template.md`, number it, and open the PR with it.
 
 ## Pull requests
@@ -68,7 +68,7 @@ Look for the `good first issue` label. Documentation fixes, extra conformance ca
 
 ## Naming and publishing
 
-The working name `unicore` is not available on npm (the `@unicore` scope is owned by someone else). See [`docs/PUBLISHING.md`](docs/PUBLISHING.md) before proposing anything that depends on package names.
+The working name `omnifront` is not available on npm (the `@omnifront` scope is owned by someone else). See [`docs/PUBLISHING.md`](docs/PUBLISHING.md) before proposing anything that depends on package names.
 
 ## Security
 

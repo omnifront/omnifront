@@ -1,15 +1,15 @@
-import { notifyManager, shallowEqual, type Subscribable } from "@unicore/core"
-import { FakeScheduler } from "@unicore/core/testing"
+import { notifyManager, shallowEqual, type Subscribable } from "@omnifront/core"
+import { FakeScheduler } from "@omnifront/core/testing"
 import {
 	QueryClient,
 	type MutationOptions,
 	type MutationState,
 	type QueryObserverOptions,
 	type QueryResult,
-} from "@unicore/query"
-import { focusManager, keepPreviousData, QueryObserver } from "@unicore/query"
-import type { InfiniteQueryObserverOptions, InfiniteQueryResult } from "@unicore/query-infinite"
-import { createStore } from "@unicore/store"
+} from "@omnifront/query"
+import { focusManager, keepPreviousData, QueryObserver } from "@omnifront/query"
+import type { InfiniteQueryObserverOptions, InfiniteQueryResult } from "@omnifront/query-infinite"
+import { createStore } from "@omnifront/store"
 import { describe, expect, it, vi } from "vitest"
 
 export interface QueryHandle<TData> {

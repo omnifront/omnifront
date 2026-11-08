@@ -1,5 +1,5 @@
 import { DestroyRef, computed, effect, inject, signal, untracked, type Signal } from "@angular/core"
-import { Mutation, type MutationOptions, type MutationStatus } from "@unicore/query"
+import { Mutation, type MutationOptions, type MutationStatus } from "@omnifront/query"
 
 export interface InjectMutationResult<TData, TVariables> {
 	status: Signal<MutationStatus>

@@ -1,5 +1,5 @@
 // Bundle size of comparable entry points, minified + gzipped, with React itself excluded.
-// Run after `pnpm build`:  pnpm --filter @unicore/benchmarks size
+// Run after `pnpm build`:  pnpm --filter @omnifront/benchmarks size
 import { build } from "esbuild"
 import { readFileSync } from "node:fs"
 import { gzipSync } from "node:zlib"
@@ -26,16 +26,16 @@ async function measure(name, code) {
 
 const sections = {
 	"Framework-agnostic core: client + observer + mutation": [
-		["@unicore/query (incl. core)", `import { QueryClient, QueryObserver, Mutation } from "@unicore/query"; console.log(QueryClient, QueryObserver, Mutation)`],
+		["@omnifront/query (incl. core)", `import { QueryClient, QueryObserver, Mutation } from "@omnifront/query"; console.log(QueryClient, QueryObserver, Mutation)`],
 		[`@tanstack/query-core ${version("@tanstack/query-core")}`, `import { QueryClient, QueryObserver, MutationObserver } from "@tanstack/query-core"; console.log(QueryClient, QueryObserver, MutationObserver)`],
 	],
 	"React: provider + useQuery + useMutation (+ the client)": [
-		["@unicore/react (incl. query + core)", `import { QueryProvider, useQuery, useMutation } from "@unicore/react"; import { QueryClient } from "@unicore/query"; console.log(QueryProvider, useQuery, useMutation, QueryClient)`],
+		["@omnifront/react (incl. query + core)", `import { QueryProvider, useQuery, useMutation } from "@omnifront/react"; import { QueryClient } from "@omnifront/query"; console.log(QueryProvider, useQuery, useMutation, QueryClient)`],
 		[`@tanstack/react-query ${version("@tanstack/react-query")}`, `import { QueryClientProvider, useQuery, useMutation, QueryClient } from "@tanstack/react-query"; console.log(QueryClientProvider, useQuery, useMutation, QueryClient)`],
 		[`swr ${version("swr")} (useSWR + useSWRMutation)`, `import useSWR from "swr"; import useSWRMutation from "swr/mutation"; console.log(useSWR, useSWRMutation)`],
 	],
-	"Store (unicore only, for reference)": [
-		["@unicore/store (incl. core)", `import { createStore } from "@unicore/store"; console.log(createStore)`],
+	"Store (omnifront only, for reference)": [
+		["@omnifront/store (incl. core)", `import { createStore } from "@omnifront/store"; console.log(createStore)`],
 	],
 }
 

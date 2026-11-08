@@ -1,6 +1,6 @@
 import { DestroyRef, effect, inject, signal, untracked, type Signal } from "@angular/core"
-import { combine } from "@unicore/core"
-import { hashKey, QueryObserver, type QueryObserverOptions, type QueryResult } from "@unicore/query"
+import { combine } from "@omnifront/core"
+import { hashKey, QueryObserver, type QueryObserverOptions, type QueryResult } from "@omnifront/query"
 import { injectQueryClient } from "./provide"
 
 export type QueriesResult<TData> = QueryResult<TData> & { refetch: () => Promise<TData> }

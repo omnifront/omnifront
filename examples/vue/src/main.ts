@@ -1,5 +1,5 @@
-import { QueryClient } from "@unicore/query"
-import { QueryPlugin } from "@unicore/vue"
+import { QueryClient } from "@omnifront/query"
+import { QueryPlugin } from "@omnifront/vue"
 import { createApp } from "vue"
 import App from "./App.vue"
 

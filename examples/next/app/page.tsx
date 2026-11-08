@@ -1,5 +1,5 @@
-import { dehydrate, getQueryClient } from "@unicore/next"
-import { HydrationBoundary } from "@unicore/next/client"
+import { dehydrate, getQueryClient } from "@omnifront/next"
+import { HydrationBoundary } from "@omnifront/next/client"
 import Link from "next/link"
 import { Todos } from "../components/todos"
 import { listTodos } from "../lib/db"

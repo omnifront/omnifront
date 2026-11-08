@@ -1,5 +1,5 @@
-import { focusManager, hashKey, type QueryClient } from "@unicore/query"
-import { dehydrate, hydrate, type DehydratedState, type DehydrateOptions } from "@unicore/query/hydration"
+import { focusManager, hashKey, type QueryClient } from "@omnifront/query"
+import { dehydrate, hydrate, type DehydratedState, type DehydrateOptions } from "@omnifront/query/hydration"
 
 /** The part of `localStorage` / `sessionStorage` / async-storage / IndexedDB wrappers we need. */
 export interface PersistStorage {
@@ -19,7 +19,7 @@ export interface PersistedCache {
 
 export interface PersistOptions {
 	storage: PersistStorage
-	/** Storage key. Default `"unicore-cache"`. */
+	/** Storage key. Default `"omnifront-cache"`. */
 	key?: string
 	/** Discard a stored cache older than this (ms). Default 24 hours. */
 	maxAge?: number
@@ -58,7 +58,7 @@ const DAY = 24 * 60 * 60 * 1000
 export function persistQueryClient(client: QueryClient, options: PersistOptions): Persister {
 	const {
 		storage,
-		key = "unicore-cache",
+		key = "omnifront-cache",
 		maxAge = DAY,
 		buster = "",
 		throttle = 1000,

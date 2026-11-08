@@ -1,5 +1,5 @@
-import { BaseSubscribable, type TimerHandle } from "@unicore/core"
-import type { QueryClient, QueryKey, QueryState } from "@unicore/query"
+import { BaseSubscribable, type TimerHandle } from "@omnifront/core"
+import type { QueryClient, QueryKey, QueryState } from "@omnifront/query"
 
 export interface DevtoolsQuery {
 	hash: string

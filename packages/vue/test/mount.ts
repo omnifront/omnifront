@@ -1,4 +1,4 @@
-import type { QueryClient } from "@unicore/query"
+import type { QueryClient } from "@omnifront/query"
 import { createApp, defineComponent, type App } from "vue"
 import { QueryPlugin } from "../src"
 

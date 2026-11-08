@@ -3,8 +3,8 @@ import {
 	type Harness,
 	type MutationHandle,
 	type QueryHandle,
-} from "@unicore/conformance"
-import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicore/query"
+} from "@omnifront/conformance"
+import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifront/query"
 import { act, renderHook } from "@testing-library/react"
 import { createElement, type ReactNode } from "react"
 import { QueryProvider, useMutation, useQuery, useStore } from "../src"

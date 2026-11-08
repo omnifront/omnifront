@@ -1,4 +1,4 @@
-# @unicore/devtools
+# @omnifront/devtools
 
 Cache inspector. See the [devtools guide](/guide/devtools). About 0.6 KB gzipped for the headless model, 2.2 KB for the panel.
 
@@ -18,7 +18,7 @@ A `Subscribable<DevtoolsSnapshot>`. `getSnapshot()` returns the same object unti
 
 `{ hash, queryKey, state, observed }`: the JSON of the key, its parts, the entry's `QueryState`, and whether something is subscribed to it.
 
-## Panel (`@unicore/devtools/panel`)
+## Panel (`@omnifront/devtools/panel`)
 
 ### `mountDevtools`
 

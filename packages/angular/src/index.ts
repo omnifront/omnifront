@@ -1,4 +1,4 @@
-export { provideUnicore, injectQueryClient } from "./provide"
+export { provideOmnifront, injectQueryClient } from "./provide"
 export { injectQuery } from "./inject-query"
 export type { InjectQueryResult } from "./inject-query"
 export { injectMutation } from "./inject-mutation"

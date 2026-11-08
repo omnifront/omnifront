@@ -1,5 +1,5 @@
-import { FakeScheduler } from "@unicore/core/testing"
-import { QueryClient } from "@unicore/query"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { QueryClient } from "@omnifront/query"
 import { createSSRApp, defineComponent, h } from "vue"
 import { renderToString } from "vue/server-renderer"
 import { afterEach, describe, expect, it, vi } from "vitest"

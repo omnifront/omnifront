@@ -1,5 +1,5 @@
 {
-	"name": "@unicore/example-angular",
+	"name": "@omnifront/example-angular",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -9,9 +9,9 @@
 		"typecheck": "tsc --noEmit -p tsconfig.app.json"
 	},
 	"dependencies": {
-		"@unicore/angular": "workspace:*",
-		"@unicore/query": "workspace:*",
-		"@unicore/example-shared": "workspace:*"
+		"@omnifront/angular": "workspace:*",
+		"@omnifront/query": "workspace:*",
+		"@omnifront/example-shared": "workspace:*"
 	},
 	"devDependencies": {
 		"@angular/build": "^22.2.6",

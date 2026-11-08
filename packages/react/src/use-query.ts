@@ -1,4 +1,4 @@
-import { hashKey, QueryObserver, type QueryObserverOptions, type QueryResult } from "@unicore/query"
+import { hashKey, QueryObserver, type QueryObserverOptions, type QueryResult } from "@omnifront/query"
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react"
 import { useQueryClient } from "./provider"
 

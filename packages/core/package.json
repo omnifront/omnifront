@@ -1,21 +1,21 @@
 {
-	"name": "@unicore/core",
+	"name": "@omnifront/core",
 	"version": "0.0.0",
-	"description": "Framework-free primitives for unicore: the Subscribable contract, notification batching, an injectable scheduler and selectors.",
+	"description": "Framework-free primitives for omnifront: the Subscribable contract, notification batching, an injectable scheduler and selectors.",
 	"license": "MIT",
 	"keywords": [
-		"unicore",
+		"omnifront",
 		"subscribable",
 		"scheduler"
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
 		"directory": "packages/core"
 	},
-	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/core#readme",
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/core#readme",
 	"bugs": {
-		"url": "https://github.com/AMHB-DEV/unicore/issues"
+		"url": "https://github.com/omnifront/omnifront/issues"
 	},
 	"type": "module",
 	"sideEffects": false,

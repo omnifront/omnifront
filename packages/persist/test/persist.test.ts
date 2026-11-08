@@ -1,5 +1,5 @@
-import { FakeScheduler } from "@unicore/core/testing"
-import { focusManager, QueryClient, QueryObserver } from "@unicore/query"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { focusManager, QueryClient, QueryObserver } from "@omnifront/query"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { persistQueryClient, type PersistedCache, type PersistStorage } from "../src"
 
@@ -20,7 +20,7 @@ const setup = (start = 0) => {
 	scheduler.advance(start)
 	return { scheduler, client: new QueryClient({ scheduler, gcTime: Infinity }) }
 }
-const stored = (storage: MemoryStorage) => JSON.parse(storage.data.get("unicore-cache") ?? "null") as PersistedCache | null
+const stored = (storage: MemoryStorage) => JSON.parse(storage.data.get("omnifront-cache") ?? "null") as PersistedCache | null
 const stoppers: Array<() => void> = []
 const persist = (...args: Parameters<typeof persistQueryClient>) => {
 	const p = persistQueryClient(...args)
@@ -254,7 +254,7 @@ describe("restoring", () => {
 
 	it("starts clean (and reports) when the stored value is unreadable", async () => {
 		const storage = new MemoryStorage()
-		storage.data.set("unicore-cache", "{not json")
+		storage.data.set("omnifront-cache", "{not json")
 		const onError = vi.fn()
 		const { client } = setup()
 		expect(await persist(client, { storage, onError }).restored).toBe(false)
@@ -277,7 +277,7 @@ describe("restoring", () => {
 
 	it("works with async storage and never saves before the restore has finished", async () => {
 		const { storage: filled } = await seeded()
-		const raw = filled.data.get("unicore-cache") as string
+		const raw = filled.data.get("omnifront-cache") as string
 		const log: string[] = []
 		let release!: () => void
 		const gate = new Promise<void>((resolve) => (release = resolve))

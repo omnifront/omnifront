@@ -25,7 +25,7 @@ createServer((req, res) => {
 			const { html, state } = await render()
 			const template = await vite.transformIndexHtml(req.url, readFileSync("index.html", "utf8"))
 			res.setHeader("content-type", "text/html")
-			res.end(template.replace("<!--app-->", html).replace("<!--state-->", `<script>window.__UNICORE__=${embed(state)}</script>`))
+			res.end(template.replace("<!--app-->", html).replace("<!--state-->", `<script>window.__OMNIFRONT__=${embed(state)}</script>`))
 		} catch (error) {
 			vite.ssrFixStacktrace(error)
 			res.statusCode = 500

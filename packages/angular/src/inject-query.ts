@@ -1,5 +1,5 @@
 import { DestroyRef, computed, effect, inject, signal, untracked, type Signal } from "@angular/core"
-import { QueryObserver, type QueryObserverOptions, type QueryResult, type QueryStatus } from "@unicore/query"
+import { QueryObserver, type QueryObserverOptions, type QueryResult, type QueryStatus } from "@omnifront/query"
 import { injectQueryClient } from "./provide"
 
 export interface InjectQueryResult<TData> {

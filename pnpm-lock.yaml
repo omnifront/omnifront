@@ -44,13 +44,13 @@ importers:
 
   apps/benchmarks:
     dependencies:
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../../packages/query
-      '@unicore/react':
+      '@omnifront/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@unicore/store':
+      '@omnifront/store':
         specifier: workspace:*
         version: link:../../packages/store
     devDependencies:
@@ -78,34 +78,34 @@ importers:
 
   apps/docs:
     devDependencies:
-      '@unicore/angular':
+      '@omnifront/angular':
         specifier: workspace:*
         version: link:../../packages/angular
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@unicore/devtools':
+      '@omnifront/devtools':
         specifier: workspace:*
         version: link:../../packages/devtools
-      '@unicore/next':
+      '@omnifront/next':
         specifier: workspace:*
         version: link:../../packages/next
-      '@unicore/persist':
+      '@omnifront/persist':
         specifier: workspace:*
         version: link:../../packages/persist
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../../packages/query
-      '@unicore/query-infinite':
+      '@omnifront/query-infinite':
         specifier: workspace:*
         version: link:../../packages/query-infinite
-      '@unicore/react':
+      '@omnifront/react':
         specifier: workspace:*
         version: link:../../packages/react
-      '@unicore/store':
+      '@omnifront/store':
         specifier: workspace:*
         version: link:../../packages/store
-      '@unicore/vue':
+      '@omnifront/vue':
         specifier: workspace:*
         version: link:../../packages/vue
       typescript:
@@ -117,13 +117,13 @@ importers:
 
   examples/angular:
     dependencies:
-      '@unicore/angular':
+      '@omnifront/angular':
         specifier: workspace:*
         version: link:../../packages/angular
-      '@unicore/example-shared':
+      '@omnifront/example-shared':
         specifier: workspace:*
         version: link:../shared
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../../packages/query
     devDependencies:
@@ -160,10 +160,10 @@ importers:
 
   examples/angular-ssr:
     dependencies:
-      '@unicore/angular':
+      '@omnifront/angular':
         specifier: workspace:*
         version: link:../../packages/angular
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../../packages/query
     devDependencies:
@@ -218,7 +218,7 @@ importers:
 
   examples/next:
     dependencies:
-      '@unicore/next':
+      '@omnifront/next':
         specifier: workspace:*
         version: link:../../packages/next
       next:
@@ -246,10 +246,10 @@ importers:
 
   examples/nuxt:
     dependencies:
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../../packages/query
-      '@unicore/vue':
+      '@omnifront/vue':
         specifier: workspace:*
         version: link:../../packages/vue
       nuxt:
@@ -264,19 +264,19 @@ importers:
 
   examples/react:
     dependencies:
-      '@unicore/devtools':
+      '@omnifront/devtools':
         specifier: workspace:*
         version: link:../../packages/devtools
-      '@unicore/example-shared':
+      '@omnifront/example-shared':
         specifier: workspace:*
         version: link:../shared
-      '@unicore/persist':
+      '@omnifront/persist':
         specifier: workspace:*
         version: link:../../packages/persist
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../../packages/query
-      '@unicore/react':
+      '@omnifront/react':
         specifier: workspace:*
         version: link:../../packages/react
     devDependencies:
@@ -301,22 +301,22 @@ importers:
 
   examples/shared:
     dependencies:
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../../packages/query
-      '@unicore/store':
+      '@omnifront/store':
         specifier: workspace:*
         version: link:../../packages/store
 
   examples/vue:
     dependencies:
-      '@unicore/example-shared':
+      '@omnifront/example-shared':
         specifier: workspace:*
         version: link:../shared
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../../packages/query
-      '@unicore/vue':
+      '@omnifront/vue':
         specifier: workspace:*
         version: link:../../packages/vue
     devDependencies:
@@ -335,10 +335,10 @@ importers:
 
   examples/vue-ssr:
     dependencies:
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../../packages/query
-      '@unicore/vue':
+      '@omnifront/vue':
         specifier: workspace:*
         version: link:../../packages/vue
     devDependencies:
@@ -360,13 +360,13 @@ importers:
 
   packages/angular:
     dependencies:
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../core
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../query
-      '@unicore/query-infinite':
+      '@omnifront/query-infinite':
         specifier: workspace:*
         version: link:../query-infinite
     devDependencies:
@@ -385,10 +385,10 @@ importers:
       '@angular/platform-server':
         specifier: ^22.2.5
         version: 22.2.5(@angular/common@22.2.5(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/compiler@22.2.5)(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(@angular/platform-browser@22.2.5(@angular/common@22.2.5(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2)))(rxjs@7.8.2)
-      '@unicore/conformance':
+      '@omnifront/conformance':
         specifier: workspace:*
         version: link:../conformance
-      '@unicore/store':
+      '@omnifront/store':
         specifier: workspace:*
         version: link:../store
       jsdom:
@@ -400,16 +400,16 @@ importers:
 
   packages/conformance:
     dependencies:
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../core
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../query
-      '@unicore/query-infinite':
+      '@omnifront/query-infinite':
         specifier: workspace:*
         version: link:../query-infinite
-      '@unicore/store':
+      '@omnifront/store':
         specifier: workspace:*
         version: link:../store
 
@@ -417,19 +417,19 @@ importers:
 
   packages/devtools:
     dependencies:
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../core
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../query
 
   packages/next:
     dependencies:
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../query
-      '@unicore/react':
+      '@omnifront/react':
         specifier: workspace:*
         version: link:../react
       next:
@@ -448,7 +448,7 @@ importers:
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../core
       jsdom:
@@ -463,11 +463,11 @@ importers:
 
   packages/persist:
     dependencies:
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../query
     devDependencies:
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../core
       fake-indexeddb:
@@ -476,7 +476,7 @@ importers:
 
   packages/query:
     dependencies:
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
@@ -486,22 +486,22 @@ importers:
 
   packages/query-infinite:
     dependencies:
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../core
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../query
 
   packages/react:
     dependencies:
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../core
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../query
-      '@unicore/query-infinite':
+      '@omnifront/query-infinite':
         specifier: workspace:*
         version: link:../query-infinite
     devDependencies:
@@ -517,10 +517,10 @@ importers:
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
-      '@unicore/conformance':
+      '@omnifront/conformance':
         specifier: workspace:*
         version: link:../conformance
-      '@unicore/store':
+      '@omnifront/store':
         specifier: workspace:*
         version: link:../store
       jsdom:
@@ -535,26 +535,26 @@ importers:
 
   packages/store:
     dependencies:
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../core
 
   packages/vue:
     dependencies:
-      '@unicore/core':
+      '@omnifront/core':
         specifier: workspace:*
         version: link:../core
-      '@unicore/query':
+      '@omnifront/query':
         specifier: workspace:*
         version: link:../query
-      '@unicore/query-infinite':
+      '@omnifront/query-infinite':
         specifier: workspace:*
         version: link:../query-infinite
     devDependencies:
-      '@unicore/conformance':
+      '@omnifront/conformance':
         specifier: workspace:*
         version: link:../conformance
-      '@unicore/store':
+      '@omnifront/store':
         specifier: workspace:*
         version: link:../store
       jsdom:

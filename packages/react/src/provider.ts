@@ -1,4 +1,4 @@
-import type { QueryClient } from "@unicore/query"
+import type { QueryClient } from "@omnifront/query"
 import { createContext, createElement, useContext, type ReactNode } from "react"
 
 const QueryClientContext = createContext<QueryClient | undefined>(undefined)

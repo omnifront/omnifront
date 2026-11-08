@@ -1,234 +1,234 @@
 [
 	{
-		"name": "@unicore/core",
+		"name": "@omnifront/core",
 		"path": "packages/core/dist/index.js",
 		"limit": "1 KB",
 		"gzip": true
 	},
 	{
-		"name": "@unicore/query",
+		"name": "@omnifront/query",
 		"path": "packages/query/dist/index.js",
 		"limit": "3 KB",
 		"gzip": true,
 		"ignore": [
-			"@unicore/core"
+			"@omnifront/core"
 		]
 	},
 	{
-		"name": "@unicore/store",
+		"name": "@omnifront/store",
 		"path": "packages/store/dist/index.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
-			"@unicore/core"
+			"@omnifront/core"
 		]
 	},
 	{
-		"name": "@unicore/react",
+		"name": "@omnifront/react",
 		"path": "packages/react/dist/index.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"react",
-			"@unicore/query",
-			"@unicore/core",
-			"@unicore/query/hydration"
+			"@omnifront/query",
+			"@omnifront/core",
+			"@omnifront/query/hydration"
 		]
 	},
 	{
-		"name": "@unicore/vue",
+		"name": "@omnifront/vue",
 		"path": "packages/vue/dist/index.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"vue",
-			"@unicore/query",
-			"@unicore/core"
+			"@omnifront/query",
+			"@omnifront/core"
 		]
 	},
 	{
-		"name": "@unicore/angular",
+		"name": "@omnifront/angular",
 		"path": "packages/angular/dist/index.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"@angular/core",
-			"@unicore/query",
-			"@unicore/core"
+			"@omnifront/query",
+			"@omnifront/core"
 		]
 	},
 	{
-		"name": "@unicore/query/hydration",
+		"name": "@omnifront/query/hydration",
 		"path": "packages/query/dist/hydration.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
-			"@unicore/core"
+			"@omnifront/core"
 		]
 	},
 	{
-		"name": "@unicore/next",
+		"name": "@omnifront/next",
 		"path": "packages/next/dist/index.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"react",
-			"@unicore/query",
-			"@unicore/query/hydration"
+			"@omnifront/query",
+			"@omnifront/query/hydration"
 		]
 	},
 	{
-		"name": "@unicore/next/client",
+		"name": "@omnifront/next/client",
 		"path": "packages/next/dist/client.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"react",
-			"@unicore/query",
-			"@unicore/react"
+			"@omnifront/query",
+			"@omnifront/react"
 		]
 	},
 	{
-		"name": "@unicore/persist",
+		"name": "@omnifront/persist",
 		"path": "packages/persist/dist/index.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
-			"@unicore/query",
-			"@unicore/query/hydration"
+			"@omnifront/query",
+			"@omnifront/query/hydration"
 		]
 	},
 	{
-		"name": "@unicore/persist/indexeddb",
+		"name": "@omnifront/persist/indexeddb",
 		"path": "packages/persist/dist/indexeddb.js",
 		"limit": "1 KB",
 		"gzip": true
 	},
 	{
-		"name": "@unicore/devtools",
+		"name": "@omnifront/devtools",
 		"path": "packages/devtools/dist/index.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
-			"@unicore/core",
-			"@unicore/query"
+			"@omnifront/core",
+			"@omnifront/query"
 		]
 	},
 	{
-		"name": "@unicore/devtools/panel",
+		"name": "@omnifront/devtools/panel",
 		"path": "packages/devtools/dist/panel.js",
 		"limit": "3 KB",
 		"gzip": true,
 		"ignore": [
-			"@unicore/core",
-			"@unicore/query"
+			"@omnifront/core",
+			"@omnifront/query"
 		]
 	},
 	{
-		"name": "@unicore/query-infinite",
+		"name": "@omnifront/query-infinite",
 		"path": "packages/query-infinite/dist/index.js",
 		"limit": "1.5 KB",
 		"gzip": true,
 		"ignore": [
-			"@unicore/core",
-			"@unicore/query"
+			"@omnifront/core",
+			"@omnifront/query"
 		]
 	},
 	{
-		"name": "@unicore/react/infinite",
+		"name": "@omnifront/react/infinite",
 		"path": "packages/react/dist/infinite.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"react",
-			"@unicore/query",
-			"@unicore/core",
-			"@unicore/query-infinite"
+			"@omnifront/query",
+			"@omnifront/core",
+			"@omnifront/query-infinite"
 		]
 	},
 	{
-		"name": "@unicore/vue/infinite",
+		"name": "@omnifront/vue/infinite",
 		"path": "packages/vue/dist/infinite.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"vue",
-			"@unicore/query",
-			"@unicore/core",
-			"@unicore/query-infinite"
+			"@omnifront/query",
+			"@omnifront/core",
+			"@omnifront/query-infinite"
 		]
 	},
 	{
-		"name": "@unicore/angular/infinite",
+		"name": "@omnifront/angular/infinite",
 		"path": "packages/angular/dist/infinite.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"@angular/core",
-			"@unicore/query",
-			"@unicore/core",
-			"@unicore/query-infinite"
+			"@omnifront/query",
+			"@omnifront/core",
+			"@omnifront/query-infinite"
 		]
 	},
 	{
-		"name": "@unicore/angular/ssr",
+		"name": "@omnifront/angular/ssr",
 		"path": "packages/angular/dist/ssr.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"@angular/core",
-			"@unicore/query",
-			"@unicore/query/hydration",
-			"@unicore/core"
+			"@omnifront/query",
+			"@omnifront/query/hydration",
+			"@omnifront/core"
 		]
 	},
 	{
-		"name": "@unicore/react/suspense",
+		"name": "@omnifront/react/suspense",
 		"path": "packages/react/dist/suspense.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"react",
-			"@unicore/query",
-			"@unicore/core",
-			"@unicore/query-infinite"
+			"@omnifront/query",
+			"@omnifront/core",
+			"@omnifront/query-infinite"
 		]
 	},
 	{
-		"name": "@unicore/react/queries",
+		"name": "@omnifront/react/queries",
 		"path": "packages/react/dist/queries.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"react",
-			"@unicore/query",
-			"@unicore/core"
+			"@omnifront/query",
+			"@omnifront/core"
 		]
 	},
 	{
-		"name": "@unicore/vue/queries",
+		"name": "@omnifront/vue/queries",
 		"path": "packages/vue/dist/queries.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"vue",
-			"@unicore/query",
-			"@unicore/core"
+			"@omnifront/query",
+			"@omnifront/core"
 		]
 	},
 	{
-		"name": "@unicore/angular/queries",
+		"name": "@omnifront/angular/queries",
 		"path": "packages/angular/dist/queries.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
 			"@angular/core",
-			"@unicore/query",
-			"@unicore/core"
+			"@omnifront/query",
+			"@omnifront/core"
 		]
 	},
 	{
-		"name": "@unicore/query/structural",
+		"name": "@omnifront/query/structural",
 		"path": "packages/query/dist/structural.js",
 		"limit": "1 KB",
 		"gzip": true

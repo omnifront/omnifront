@@ -1,5 +1,5 @@
 {
-	"name": "@unicore/docs",
+	"name": "@omnifront/docs",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -12,15 +12,15 @@
 	"devDependencies": {
 		"typescript": "~5.9.3",
 		"vitepress": "^1.6.4",
-		"@unicore/core": "workspace:*",
-		"@unicore/query": "workspace:*",
-		"@unicore/store": "workspace:*",
-		"@unicore/react": "workspace:*",
-		"@unicore/vue": "workspace:*",
-		"@unicore/angular": "workspace:*",
-		"@unicore/next": "workspace:*",
-		"@unicore/persist": "workspace:*",
-		"@unicore/devtools": "workspace:*",
-		"@unicore/query-infinite": "workspace:*"
+		"@omnifront/core": "workspace:*",
+		"@omnifront/query": "workspace:*",
+		"@omnifront/store": "workspace:*",
+		"@omnifront/react": "workspace:*",
+		"@omnifront/vue": "workspace:*",
+		"@omnifront/angular": "workspace:*",
+		"@omnifront/next": "workspace:*",
+		"@omnifront/persist": "workspace:*",
+		"@omnifront/devtools": "workspace:*",
+		"@omnifront/query-infinite": "workspace:*"
 	}
 }

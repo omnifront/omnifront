@@ -1,5 +1,5 @@
-import { FakeScheduler } from "@unicore/core/testing"
-import { QueryClient } from "@unicore/query"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { QueryClient } from "@omnifront/query"
 import { act, renderHook } from "@testing-library/react"
 import { createElement, type ReactNode } from "react"
 import { describe, expect, it } from "vitest"

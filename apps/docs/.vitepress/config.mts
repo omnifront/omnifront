@@ -1,8 +1,8 @@
 import { defineConfig } from "vitepress"
 
-// Set DOCS_BASE (for example "/unicore/") when hosting under a sub-path such as GitHub Pages.
+// Set DOCS_BASE (for example "/omnifront/") when hosting under a sub-path such as GitHub Pages.
 export default defineConfig({
-	title: "unicore",
+	title: "omnifront",
 	description: "One data layer (queries and state) for React, Next.js, Vue and Angular.",
 	base: process.env.DOCS_BASE ?? "/",
 	cleanUrls: true,
@@ -11,7 +11,7 @@ export default defineConfig({
 			{ text: "Guide", link: "/guide/introduction" },
 			{ text: "API", link: "/api/query" },
 			{ text: "Benchmarks", link: "/benchmarks" },
-			{ text: "GitHub", link: "https://github.com/AMHB-DEV/unicore" },
+			{ text: "GitHub", link: "https://github.com/omnifront/omnifront" },
 		],
 		sidebar: {
 			"/guide/": [
@@ -52,21 +52,21 @@ export default defineConfig({
 				{
 					text: "Packages",
 					items: [
-						{ text: "@unicore/core", link: "/api/core" },
-						{ text: "@unicore/query", link: "/api/query" },
-						{ text: "@unicore/store", link: "/api/store" },
-						{ text: "@unicore/react", link: "/api/react" },
-						{ text: "@unicore/vue", link: "/api/vue" },
-						{ text: "@unicore/angular", link: "/api/angular" },
-						{ text: "@unicore/next", link: "/api/next" },
-						{ text: "@unicore/query-infinite", link: "/api/query-infinite" },
-						{ text: "@unicore/persist", link: "/api/persist" },
-						{ text: "@unicore/devtools", link: "/api/devtools" },
+						{ text: "@omnifront/core", link: "/api/core" },
+						{ text: "@omnifront/query", link: "/api/query" },
+						{ text: "@omnifront/store", link: "/api/store" },
+						{ text: "@omnifront/react", link: "/api/react" },
+						{ text: "@omnifront/vue", link: "/api/vue" },
+						{ text: "@omnifront/angular", link: "/api/angular" },
+						{ text: "@omnifront/next", link: "/api/next" },
+						{ text: "@omnifront/query-infinite", link: "/api/query-infinite" },
+						{ text: "@omnifront/persist", link: "/api/persist" },
+						{ text: "@omnifront/devtools", link: "/api/devtools" },
 					],
 				},
 			],
 		},
-		socialLinks: [{ icon: "github", link: "https://github.com/AMHB-DEV/unicore" }],
+		socialLinks: [{ icon: "github", link: "https://github.com/omnifront/omnifront" }],
 		search: { provider: "local" },
 	},
 })

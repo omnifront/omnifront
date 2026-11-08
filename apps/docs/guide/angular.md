@@ -1,7 +1,7 @@
 # Angular
 
 ::: info Pre-release
-Not on npm yet. Once published: `npm install @unicore/angular @unicore/query` (Angular 17 or newer). Tested against the latest Angular, zoneless.
+Not on npm yet. Once published: `npm install @omnifront/angular @omnifront/query` (Angular 17 or newer). Tested against the latest Angular, zoneless.
 :::
 
 ## Set up
@@ -9,15 +9,15 @@ Not on npm yet. Once published: `npm install @unicore/angular @unicore/query` (A
 ```ts
 import { provideZonelessChangeDetection } from "@angular/core"
 import { bootstrapApplication } from "@angular/platform-browser"
-import { QueryClient } from "@unicore/query"
-import { provideUnicore } from "@unicore/angular"
+import { QueryClient } from "@omnifront/query"
+import { provideOmnifront } from "@omnifront/angular"
 
 bootstrapApplication(AppComponent, {
-	providers: [provideZonelessChangeDetection(), provideUnicore(new QueryClient())],
+	providers: [provideZonelessChangeDetection(), provideOmnifront(new QueryClient())],
 })
 ```
 
-`provideUnicore` is an environment provider, so it also works in a route's `providers`.
+`provideOmnifront` is an environment provider, so it also works in a route's `providers`.
 
 ## Fetch data
 
@@ -25,7 +25,7 @@ bootstrapApplication(AppComponent, {
 
 ```ts
 import { Component } from "@angular/core"
-import { injectQuery } from "@unicore/angular"
+import { injectQuery } from "@omnifront/angular"
 
 @Component({
 	selector: "app-todos",
@@ -83,4 +83,4 @@ filter = injectStore(filterStore, (s) => s.text) // Signal<string>
 
 - Subscriptions end with `DestroyRef`, i.e. when the component, route or injector that called `injectQuery` is destroyed.
 - Reactive options use `effect` with `untracked`, so the observer's own work never becomes an accidental dependency.
-- Server-side rendering: add `provideUnicoreSsr()` from `@unicore/angular/ssr`; see [Server-side rendering](/guide/ssr#angular).
+- Server-side rendering: add `provideOmnifrontSsr()` from `@omnifront/angular/ssr`; see [Server-side rendering](/guide/ssr#angular).

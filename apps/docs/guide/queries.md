@@ -32,7 +32,7 @@ Invalidation and cancellation match **by prefix**: `["todos"]` also matches `["t
 
 ## Freshness: `staleTime` and `gcTime`
 
-- **`staleTime`** (default `0`): how long data counts as fresh. While fresh, mounting another component that uses the key does **not** refetch. `Infinity` means never stale. When data goes stale while someone is watching, listeners are notified (so `isStale` updates), but unicore does not refetch on its own; it refetches on mount, on `invalidateQueries`, or when you call `refetch()`.
+- **`staleTime`** (default `0`): how long data counts as fresh. While fresh, mounting another component that uses the key does **not** refetch. `Infinity` means never stale. When data goes stale while someone is watching, listeners are notified (so `isStale` updates), but omnifront does not refetch on its own; it refetches on mount, on `invalidateQueries`, or when you call `refetch()`.
 - **`gcTime`** (default 5 minutes): how long an entry nobody observes is kept before it is removed. When several observers ask for different values, the longest wins. `Infinity` keeps it forever.
 
 ```ts
@@ -65,7 +65,7 @@ Besides mounting and invalidation, stale queries refetch when the world changes:
 Focus and reconnect only refetch **stale** data, so a `staleTime` shields a query from them. Both signals are plain objects you can drive yourself, which is how you support React Native or tests:
 
 ```ts
-import { focusManager, onlineManager } from "@unicore/query"
+import { focusManager, onlineManager } from "@omnifront/query"
 focusManager.set(AppState.currentState === "active")   // React Native
 onlineManager.set(false)
 ```
@@ -90,7 +90,7 @@ useQuery({ queryKey: ["todo", id], queryFn: loadTodo, placeholderData: { title: 
 `placeholderData` can be a function of the data this component showed before. `keepPreviousData` is exactly that:
 
 ```ts
-import { keepPreviousData } from "@unicore/query"
+import { keepPreviousData } from "@omnifront/query"
 
 const page = ref(1)
 const { data, isPlaceholderData } = useQuery(() => ({
@@ -105,7 +105,7 @@ const { data, isPlaceholderData } = useQuery(() => ({
 `useQueries` (React), `useQueries` (Vue) and `injectQueries` (Angular) run a list of queries in parallel and give back their results in order. The list can be built at run time and can grow and shrink.
 
 ```tsx
-import { useQueries } from "@unicore/react/queries"
+import { useQueries } from "@omnifront/react/queries"
 
 const [user, posts] = useQueries([
 	{ queryKey: ["user", id], queryFn: () => loadUser(id) },
@@ -113,15 +113,15 @@ const [user, posts] = useQueries([
 ])
 ```
 
-Vue: `import { useQueries } from "@unicore/vue/queries"` (one array of plain results). Angular: `injectQueries` from `@unicore/angular/queries` (one signal of an array). **Dependent queries** need no special API: set `enabled` on the later query. (The `user` above is the previous render's result, so the second query starts once the first has data.)
+Vue: `import { useQueries } from "@omnifront/vue/queries"` (one array of plain results). Angular: `injectQueries` from `@omnifront/angular/queries` (one signal of an array). **Dependent queries** need no special API: set `enabled` on the later query. (The `user` above is the previous render's result, so the second query starts once the first has data.)
 
 ## Stable references: structural sharing
 
 By default a refetch that returns equal data still produces a new object, so anything memoized on it re-runs. Opt in to keep the old references for the parts that did not change:
 
 ```ts
-import { QueryClient } from "@unicore/query"
-import { replaceEqualDeep } from "@unicore/query/structural"
+import { QueryClient } from "@omnifront/query"
+import { replaceEqualDeep } from "@omnifront/query/structural"
 
 const client = new QueryClient({ structuralSharing: replaceEqualDeep })
 ```

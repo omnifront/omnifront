@@ -1,7 +1,7 @@
 "use client"
 
-import { QueryClient } from "@unicore/query"
-import { QueryProvider } from "@unicore/react"
+import { QueryClient } from "@omnifront/query"
+import { QueryProvider } from "@omnifront/react"
 import { createElement, useState, type ReactNode } from "react"
 
 // One import for everything a Client Component needs.
@@ -12,11 +12,11 @@ export {
 	useQuery,
 	useQueryClient,
 	useStore,
-} from "@unicore/react"
-export type { HydrationBoundaryProps, UseMutationResult, UseQueryResult } from "@unicore/react"
-export type { MutationOptions, MutationState, QueryKey, QueryObserverOptions, QueryResult } from "@unicore/query"
+} from "@omnifront/react"
+export type { HydrationBoundaryProps, UseMutationResult, UseQueryResult } from "@omnifront/react"
+export type { MutationOptions, MutationState, QueryKey, QueryObserverOptions, QueryResult } from "@omnifront/query"
 
-export interface UnicoreProviderProps {
+export interface OmnifrontProviderProps {
 	children?: ReactNode
 	/** Default gcTime (ms) for the browser's cache entries. */
 	gcTime?: number
@@ -28,7 +28,7 @@ export interface UnicoreProviderProps {
  * lives for the whole session. For custom client configuration write your own provider with
  * `useState(() => new QueryClient(...))` (a client can't be passed down from a Server Component).
  */
-export function UnicoreProvider({ children, gcTime }: UnicoreProviderProps) {
+export function OmnifrontProvider({ children, gcTime }: OmnifrontProviderProps) {
 	const [client] = useState(() => {
 		if (typeof window === "undefined") return new QueryClient({ gcTime: Infinity })
 		return new QueryClient(gcTime === undefined ? {} : { gcTime })

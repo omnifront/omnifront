@@ -1,14 +1,14 @@
-# @unicore/angular
+# @omnifront/angular
 
 Angular 17+. About 0.7 KB gzipped. See the [Angular guide](/guide/angular).
 
-### `provideUnicore`
+### `provideOmnifront`
 
-`provideUnicore(client)`: environment providers; use in `bootstrapApplication` or a route's `providers`.
+`provideOmnifront(client)`: environment providers; use in `bootstrapApplication` or a route's `providers`.
 
 ### `injectQueryClient`
 
-Returns the provided client; throws a helpful error if `provideUnicore` is missing. Like all `inject*` functions it must run in an injection context.
+Returns the provided client; throws a helpful error if `provideOmnifront` is missing. Like all `inject*` functions it must run in an injection context.
 
 ### `injectQuery`
 
@@ -30,7 +30,7 @@ Returns the provided client; throws a helpful error if `provideUnicore` is missi
 
 `injectStore(source, selector?, equals?)` returns a read-only `Signal` of the selected slice of any `Subscribable`.
 
-## Infinite queries (`@unicore/angular/infinite`)
+## Infinite queries (`@omnifront/angular/infinite`)
 
 ### `injectInfiniteQuery`
 
@@ -42,15 +42,15 @@ Returns the provided client; throws a helpful error if `provideUnicore` is missi
 
 ### `InfiniteQueryObserverOptions`
 
-Re-exported from `@unicore/query-infinite` ([options](/api/query-infinite#infinitequeryobserveroptions)). `InfiniteData` and `InfiniteQueryResult` are re-exported too.
+Re-exported from `@omnifront/query-infinite` ([options](/api/query-infinite#infinitequeryobserveroptions)). `InfiniteData` and `InfiniteQueryResult` are re-exported too.
 
-## Server rendering (`@unicore/angular/ssr`)
+## Server rendering (`@omnifront/angular/ssr`)
 
-### `provideUnicoreSsr`
+### `provideOmnifrontSsr`
 
-Environment providers: on the server, wait for started queries and write the cache into `TransferState`; in the browser, load it. Add next to `provideUnicore`. See [Server-side rendering](/guide/ssr#angular).
+Environment providers: on the server, wait for started queries and write the cache into `TransferState`; in the browser, load it. Add next to `provideOmnifront`. See [Server-side rendering](/guide/ssr#angular).
 
-## Several queries (`@unicore/angular/queries`)
+## Several queries (`@omnifront/angular/queries`)
 
 ### `injectQueries`
 

@@ -1,10 +1,10 @@
 import { Component, signal } from "@angular/core"
 import { TestBed } from "@angular/core/testing"
-import { FakeScheduler } from "@unicore/core/testing"
-import { QueryClient } from "@unicore/query"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { QueryClient } from "@omnifront/query"
 import { describe, expect, it, vi } from "vitest"
-import { createStore } from "@unicore/store"
-import { injectMutation, injectQuery, injectQueryClient, injectStore, provideUnicore } from "../src"
+import { createStore } from "@omnifront/store"
+import { injectMutation, injectQuery, injectQueryClient, injectStore, provideOmnifront } from "../src"
 import { flushEffects, mountInjectable } from "./mount"
 
 const newClient = () => new QueryClient({ scheduler: new FakeScheduler() })
@@ -13,14 +13,14 @@ const settle = async () => {
 	flushEffects()
 }
 
-describe("provideUnicore / injectQueryClient", () => {
+describe("provideOmnifront / injectQueryClient", () => {
 	it("hands out the provided client", () => {
 		const client = newClient()
-		expect(mountInjectable(() => injectQueryClient(), [provideUnicore(client)]).result).toBe(client)
+		expect(mountInjectable(() => injectQueryClient(), [provideOmnifront(client)]).result).toBe(client)
 	})
 
-	it("throws a helpful error without provideUnicore", () => {
-		expect(() => mountInjectable(() => injectQueryClient())).toThrow(/provideUnicore/)
+	it("throws a helpful error without provideOmnifront", () => {
+		expect(() => mountInjectable(() => injectQueryClient())).toThrow(/provideOmnifront/)
 	})
 })
 
@@ -29,7 +29,7 @@ describe("injectQuery / injectMutation", () => {
 		const client = newClient()
 		const { result: q, unmount } = mountInjectable(
 			() => injectQuery({ queryKey: ["k"], queryFn: () => Promise.resolve(5), staleTime: Infinity }),
-			[provideUnicore(client)],
+			[provideOmnifront(client)],
 		)
 		expect(q.status()).toBe("loading")
 		await settle()
@@ -59,7 +59,7 @@ describe("injectQuery / injectMutation", () => {
 	it("stops observing when its injector is destroyed", async () => {
 		const client = newClient()
 		const fn = vi.fn(() => Promise.resolve(1))
-		const m = mountInjectable(() => injectQuery({ queryKey: ["k"], queryFn: fn, staleTime: Infinity }), [provideUnicore(client)])
+		const m = mountInjectable(() => injectQuery({ queryKey: ["k"], queryFn: fn, staleTime: Infinity }), [provideOmnifront(client)])
 		await settle()
 		m.unmount()
 		await client.invalidateQueries()
@@ -85,7 +85,7 @@ describe("in a real component", () => {
 			template: `<p>{{ item.status() === 'loading' ? 'loading' : item.data() }}</p>`,
 		})(Item)
 
-		TestBed.configureTestingModule({ providers: [provideUnicore(client)] })
+		TestBed.configureTestingModule({ providers: [provideOmnifront(client)] })
 		const fixture = TestBed.createComponent(Item)
 		const text = () => (fixture.nativeElement as HTMLElement).textContent
 		fixture.detectChanges()

@@ -1,9 +1,9 @@
-import { FakeScheduler } from "@unicore/core/testing"
-import { QueryClient } from "@unicore/query"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { QueryClient } from "@omnifront/query"
 import { computed, createApp, createSSRApp, defineComponent, h, nextTick, ref } from "vue"
 import { renderToString } from "vue/server-renderer"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { createStore } from "@unicore/store"
+import { createStore } from "@omnifront/store"
 import { provideQueryClient, QueryPlugin, useMutation, useQuery, useQueryClient, useStore } from "../src"
 import { mountComposable } from "./mount"
 

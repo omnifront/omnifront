@@ -1,4 +1,4 @@
-import { defaultScheduler, notifyManager, type Scheduler } from "@unicore/core"
+import { defaultScheduler, notifyManager, type Scheduler } from "@omnifront/core"
 import { hashKey, matchesKey, type QueryKey } from "./hash-key"
 import { DEFAULT_GC_TIME, Query, type QueryFn, type QueryState } from "./query"
 import type { RetryOptions } from "./retry"
@@ -10,7 +10,7 @@ export interface QueryClientOptions {
 	gcTime?: number
 	/**
 	 * Reuse unchanged parts of data across refetches (stable references). Pass `replaceEqualDeep` from
-	 * `@unicore/query/structural`. Off by default to keep the core small.
+	 * `@omnifront/query/structural`. Off by default to keep the core small.
 	 */
 	structuralSharing?: ((previous: unknown, next: unknown) => unknown) | undefined
 }

@@ -1,6 +1,6 @@
-import { FakeScheduler } from "@unicore/core/testing"
-import { QueryClient } from "@unicore/query"
-import { dehydrate, hydrate } from "@unicore/query/hydration"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { QueryClient } from "@omnifront/query"
+import { dehydrate, hydrate } from "@omnifront/query/hydration"
 import { describe, expect, expectTypeOf, it, vi } from "vitest"
 import { InfiniteQueryObserver, type InfiniteData, type InfiniteQueryObserverOptions } from "../src/infinite-observer"
 

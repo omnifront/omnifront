@@ -1,4 +1,4 @@
-# @unicore/react
+# @omnifront/react
 
 React 18+. About 0.7 KB gzipped. See the [React guide](/guide/react).
 
@@ -34,7 +34,7 @@ The state fields plus the three functions.
 
 `<HydrationBoundary state={dehydratedState}>`: hydrates server-fetched data into the client's cache before its children render. Props type: `HydrationBoundaryProps`.
 
-## Infinite queries (`@unicore/react/infinite`)
+## Infinite queries (`@omnifront/react/infinite`)
 
 ### `useInfiniteQuery`
 
@@ -46,9 +46,9 @@ An [`InfiniteQueryResult`](/api/query-infinite#infinitequeryresult) plus `fetchN
 
 ### `InfiniteQueryObserverOptions`
 
-Re-exported from `@unicore/query-infinite` ([options](/api/query-infinite#infinitequeryobserveroptions)). `InfiniteData` and `InfiniteQueryResult` are re-exported too.
+Re-exported from `@omnifront/query-infinite` ([options](/api/query-infinite#infinitequeryobserveroptions)). `InfiniteData` and `InfiniteQueryResult` are re-exported too.
 
-## Suspense (`@unicore/react/suspense`)
+## Suspense (`@omnifront/react/suspense`)
 
 ### `useSuspenseQuery`
 
@@ -58,7 +58,7 @@ Re-exported from `@unicore/query-infinite` ([options](/api/query-infinite#infini
 
 Like `UseQueryResult` but `data` is always defined and `status` is `"success" | "error"`.
 
-## Several queries (`@unicore/react/queries`)
+## Several queries (`@omnifront/react/queries`)
 
 ### `useQueries`
 
@@ -70,7 +70,7 @@ The mapped result type of `useQueries`: one `UseQueryResult` per query.
 
 ### `useSuspenseInfiniteQuery`
 
-`useSuspenseInfiniteQuery(options)` is [`useInfiniteQuery`](/api/react#useinfinitequery) for Suspense and error boundaries (same rules as `useSuspenseQuery`), exported from `@unicore/react/suspense`.
+`useSuspenseInfiniteQuery(options)` is [`useInfiniteQuery`](/api/react#useinfinitequery) for Suspense and error boundaries (same rules as `useSuspenseQuery`), exported from `@omnifront/react/suspense`.
 
 ### `UseSuspenseInfiniteQueryResult`
 

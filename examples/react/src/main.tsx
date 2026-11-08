@@ -1,7 +1,7 @@
-import { mountDevtools } from "@unicore/devtools/panel"
-import { persistQueryClient } from "@unicore/persist"
-import { QueryClient } from "@unicore/query"
-import { QueryProvider } from "@unicore/react"
+import { mountDevtools } from "@omnifront/devtools/panel"
+import { persistQueryClient } from "@omnifront/persist"
+import { QueryClient } from "@omnifront/query"
+import { QueryProvider } from "@omnifront/react"
 import { createRoot } from "react-dom/client"
 import { App } from "./App"
 

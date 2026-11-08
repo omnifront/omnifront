@@ -1,14 +1,14 @@
 # Persistence
 
-`@unicore/persist` keeps the query cache across page loads: it restores the stored cache on start and writes it back when it changes. It works with `localStorage`, IndexedDB or any storage with `getItem`/`setItem`/`removeItem`, and it needs no framework.
+`@omnifront/persist` keeps the query cache across page loads: it restores the stored cache on start and writes it back when it changes. It works with `localStorage`, IndexedDB or any storage with `getItem`/`setItem`/`removeItem`, and it needs no framework.
 
 ::: info Pre-release
-Not on npm yet. Once published: `npm install @unicore/persist @unicore/query`.
+Not on npm yet. Once published: `npm install @omnifront/persist @omnifront/query`.
 :::
 
 ```ts
-import { QueryClient } from "@unicore/query"
-import { persistQueryClient } from "@unicore/persist"
+import { QueryClient } from "@omnifront/query"
+import { persistQueryClient } from "@omnifront/persist"
 
 const client = new QueryClient()
 persistQueryClient(client, {
@@ -43,7 +43,7 @@ Storage errors (quota exceeded, private mode, data that cannot be serialized) ne
 `localStorage` holds about 5 MB and is synchronous. For bigger caches:
 
 ```ts
-import { createIndexedDBStorage } from "@unicore/persist/indexeddb"
+import { createIndexedDBStorage } from "@omnifront/persist/indexeddb"
 
 persistQueryClient(client, { storage: createIndexedDBStorage({ dbName: "my-app" }) })
 ```
@@ -62,7 +62,7 @@ client.clear()
 | Option | Default | |
 |---|---|---|
 | `storage` | required | `localStorage`, IndexedDB wrapper, async-storage, ... |
-| `key` | `"unicore-cache"` | storage key |
+| `key` | `"omnifront-cache"` | storage key |
 | `maxAge` | 24 h | older stored caches are discarded |
 | `buster` | `""` | a different value discards the stored cache |
 | `throttle` | `1000` | ms between looks for changes |

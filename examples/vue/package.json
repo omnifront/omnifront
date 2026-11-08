@@ -1,5 +1,5 @@
 {
-	"name": "@unicore/example-vue",
+	"name": "@omnifront/example-vue",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -9,9 +9,9 @@
 		"typecheck": "vue-tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/query": "workspace:*",
-		"@unicore/vue": "workspace:*",
-		"@unicore/example-shared": "workspace:*"
+		"@omnifront/query": "workspace:*",
+		"@omnifront/vue": "workspace:*",
+		"@omnifront/example-shared": "workspace:*"
 	},
 	"devDependencies": {
 		"@vitejs/plugin-vue": "^6.0.10",

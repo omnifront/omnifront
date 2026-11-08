@@ -1,4 +1,4 @@
-import { derive, notifyManager, shallowEqual } from "@unicore/core"
+import { derive, notifyManager, shallowEqual } from "@omnifront/core"
 import { describe, expect, it, vi } from "vitest"
 import { createStore } from "../src"
 

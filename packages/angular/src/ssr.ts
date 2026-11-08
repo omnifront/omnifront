@@ -8,10 +8,10 @@ import {
 	makeStateKey,
 	type EnvironmentProviders,
 } from "@angular/core"
-import { dehydrate, hydrate, type DehydratedState } from "@unicore/query/hydration"
+import { dehydrate, hydrate, type DehydratedState } from "@omnifront/query/hydration"
 import { injectQueryClient } from "./provide"
 
-const STATE_KEY = makeStateKey<DehydratedState>("unicore:query-cache")
+const STATE_KEY = makeStateKey<DehydratedState>("omnifront:query-cache")
 
 // PendingTasks (Angular 19+; ExperimentalPendingTasks in 18) lets us hold the server render open.
 // Looked up by name at run time so bundlers do not warn that one of the two spellings does not exist
@@ -21,15 +21,15 @@ const angular = ng as unknown as Record<string, PendingTasksClass | undefined>
 const PendingTasks = angular["PendingTasks"] ?? angular[["Experimental", "PendingTasks"].join("")]
 
 /**
- * Server-side rendering support. Add it next to `provideUnicore(client)`:
+ * Server-side rendering support. Add it next to `provideOmnifront(client)`:
  *
- *   providers: [provideUnicore(new QueryClient()), provideUnicoreSsr()]
+ *   providers: [provideOmnifront(new QueryClient()), provideOmnifrontSsr()]
  *
  * On the server it waits for every query that started during rendering, then puts the cache into
  * Angular's `TransferState`; in the browser it loads that cache before any component asks for data,
  * so pages start with their data and do not fetch it again while it is fresh.
  */
-export function provideUnicoreSsr(): EnvironmentProviders {
+export function provideOmnifrontSsr(): EnvironmentProviders {
 	const isServer = typeof window === "undefined"
 	return makeEnvironmentProviders([
 		{

@@ -1,9 +1,9 @@
 ---
-"@unicore/core": minor
-"@unicore/store": minor
-"@unicore/react": minor
-"@unicore/vue": minor
-"@unicore/angular": minor
+"@omnifront/core": minor
+"@omnifront/store": minor
+"@omnifront/react": minor
+"@omnifront/vue": minor
+"@omnifront/angular": minor
 ---
 
-Add `derive`/`shallowEqual` to core, the new `@unicore/store` package, and `useStore` / `injectStore` to every adapter.
+Add `derive`/`shallowEqual` to core, the new `@omnifront/store` package, and `useStore` / `injectStore` to every adapter.

@@ -1,21 +1,21 @@
 {
-	"name": "@unicore/react",
+	"name": "@omnifront/react",
 	"version": "0.0.0",
-	"description": "React adapter for unicore: QueryProvider, useQuery, useMutation, useStore and HydrationBoundary.",
+	"description": "React adapter for omnifront: QueryProvider, useQuery, useMutation, useStore and HydrationBoundary.",
 	"license": "MIT",
 	"keywords": [
-		"unicore",
+		"omnifront",
 		"react",
 		"hooks"
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
 		"directory": "packages/react"
 	},
-	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/react#readme",
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/react#readme",
 	"bugs": {
-		"url": "https://github.com/AMHB-DEV/unicore/issues"
+		"url": "https://github.com/omnifront/omnifront/issues"
 	},
 	"type": "module",
 	"sideEffects": false,
@@ -73,9 +73,9 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/query": "workspace:*",
-		"@unicore/core": "workspace:*",
-		"@unicore/query-infinite": "workspace:*"
+		"@omnifront/query": "workspace:*",
+		"@omnifront/core": "workspace:*",
+		"@omnifront/query-infinite": "workspace:*"
 	},
 	"peerDependencies": {
 		"react": ">=18"
@@ -85,10 +85,10 @@
 		"@testing-library/react": "^16.3.3",
 		"@types/react": "^19.3.0",
 		"@types/react-dom": "^19.3.0",
-		"@unicore/conformance": "workspace:*",
+		"@omnifront/conformance": "workspace:*",
 		"jsdom": "^31.0.0",
 		"react": ">=18",
 		"react-dom": "^19.3.1",
-		"@unicore/store": "workspace:*"
+		"@omnifront/store": "workspace:*"
 	}
 }

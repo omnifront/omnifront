@@ -1,22 +1,22 @@
 {
-	"name": "@unicore/persist",
+	"name": "@omnifront/persist",
 	"version": "0.0.0",
-	"description": "Persist the unicore query cache to localStorage, IndexedDB or any storage, and restore it on startup.",
+	"description": "Persist the omnifront query cache to localStorage, IndexedDB or any storage, and restore it on startup.",
 	"license": "MIT",
 	"keywords": [
-		"unicore",
+		"omnifront",
 		"persist",
 		"cache",
 		"offline"
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
 		"directory": "packages/persist"
 	},
-	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/persist#readme",
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/persist#readme",
 	"bugs": {
-		"url": "https://github.com/AMHB-DEV/unicore/issues"
+		"url": "https://github.com/omnifront/omnifront/issues"
 	},
 	"type": "module",
 	"sideEffects": false,
@@ -54,10 +54,10 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/query": "workspace:*"
+		"@omnifront/query": "workspace:*"
 	},
 	"devDependencies": {
-		"@unicore/core": "workspace:*",
+		"@omnifront/core": "workspace:*",
 		"fake-indexeddb": "^6.2.7"
 	}
 }

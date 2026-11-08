@@ -8,11 +8,11 @@ cd "$root"
 pnpm build >/dev/null
 status=0
 for pkg in core query query-infinite store react vue angular next persist devtools; do
-  pnpm --filter "@unicore/$pkg" pack --pack-destination "$packs" >/dev/null
-  tgz="$packs/unicore-$pkg-0.0.0.tgz"
-  echo "== @unicore/$pkg"
+  pnpm --filter "@omnifront/$pkg" pack --pack-destination "$packs" >/dev/null
+  tgz="$packs/omnifront-$pkg-0.0.0.tgz"
+  echo "== @omnifront/$pkg"
   pnpm --registry=https://registry.npmjs.org/ dlx publint "$tgz" --level warning || status=1
-  # @unicore/next/client is a "use client" CommonJS file on purpose (Next.js 14 cannot read it as ESM);
+  # @omnifront/next/client is a "use client" CommonJS file on purpose (Next.js 14 cannot read it as ESM);
   # attw cannot see its `0 && (module.exports = ...)` export names although Node can, so skip that rule there.
   ignore=(); [ "$pkg" = next ] && ignore=(--ignore-rules named-exports)
   pnpm --registry=https://registry.npmjs.org/ dlx @arethetypeswrong/cli "$tgz" --profile node16 ${ignore[@]+"${ignore[@]}"} || status=1

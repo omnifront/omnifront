@@ -6,7 +6,7 @@
 set -euo pipefail
 name="${1:?usage: test-matrix.sh <react18|vue33|angular17|angular18>}"
 root="$(cd "$(dirname "$0")/.." && pwd)"
-work="$(mktemp -d)/unicore-matrix-$name"
+work="$(mktemp -d)/omnifront-matrix-$name"
 mkdir -p "$work"
 [ -n "${KEEP:-}" ] || trap 'rm -rf "$(dirname "$work")"' EXIT
 [ -z "${KEEP:-}" ] || echo "kept: $work"
@@ -19,22 +19,22 @@ case "$name" in
   react18)   overrides='react: 18.3.1
   react-dom: 18.3.1
   "@types/react": 18.3.12
-  "@types/react-dom": 18.3.1'; filter="@unicore/react @unicore/next" ;;
-  vue33)     overrides='vue: 3.3.13'; filter="@unicore/vue" ;;
+  "@types/react-dom": 18.3.1'; filter="@omnifront/react @omnifront/next" ;;
+  vue33)     overrides='vue: 3.3.13'; filter="@omnifront/vue" ;;
   angular17) overrides='"@angular/core": 17.3.12
   "@angular/common": 17.3.12
   "@angular/compiler": 17.3.12
   "@angular/platform-browser": 17.3.12
   "@angular/platform-server": 17.3.12
   rxjs: 7.8.1
-  zone.js: 0.14.10'; filter="@unicore/angular" ;;
+  zone.js: 0.14.10'; filter="@omnifront/angular" ;;
   angular18) overrides='"@angular/core": 18.2.13
   "@angular/common": 18.2.13
   "@angular/compiler": 18.2.13
   "@angular/platform-browser": 18.2.13
   "@angular/platform-server": 18.2.13
   rxjs: 7.8.1
-  zone.js: 0.14.10'; filter="@unicore/angular" ;;
+  zone.js: 0.14.10'; filter="@omnifront/angular" ;;
   *) echo "unknown matrix entry: $name" >&2; exit 2 ;;
 esac
 
@@ -44,7 +44,7 @@ case "$name" in
   # Old Angular needs the dynamic platform for JIT in tests, and 17 needs zone.js (no zoneless yet).
   angular17|angular18)
     ng="${name#angular}"; v=$([ "$ng" = 17 ] && echo 17.3.12 || echo 18.2.13)
-    pnpm --filter @unicore/angular add -D "@angular/platform-browser-dynamic@$v" zone.js@0.14.10 --reporter=append-only ;;
+    pnpm --filter @omnifront/angular add -D "@angular/platform-browser-dynamic@$v" zone.js@0.14.10 --reporter=append-only ;;
 esac
 # Build everything the filtered packages depend on, then test or build them.
 for pkg in $filter; do

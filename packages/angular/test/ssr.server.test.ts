@@ -4,10 +4,10 @@ import * as ng from "@angular/core"
 import { Component } from "@angular/core"
 import { bootstrapApplication, type BootstrapContext } from "@angular/platform-browser"
 import { provideServerRendering, renderApplication } from "@angular/platform-server"
-import { QueryClient } from "@unicore/query"
+import { QueryClient } from "@omnifront/query"
 import { describe, expect, it } from "vitest"
-import { injectQuery, provideUnicore } from "../src"
-import { provideUnicoreSsr } from "../src/ssr"
+import { injectQuery, provideOmnifront } from "../src"
+import { provideOmnifrontSsr } from "../src/ssr"
 import { zonelessProviders } from "./compat"
 
 // Angular 17 cannot run without zone.js (its server renderer included); newer versions need nothing.
@@ -36,14 +36,14 @@ const render = (client: QueryClient) =>
 		(context: BootstrapContext) =>
 			bootstrapApplication(
 				Todos,
-				{ providers: [...zonelessProviders(), provideServerRendering(), provideUnicore(client), provideUnicoreSsr()] },
+				{ providers: [...zonelessProviders(), provideServerRendering(), provideOmnifront(client), provideOmnifrontSsr()] },
 				context,
 			),
 		{ document: "<app-root></app-root>" },
 	)
 
 // Waiting for queries on the server needs PendingTasks (Angular 19; ExperimentalPendingTasks in 18).
-// On 17 provideUnicoreSsr still transfers state but cannot hold the render open; that is documented.
+// On 17 provideOmnifrontSsr still transfers state but cannot hold the render open; that is documented.
 const canWait = "PendingTasks" in ng || "ExperimentalPendingTasks" in ng
 
 describe.skipIf(!canWait)("Angular server rendering", () => {
@@ -56,7 +56,7 @@ describe.skipIf(!canWait)("Angular server rendering", () => {
 		const script = /<script id="ng-state" type="application\/json">(.*?)<\/script>/.exec(html)
 		expect(script).not.toBeNull()
 		const state = JSON.parse(script?.[1] ?? "{}") as Record<string, { queries: Array<{ queryKey: unknown; data: unknown }> }>
-		expect(state["unicore:query-cache"]?.queries).toMatchObject([{ queryKey: ["todos"], data: ["server-a", "server-b"] }])
+		expect(state["omnifront:query-cache"]?.queries).toMatchObject([{ queryKey: ["todos"], data: ["server-a", "server-b"] }])
 	})
 
 	it("each request has its own client; nothing leaks from one render into the next", async () => {
@@ -80,7 +80,7 @@ describe.skipIf(!canWait)("Angular server rendering: failures and dependent quer
 			(context: BootstrapContext) =>
 				bootstrapApplication(
 					Failing,
-					{ providers: [...zonelessProviders(), provideServerRendering(), provideUnicore(new QueryClient({ gcTime: Infinity })), provideUnicoreSsr()] },
+					{ providers: [...zonelessProviders(), provideServerRendering(), provideOmnifront(new QueryClient({ gcTime: Infinity })), provideOmnifrontSsr()] },
 					context,
 				),
 			{ document: "<app-root></app-root>" },
@@ -113,7 +113,7 @@ describe.skipIf(!canWait)("Angular server rendering: failures and dependent quer
 			(context: BootstrapContext) =>
 				bootstrapApplication(
 					Parent,
-					{ providers: [...zonelessProviders(), provideServerRendering(), provideUnicore(new QueryClient({ gcTime: Infinity })), provideUnicoreSsr()] },
+					{ providers: [...zonelessProviders(), provideServerRendering(), provideOmnifront(new QueryClient({ gcTime: Infinity })), provideOmnifrontSsr()] },
 					context,
 				),
 			{ document: "<app-root></app-root>" },

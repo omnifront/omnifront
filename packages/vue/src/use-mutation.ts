@@ -1,4 +1,4 @@
-import { Mutation, type MutationOptions, type MutationState, type MutationStatus } from "@unicore/query"
+import { Mutation, type MutationOptions, type MutationState, type MutationStatus } from "@omnifront/query"
 import { computed, getCurrentScope, onScopeDispose, shallowRef, toValue, watch, type ComputedRef, type MaybeRefOrGetter } from "vue"
 
 export interface UseMutationReturn<TData, TVariables> {

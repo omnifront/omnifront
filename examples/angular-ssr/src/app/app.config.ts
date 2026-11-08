@@ -1,9 +1,9 @@
 import { provideZonelessChangeDetection, type ApplicationConfig } from "@angular/core"
 import { provideClientHydration } from "@angular/platform-browser"
 import { provideRouter } from "@angular/router"
-import { provideUnicore } from "@unicore/angular"
-import { provideUnicoreSsr } from "@unicore/angular/ssr"
-import { QueryClient } from "@unicore/query"
+import { provideOmnifront } from "@omnifront/angular"
+import { provideOmnifrontSsr } from "@omnifront/angular/ssr"
+import { QueryClient } from "@omnifront/query"
 import { routes } from "./app.routes"
 
 /**
@@ -15,7 +15,7 @@ export const createAppConfig = (): ApplicationConfig => ({
 		provideZonelessChangeDetection(),
 		provideRouter(routes),
 		provideClientHydration(),
-		provideUnicore(new QueryClient(typeof window === "undefined" ? { gcTime: Infinity } : {})),
-		provideUnicoreSsr(), // wait for queries on the server, move the cache through TransferState
+		provideOmnifront(new QueryClient(typeof window === "undefined" ? { gcTime: Infinity } : {})),
+		provideOmnifrontSsr(), // wait for queries on the server, move the cache through TransferState
 	],
 })

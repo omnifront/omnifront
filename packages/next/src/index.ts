@@ -1,14 +1,14 @@
 /**
  * Server-safe entry (Server Components, route handlers, getServerSideProps, ...).
- * Hooks and components live in "@unicore/next/client".
+ * Hooks and components live in "@omnifront/next/client".
  */
-import { QueryClient } from "@unicore/query"
+import { QueryClient } from "@omnifront/query"
 import * as React from "react"
 
-export { dehydrate, hydrate } from "@unicore/query/hydration"
-export type { DehydratedState, DehydrateOptions } from "@unicore/query/hydration"
-export { QueryClient } from "@unicore/query"
-export type { QueryKey, QueryObserverOptions, QueryResult } from "@unicore/query"
+export { dehydrate, hydrate } from "@omnifront/query/hydration"
+export type { DehydratedState, DehydrateOptions } from "@omnifront/query/hydration"
+export { QueryClient } from "@omnifront/query"
+export type { QueryKey, QueryObserverOptions, QueryResult } from "@omnifront/query"
 
 /** A client for one server request. Never reuse one across requests: the cache would leak between users. */
 export function createServerQueryClient(): QueryClient {

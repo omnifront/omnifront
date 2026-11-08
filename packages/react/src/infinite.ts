@@ -2,7 +2,7 @@ import {
 	type InfiniteData,
 	type InfiniteQueryObserverOptions,
 	type InfiniteQueryResult,
-} from "@unicore/query-infinite"
+} from "@omnifront/query-infinite"
 import { useMemo } from "react"
 import { useObservedInfinite } from "./observed-infinite"
 

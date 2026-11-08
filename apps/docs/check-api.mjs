@@ -1,7 +1,7 @@
 // Keeps the API reference honest. For every package:
 //   1. each name the built package exports must appear (in backticks) on its API page, and
 //   2. each "### `name`" heading on that page must be a real export.
-// Run after `pnpm build` (reads the generated .d.ts files). Used by `pnpm --filter @unicore/docs build`.
+// Run after `pnpm build` (reads the generated .d.ts files). Used by `pnpm --filter @omnifront/docs build`.
 import ts from "typescript"
 import { readFileSync } from "node:fs"
 import { fileURLToPath } from "node:url"
@@ -50,7 +50,7 @@ for (const [page, [pkg, entries]] of Object.entries(pages)) {
 	}
 	for (const [, name] of text.matchAll(/^### `([A-Za-z0-9_$]+)/gm)) {
 		if (!exported.has(name)) {
-			console.error(`api/${page}.md: heading \`${name}\` is not exported by @unicore/${pkg}`)
+			console.error(`api/${page}.md: heading \`${name}\` is not exported by @omnifront/${pkg}`)
 			problems++
 		}
 	}

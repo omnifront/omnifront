@@ -1,5 +1,5 @@
 import type { Signal } from "@angular/core"
-import { createStore } from "@unicore/store"
+import { createStore } from "@omnifront/store"
 import { describe, expect, expectTypeOf, it } from "vitest"
 import { injectMutation, injectQuery, injectStore } from "../src"
 

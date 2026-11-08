@@ -1,4 +1,4 @@
-# Project Context: `unicore` (working name)
+# Project Context: `omnifront`
 
 > Drop this file in the repo root as `CLAUDE.md`. It captures every decision made so far during planning. Treat the "Decisions" sections as settled unless the review triggers in them fire. Ask before changing them.
 
@@ -24,14 +24,14 @@ Non-goals for v1: forms/validation, Svelte/Solid/Qwik adapters, a custom GraphQL
 - **Release:** Changesets.
 - **Size guard:** `size-limit` in CI. Budgets (gzip): `core` ≤ 1KB, `query` ≤ 3KB, each adapter ≤ 1KB.
 - **Supported targets:** React ≥ 18, Vue ≥ 3.3, Angular ≥ 17, Next ≥ 14 (App Router and Pages Router).
-- **Package manager:** pnpm 9. Package scope: `@unicore/*`.
+- **Package manager:** pnpm 9. Package scope: `@omnifront/*`.
 
 Review trigger for adding Turborepo: CI exceeds about 5 minutes, docs/examples/Angular builds become painfully slow, or contributor count grows. Migration is easy because Turbo would just call each package's existing scripts.
 
 ## 3. Repo structure
 
 ```
-unicore/
+omnifront/
 ├─ .changeset/
 ├─ .github/workflows/
 │   ├─ ci.yml                  # lint + typecheck + test + size-limit
@@ -86,7 +86,7 @@ packages:
 Root `package.json` scripts
 ```json
 {
-  "name": "unicore-monorepo",
+  "name": "omnifront-monorepo",
   "private": true,
   "packageManager": "pnpm@9",
   "scripts": {
@@ -113,7 +113,7 @@ Root `package.json` scripts
 
 Useful commands
 ```bash
-pnpm --filter @unicore/query... build        # package + its dependencies
+pnpm --filter @omnifront/query... build        # package + its dependencies
 pnpm --filter "...[origin/main]" test        # only changed packages
 ```
 
@@ -134,10 +134,10 @@ pnpm --filter "...[origin/main]" test        # only changed packages
 }
 ```
 
-Per-package `package.json` template (example: `@unicore/query`)
+Per-package `package.json` template (example: `@omnifront/query`)
 ```json
 {
-  "name": "@unicore/query",
+  "name": "@omnifront/query",
   "version": "0.0.0",
   "type": "module",
   "sideEffects": false,
@@ -154,7 +154,7 @@ Per-package `package.json` template (example: `@unicore/query`)
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },
-  "dependencies": { "@unicore/core": "workspace:*" }
+  "dependencies": { "@omnifront/core": "workspace:*" }
 }
 ```
 `sideEffects: false` is required for tree-shaking. Adapters add `peerDependencies` (for example `"react": ">=18"`).
@@ -239,7 +239,7 @@ Rule: do not start a phase until the previous one meets its exit criteria.
 
 **Phase 3: Vue adapter (month 3).** `useQuery` with `ref`/`computed` and reactive inputs (a `ref` key works), auto cleanup with `onScopeDispose`, plugin via `app.use()`, Nuxt SSR hydration support. This phase is the real test of the core design: anything leaking React assumptions must be fixed in core.
 
-**Phase 4: Angular adapter and `store` (month 4).** `injectQuery()`/`injectMutation()` returning Signals (and Observables where useful), lifecycle via `DestroyRef`, `provideUnicore()` for standalone components. `store` package: state with selectors, derived state, actions, with adapters for all frameworks.
+**Phase 4: Angular adapter and `store` (month 4).** `injectQuery()`/`injectMutation()` returning Signals (and Observables where useful), lifecycle via `DestroyRef`, `provideOmnifront()` for standalone components. `store` package: state with selectors, derived state, actions, with adapters for all frameworks.
 
 **Phase 5: Next and SSR (months 4 to 5).** Prefetch in Server Components plus `dehydrate/hydrate` for Client Components; App Router and Pages Router; a fresh client instance per request to avoid cross-request state sharing; hydration mismatch tests.
 

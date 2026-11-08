@@ -1,15 +1,15 @@
-import type { QueryClient } from "@unicore/query"
+import type { QueryClient } from "@omnifront/query"
 import { InjectionToken, inject, makeEnvironmentProviders, type EnvironmentProviders } from "@angular/core"
 
-const QUERY_CLIENT = new InjectionToken<QueryClient>("unicore:query-client")
+const QUERY_CLIENT = new InjectionToken<QueryClient>("omnifront:query-client")
 
 /**
  * Register the client for an app or a route subtree:
- *   bootstrapApplication(App, { providers: [provideUnicore(new QueryClient())] })
+ *   bootstrapApplication(App, { providers: [provideOmnifront(new QueryClient())] })
  * (Providers are Angular's dependency injection config; `makeEnvironmentProviders` marks these as
  * environment-level, so they can go in `bootstrapApplication` or a route's `providers`.)
  */
-export function provideUnicore(client: QueryClient): EnvironmentProviders {
+export function provideOmnifront(client: QueryClient): EnvironmentProviders {
 	return makeEnvironmentProviders([{ provide: QUERY_CLIENT, useValue: client }])
 }
 
@@ -19,5 +19,5 @@ export function injectQueryClient(): QueryClient {
 }
 
 function fail(): never {
-	throw new Error("injectQueryClient: add provideUnicore(client) to your providers")
+	throw new Error("injectQueryClient: add provideOmnifront(client) to your providers")
 }

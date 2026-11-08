@@ -1,4 +1,4 @@
-# @unicore/vue
+# @omnifront/vue
 
 Vue 3.3+. About 0.8 KB gzipped. See the [Vue guide](/guide/vue).
 
@@ -34,7 +34,7 @@ One `ComputedRef` per field (`status`, `data`, `error`, `isFetching`, `isStale`,
 
 `useStore(source, selector?, equals?)` returns a `ComputedRef` of the selected slice of any `Subscribable`.
 
-## Infinite queries (`@unicore/vue/infinite`)
+## Infinite queries (`@omnifront/vue/infinite`)
 
 ### `useInfiniteQuery`
 
@@ -46,9 +46,9 @@ One `ComputedRef` per field (`status`, `data`, `error`, `isFetching`, `isStale`,
 
 ### `InfiniteQueryObserverOptions`
 
-Re-exported from `@unicore/query-infinite` ([options](/api/query-infinite#infinitequeryobserveroptions)). `InfiniteData` and `InfiniteQueryResult` are re-exported too.
+Re-exported from `@omnifront/query-infinite` ([options](/api/query-infinite#infinitequeryobserveroptions)). `InfiniteData` and `InfiniteQueryResult` are re-exported too.
 
-## Several queries (`@unicore/vue/queries`)
+## Several queries (`@omnifront/vue/queries`)
 
 ### `useQueries`
 

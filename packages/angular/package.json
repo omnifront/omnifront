@@ -1,21 +1,21 @@
 {
-	"name": "@unicore/angular",
+	"name": "@omnifront/angular",
 	"version": "0.0.0",
-	"description": "Angular adapter for unicore: provideUnicore and signal-based injectQuery, injectMutation and injectStore.",
+	"description": "Angular adapter for omnifront: provideOmnifront and signal-based injectQuery, injectMutation and injectStore.",
 	"license": "MIT",
 	"keywords": [
-		"unicore",
+		"omnifront",
 		"angular",
 		"signals"
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
 		"directory": "packages/angular"
 	},
-	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/angular#readme",
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/angular#readme",
 	"bugs": {
-		"url": "https://github.com/AMHB-DEV/unicore/issues"
+		"url": "https://github.com/omnifront/omnifront/issues"
 	},
 	"type": "module",
 	"sideEffects": false,
@@ -73,9 +73,9 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/core": "workspace:*",
-		"@unicore/query": "workspace:*",
-		"@unicore/query-infinite": "workspace:*"
+		"@omnifront/core": "workspace:*",
+		"@omnifront/query": "workspace:*",
+		"@omnifront/query-infinite": "workspace:*"
 	},
 	"peerDependencies": {
 		"@angular/core": ">=17"
@@ -86,8 +86,8 @@
 		"@angular/core": ">=17",
 		"@angular/platform-browser": "^22.2.5",
 		"@angular/platform-server": "^22.2.5",
-		"@unicore/conformance": "workspace:*",
-		"@unicore/store": "workspace:*",
+		"@omnifront/conformance": "workspace:*",
+		"@omnifront/store": "workspace:*",
 		"jsdom": "^31.0.0",
 		"rxjs": "^7.8.2"
 	}

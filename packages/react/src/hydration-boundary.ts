@@ -1,5 +1,5 @@
-import type { DehydratedState } from "@unicore/query/hydration"
-import { hydrate } from "@unicore/query/hydration"
+import type { DehydratedState } from "@omnifront/query/hydration"
+import { hydrate } from "@omnifront/query/hydration"
 import { createElement, Fragment, useMemo, type ReactNode } from "react"
 import { useQueryClient } from "./provider"
 

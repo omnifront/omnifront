@@ -1,4 +1,4 @@
-# @unicore/core
+# @omnifront/core
 
 The framework-free plumbing everything else is built on. About 0.7 KB gzipped.
 
@@ -31,7 +31,7 @@ Abstract class that implements `subscribe` for you. Extend it, implement `getSna
 
 ### `EnvironmentSignal`
 
-A `Subscribable<boolean>` for something the outside world controls (page visible? network up?). `new EnvironmentSignal((set) => { ...attach...; return cleanup })`: the attach function runs only while someone is subscribed. `set(value)` overrides the value from anywhere and notifies only on change. `@unicore/query` builds `focusManager` and `onlineManager` from it.
+A `Subscribable<boolean>` for something the outside world controls (page visible? network up?). `new EnvironmentSignal((set) => { ...attach...; return cleanup })`: the attach function runs only while someone is subscribed. `set(value)` overrides the value from anywhere and notifies only on change. `@omnifront/query` builds `focusManager` and `onlineManager` from it.
 
 ### `defaultScheduler`
 
@@ -53,7 +53,7 @@ A `Subscribable` of a slice of another one. It listens to the source only while 
 
 ## Testing
 
-Import from `@unicore/core/testing`.
+Import from `@omnifront/core/testing`.
 
 ### `FakeScheduler`
 

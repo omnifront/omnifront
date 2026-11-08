@@ -1,7 +1,7 @@
 import type { PersistStorage } from "./index"
 
 export interface IndexedDBStorageOptions {
-	/** Database name. Default `"unicore"`. */
+	/** Database name. Default `"omnifront"`. */
 	dbName?: string
 	/** Object store name. Default `"cache"`. */
 	storeName?: string
@@ -11,7 +11,7 @@ export interface IndexedDBStorageOptions {
  * A `PersistStorage` backed by IndexedDB (no size limit worth worrying about, unlike
  * localStorage's ~5 MB). Values are the serialized strings the persister gives it.
  */
-export function createIndexedDBStorage({ dbName = "unicore", storeName = "cache" }: IndexedDBStorageOptions = {}): PersistStorage {
+export function createIndexedDBStorage({ dbName = "omnifront", storeName = "cache" }: IndexedDBStorageOptions = {}): PersistStorage {
 	let opened: Promise<IDBDatabase> | undefined
 	const open = (): Promise<IDBDatabase> =>
 		(opened ??= new Promise((resolve, reject) => {

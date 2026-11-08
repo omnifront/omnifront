@@ -1,6 +1,6 @@
-# @unicore/query
+# @omnifront/query
 
-Query client, observers, mutations. About 2.4 KB gzipped (excluding `@unicore/core`). Hydration helpers are in the subpath `@unicore/query/hydration`.
+Query client, observers, mutations. About 2.4 KB gzipped (excluding `@omnifront/core`). Hydration helpers are in the subpath `@omnifront/query/hydration`.
 
 ## Client
 
@@ -114,7 +114,7 @@ A `Subscribable<MutationState>` (type parameters: data, variables, context). Mem
 
 `status`, `data`, `error`, `variables`. `MutationStatus` is `"idle" | "pending" | "success" | "error"`.
 
-## Hydration (`@unicore/query/hydration`)
+## Hydration (`@omnifront/query/hydration`)
 
 ### `dehydrate`
 
@@ -128,7 +128,7 @@ A `Subscribable<MutationState>` (type parameters: data, variables, context). Mem
 
 `{ queries: Array<{ queryKey, data, dataUpdatedAt }> }`. `DehydrateOptions` is `{ shouldDehydrate?({ queryKey, state }) => boolean }`.
 
-## Structural sharing (`@unicore/query/structural`)
+## Structural sharing (`@omnifront/query/structural`)
 
 ### `replaceEqualDeep`
 

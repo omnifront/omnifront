@@ -1,8 +1,8 @@
-# @unicore/next
+# @omnifront/next
 
-Next.js 14+, built on `@unicore/react`. Two entry points; see the [Next.js guide](/guide/next).
+Next.js 14+, built on `@omnifront/react`. Two entry points; see the [Next.js guide](/guide/next).
 
-## `@unicore/next` (server-safe)
+## `@omnifront/next` (server-safe)
 
 ### `getQueryClient`
 
@@ -14,42 +14,42 @@ A new client with `gcTime: Infinity`, for `getServerSideProps`, route handlers o
 
 ### `dehydrate`
 
-Re-exported from `@unicore/query/hydration`. `DehydratedState` and `DehydrateOptions` are its types.
+Re-exported from `@omnifront/query/hydration`. `DehydratedState` and `DehydrateOptions` are its types.
 
 ### `hydrate`
 
-Re-exported from `@unicore/query/hydration`.
+Re-exported from `@omnifront/query/hydration`.
 
 ### `QueryClient`
 
-Re-exported from `@unicore/query`, as are the types `QueryKey`, `QueryObserverOptions` and `QueryResult`.
+Re-exported from `@omnifront/query`, as are the types `QueryKey`, `QueryObserverOptions` and `QueryResult`.
 
-## `@unicore/next/client` (`"use client"`)
+## `@omnifront/next/client` (`"use client"`)
 
-### `UnicoreProvider`
+### `OmnifrontProvider`
 
-Put it in the root layout or `_app`. Creates the browser's `QueryClient` once per component instance (on the server: one per render, with `gcTime: Infinity`). Props: `UnicoreProviderProps` (`children`, optional `gcTime`).
+Put it in the root layout or `_app`. Creates the browser's `QueryClient` once per component instance (on the server: one per render, with `gcTime: Infinity`). Props: `OmnifrontProviderProps` (`children`, optional `gcTime`).
 
 ### `HydrationBoundary`
 
-From `@unicore/react`; props type `HydrationBoundaryProps`.
+From `@omnifront/react`; props type `HydrationBoundaryProps`.
 
 ### `QueryProvider`
 
-From `@unicore/react`, for when you create the client yourself.
+From `@omnifront/react`, for when you create the client yourself.
 
 ### `useQuery`
 
-From `@unicore/react`; result type `UseQueryResult`.
+From `@omnifront/react`; result type `UseQueryResult`.
 
 ### `useMutation`
 
-From `@unicore/react`; result type `UseMutationResult`.
+From `@omnifront/react`; result type `UseMutationResult`.
 
 ### `useQueryClient`
 
-From `@unicore/react`.
+From `@omnifront/react`.
 
 ### `useStore`
 
-From `@unicore/react`. The types `MutationOptions`, `MutationState`, `QueryKey`, `QueryObserverOptions` and `QueryResult` are re-exported from `@unicore/query`.
+From `@omnifront/react`. The types `MutationOptions`, `MutationState`, `QueryKey`, `QueryObserverOptions` and `QueryResult` are re-exported from `@omnifront/query`.

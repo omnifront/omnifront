@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest something unicore should do
+description: Suggest something omnifront should do
 labels: [enhancement]
 body:
   - type: textarea

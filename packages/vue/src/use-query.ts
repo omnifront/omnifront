@@ -3,7 +3,7 @@ import {
 	type QueryObserverOptions,
 	type QueryResult,
 	type QueryStatus,
-} from "@unicore/query"
+} from "@omnifront/query"
 import {
 	computed,
 	getCurrentInstance,

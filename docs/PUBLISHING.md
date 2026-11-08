@@ -1,8 +1,8 @@
 # Publishing: reserving names on npm
 
-**Status: we do not publish yet.** This file records what to do before the first publish, and what we found when we checked the working name on 2026-11-09.
+**Status: we do not publish yet.** The project was originally called `unicore`; because that scope was taken (see below) it was renamed to **`omnifront`** (npm scope `@omnifront` and GitHub org `omnifront` reserved). This file records what to do before the first publish, and what we found when we checked the working name on 2026-11-09.
 
-## Finding: `@unicore` is not available
+## Finding (historical): `@unicore` was not available
 
 | Check | Result |
 |---|---|
@@ -10,7 +10,7 @@
 | Scope `@unicore` | **Taken**: `@unicore/http-request` exists, published by maintainer `siberiacomponents` (an org/user named `unicore` owns the scope) |
 | GitHub user/org `unicore` | Taken (we use `AMHB-DEV/unicore`, which is fine for a repo, but not as an org name) |
 
-So `@unicore/core`, `@unicore/react`, ... cannot be published by us. **Decide the final name before the first publish**, because the package names appear in every import, doc page, example and CI script (a rename is mechanical but touches the whole repo: search for `@unicore/` and `unicore`).
+So `@unicore/*` could not be published by us, and the project was renamed to `omnifront` before any publish. The rename touched every package name, import, doc page, example and CI script.
 
 ## How a name is reserved on npm
 

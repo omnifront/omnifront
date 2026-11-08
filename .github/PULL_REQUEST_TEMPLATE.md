@@ -14,7 +14,7 @@
 ## Checklist
 
 - [ ] Tests added or updated (a conformance case if an adapter can observe it)
-- [ ] Docs updated (guides and API page; `pnpm --filter @unicore/docs build` passes)
+- [ ] Docs updated (guides and API page; `pnpm --filter @omnifront/docs build` passes)
 - [ ] Changeset added (`pnpm changeset`) for user-facing changes
 - [ ] No size budget exceeded; an ADR if the design or a budget changed
 

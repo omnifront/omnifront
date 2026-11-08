@@ -3,10 +3,10 @@ import {
 	type Harness,
 	type MutationHandle,
 	type QueryHandle,
-} from "@unicore/conformance"
-import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicore/query"
+} from "@omnifront/conformance"
+import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifront/query"
 import { signal } from "@angular/core"
-import { injectMutation, injectQuery, injectStore, provideUnicore } from "../src"
+import { injectMutation, injectQuery, injectStore, provideOmnifront } from "../src"
 import { injectInfiniteQuery } from "../src/infinite"
 import { injectQueries } from "../src/queries"
 import { flushEffects, mountInjectable } from "./mount"
@@ -19,7 +19,7 @@ const harness: Harness = {
 
 	mountQuery<TData>(client: QueryClient, options: QueryObserverOptions<TData>): QueryHandle<TData> {
 		const current = signal(options)
-		const { result: r, unmount } = mountInjectable(() => injectQuery(() => current()), [provideUnicore(client)])
+		const { result: r, unmount } = mountInjectable(() => injectQuery(() => current()), [provideOmnifront(client)])
 		return {
 			current: () => r.result(),
 			update: (next: QueryObserverOptions<TData>) => {
@@ -33,7 +33,7 @@ const harness: Harness = {
 
 	mountQueries(client, options) {
 		const current = signal(options)
-		const { result: r, unmount } = mountInjectable(() => injectQueries(() => current()), [provideUnicore(client)])
+		const { result: r, unmount } = mountInjectable(() => injectQueries(() => current()), [provideOmnifront(client)])
 		return {
 			current: () => r() as never,
 			update: (next) => {
@@ -46,7 +46,7 @@ const harness: Harness = {
 
 	mountInfiniteQuery(client, options) {
 		const current = signal(options)
-		const { result: r, unmount } = mountInjectable(() => injectInfiniteQuery(() => current()), [provideUnicore(client)])
+		const { result: r, unmount } = mountInjectable(() => injectInfiniteQuery(() => current()), [provideOmnifront(client)])
 		return {
 			current: () => r.result(),
 			fetchNextPage: () => r.fetchNextPage(),

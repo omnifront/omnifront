@@ -1,8 +1,8 @@
-import type { QueryObserverOptions } from "@unicore/query"
+import type { QueryObserverOptions } from "@omnifront/query"
 import { useMemo } from "react"
 import type { UseInfiniteQueryResult } from "./infinite"
 import { useObservedInfinite } from "./observed-infinite"
-import type { InfiniteData, InfiniteQueryObserverOptions } from "@unicore/query-infinite"
+import type { InfiniteData, InfiniteQueryObserverOptions } from "@omnifront/query-infinite"
 import { useObservedQuery, type UseQueryResult } from "./use-query"
 
 export interface UseSuspenseQueryResult<TData> extends Omit<UseQueryResult<TData>, "data" | "status"> {

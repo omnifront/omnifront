@@ -2,7 +2,7 @@
 layout: home
 
 hero:
-  name: unicore
+  name: omnifront
   text: One data layer. Every framework.
   tagline: Queries, caching and state that work the same in React, Next.js, Vue and Angular, in about 3 KB.
   actions:
@@ -25,5 +25,5 @@ features:
 ---
 
 ::: warning Pre-release
-unicore is not on npm yet and the API can still change. Everything in these docs is exercised by the repository's tests and example apps.
+omnifront is not on npm yet and the API can still change. Everything in these docs is exercised by the repository's tests and example apps.
 :::

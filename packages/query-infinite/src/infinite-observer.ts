@@ -1,11 +1,11 @@
-import { BaseSubscribable } from "@unicore/core"
+import { BaseSubscribable } from "@omnifront/core"
 import {
 	QueryObserver,
 	type QueryClient,
 	type QueryFnContext,
 	type QueryObserverOptions,
 	type QueryResult,
-} from "@unicore/query"
+} from "@omnifront/query"
 
 /** What an infinite query stores in the cache: every page loaded so far, and the cursor each used. */
 export interface InfiniteData<TPage, TPageParam> {

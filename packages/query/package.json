@@ -1,10 +1,10 @@
 {
-	"name": "@unicore/query",
+	"name": "@omnifront/query",
 	"version": "0.0.0",
 	"description": "Framework-agnostic query cache: fetching, deduplication, retries, invalidation, mutations and SSR hydration.",
 	"license": "MIT",
 	"keywords": [
-		"unicore",
+		"omnifront",
 		"query",
 		"cache",
 		"fetch",
@@ -12,12 +12,12 @@
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
 		"directory": "packages/query"
 	},
-	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/query#readme",
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/query#readme",
 	"bugs": {
-		"url": "https://github.com/AMHB-DEV/unicore/issues"
+		"url": "https://github.com/omnifront/omnifront/issues"
 	},
 	"type": "module",
 	"sideEffects": false,
@@ -65,7 +65,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/core": "workspace:*"
+		"@omnifront/core": "workspace:*"
 	},
 	"devDependencies": {
 		"jsdom": "^31.0.0"

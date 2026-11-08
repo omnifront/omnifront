@@ -1,4 +1,4 @@
-import { EnvironmentSignal } from "@unicore/core"
+import { EnvironmentSignal } from "@omnifront/core"
 import { noop } from "./resolve"
 
 export type { EnvironmentSignal }

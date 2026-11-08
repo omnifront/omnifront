@@ -1,9 +1,9 @@
 import { provideZonelessChangeDetection } from "@angular/core"
 import { bootstrapApplication } from "@angular/platform-browser"
-import { QueryClient } from "@unicore/query"
-import { provideUnicore } from "@unicore/angular"
+import { QueryClient } from "@omnifront/query"
+import { provideOmnifront } from "@omnifront/angular"
 import { AppComponent } from "./app.component"
 
 bootstrapApplication(AppComponent, {
-	providers: [provideZonelessChangeDetection(), provideUnicore(new QueryClient())],
+	providers: [provideZonelessChangeDetection(), provideOmnifront(new QueryClient())],
 }).catch((err) => console.error(err))

@@ -1,5 +1,5 @@
 {
-	"name": "@unicore/example-react",
+	"name": "@omnifront/example-react",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -9,11 +9,11 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/query": "workspace:*",
-		"@unicore/react": "workspace:*",
-		"@unicore/example-shared": "workspace:*",
-		"@unicore/persist": "workspace:*",
-		"@unicore/devtools": "workspace:*"
+		"@omnifront/query": "workspace:*",
+		"@omnifront/react": "workspace:*",
+		"@omnifront/example-shared": "workspace:*",
+		"@omnifront/persist": "workspace:*",
+		"@omnifront/devtools": "workspace:*"
 	},
 	"devDependencies": {
 		"@types/react": "^19.3.0",

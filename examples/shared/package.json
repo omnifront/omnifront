@@ -1,5 +1,5 @@
 {
-	"name": "@unicore/example-shared",
+	"name": "@omnifront/example-shared",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -14,7 +14,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/query": "workspace:*",
-		"@unicore/store": "workspace:*"
+		"@omnifront/query": "workspace:*",
+		"@omnifront/store": "workspace:*"
 	}
 }

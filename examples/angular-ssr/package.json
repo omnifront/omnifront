@@ -1,5 +1,5 @@
 {
-	"name": "@unicore/example-angular-ssr",
+	"name": "@omnifront/example-angular-ssr",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -10,8 +10,8 @@
 		"typecheck": "tsc --noEmit -p tsconfig.app.json"
 	},
 	"dependencies": {
-		"@unicore/angular": "workspace:*",
-		"@unicore/query": "workspace:*"
+		"@omnifront/angular": "workspace:*",
+		"@omnifront/query": "workspace:*"
 	},
 	"devDependencies": {
 		"@angular/build": "^22.2.6",

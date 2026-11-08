@@ -1,7 +1,7 @@
-import type { QueryClient } from "@unicore/query"
+import type { QueryClient } from "@omnifront/query"
 import { inject, provide, type InjectionKey, type Plugin } from "vue"
 
-const QueryClientKey: InjectionKey<QueryClient> = Symbol("unicore:query-client")
+const QueryClientKey: InjectionKey<QueryClient> = Symbol("omnifront:query-client")
 
 /**
  * App-wide install: `app.use(QueryPlugin, client)`.

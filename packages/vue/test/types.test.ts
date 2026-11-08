@@ -1,4 +1,4 @@
-import { createStore } from "@unicore/store"
+import { createStore } from "@omnifront/store"
 import { describe, expect, expectTypeOf, it } from "vitest"
 import type { ComputedRef } from "vue"
 import { useMutation, useQuery, useStore } from "../src"

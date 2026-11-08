@@ -1,4 +1,4 @@
-import { BaseSubscribable, type Scheduler, type TimerHandle } from "@unicore/core"
+import { BaseSubscribable, type Scheduler, type TimerHandle } from "@omnifront/core"
 import { getRetryDelay, shouldRetry, type RetryOptions } from "./retry"
 import { noop } from "./resolve"
 

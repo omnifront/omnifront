@@ -3,7 +3,7 @@
 A small store for state that is not server data: UI state, filters, a session. It is plain-object state with the actions inside it.
 
 ```ts
-import { createStore } from "@unicore/store"
+import { createStore } from "@omnifront/store"
 
 export const counter = createStore<{ count: number; inc(): void }>((set, get) => ({
 	count: 0,
@@ -35,7 +35,7 @@ const count = injectStore(counter, (s) => s.count)      // Angular: Signal<numbe
 When the selector builds a new object each time, give it a comparison so equal results keep their identity:
 
 ```ts
-import { shallowEqual } from "@unicore/core"
+import { shallowEqual } from "@omnifront/core"
 const view = useStore(counter, (s) => ({ count: s.count }), shallowEqual)
 ```
 

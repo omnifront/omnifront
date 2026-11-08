@@ -1,5 +1,5 @@
 blank_issues_enabled: false
 contact_links:
   - name: Security vulnerability
-    url: https://github.com/AMHB-DEV/unicore/security/advisories/new
+    url: https://github.com/omnifront/omnifront/security/advisories/new
     about: Please report vulnerabilities privately here, not in a public issue.

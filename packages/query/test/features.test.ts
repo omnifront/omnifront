@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { FakeScheduler } from "@unicore/core/testing"
+import { FakeScheduler } from "@omnifront/core/testing"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { focusManager, keepPreviousData, onlineManager, QueryClient, QueryObserver } from "../src"
 

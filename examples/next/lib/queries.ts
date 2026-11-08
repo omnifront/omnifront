@@ -1,4 +1,4 @@
-import type { QueryObserverOptions } from "@unicore/next/client"
+import type { QueryObserverOptions } from "@omnifront/next/client"
 
 /**
  * The browser's definition of the query. On the server the same key is prefetched straight from

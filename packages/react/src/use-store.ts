@@ -1,4 +1,4 @@
-import { derive, type Subscribable } from "@unicore/core"
+import { derive, type Subscribable } from "@omnifront/core"
 import { useCallback, useMemo, useSyncExternalStore } from "react"
 
 const identity = <T>(value: T): T => value

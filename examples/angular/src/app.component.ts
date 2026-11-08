@@ -1,12 +1,12 @@
 import { Component, computed, signal } from "@angular/core"
-import { addTodoMutation, matchesFilter, server, todoFilter, todosQuery } from "@unicore/example-shared"
-import { injectMutation, injectQuery, injectQueryClient, injectStore } from "@unicore/angular"
+import { addTodoMutation, matchesFilter, server, todoFilter, todosQuery } from "@omnifront/example-shared"
+import { injectMutation, injectQuery, injectQueryClient, injectStore } from "@omnifront/angular"
 
 @Component({
 	selector: "app-root",
 	template: `
 		<main style="font-family: system-ui; max-width: 480px; margin: 2rem auto">
-			<h1>unicore + Angular</h1>
+			<h1>omnifront + Angular</h1>
 
 			<p>
 				status: <b>{{ todos.status() }}</b> · fetching: <b>{{ todos.isFetching() }}</b> · stale:

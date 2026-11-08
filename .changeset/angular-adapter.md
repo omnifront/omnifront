@@ -1,5 +1,5 @@
 ---
-"@unicore/angular": minor
+"@omnifront/angular": minor
 ---
 
-Add @unicore/angular (provideUnicore, injectQueryClient, injectQuery, injectMutation) returning signals.
+Add @omnifront/angular (provideOmnifront, injectQueryClient, injectQuery, injectMutation) returning signals.

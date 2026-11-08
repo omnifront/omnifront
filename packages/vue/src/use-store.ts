@@ -1,4 +1,4 @@
-import { derive, type Subscribable } from "@unicore/core"
+import { derive, type Subscribable } from "@omnifront/core"
 import { computed, getCurrentScope, onScopeDispose, shallowRef, type ComputedRef } from "vue"
 
 const identity = <T>(value: T): T => value

@@ -1,5 +1,5 @@
-import { hashKey } from "@unicore/query"
-import { InfiniteQueryObserver, type InfiniteQueryObserverOptions, type InfiniteQueryResult } from "@unicore/query-infinite"
+import { hashKey } from "@omnifront/query"
+import { InfiniteQueryObserver, type InfiniteQueryObserverOptions, type InfiniteQueryResult } from "@omnifront/query-infinite"
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react"
 import { useQueryClient } from "./provider"
 

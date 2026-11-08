@@ -1,11 +1,11 @@
 import { DestroyRef, computed, effect, inject, signal, untracked, type Signal } from "@angular/core"
-import type { QueryStatus } from "@unicore/query"
+import type { QueryStatus } from "@omnifront/query"
 import {
 	InfiniteQueryObserver,
 	type InfiniteData,
 	type InfiniteQueryObserverOptions,
 	type InfiniteQueryResult,
-} from "@unicore/query-infinite"
+} from "@omnifront/query-infinite"
 import { injectQueryClient } from "./provide"
 
 export type { InfiniteData, InfiniteQueryObserverOptions, InfiniteQueryResult }

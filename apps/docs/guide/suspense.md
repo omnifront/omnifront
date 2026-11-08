@@ -3,7 +3,7 @@
 `useSuspenseQuery` is `useQuery` for `<Suspense>` and error boundaries: instead of checking `status`, you write the happy path and let React handle loading and failure.
 
 ```tsx
-import { useSuspenseQuery } from "@unicore/react/suspense"
+import { useSuspenseQuery } from "@omnifront/react/suspense"
 
 function Todos() {
 	const todos = useSuspenseQuery({ queryKey: ["todos"], queryFn: listTodos })

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { addTodoMutation, matchesFilter, server, todoFilter, todosQuery } from "@unicore/example-shared"
-import { useMutation, useQuery, useQueryClient, useStore } from "@unicore/vue"
+import { addTodoMutation, matchesFilter, server, todoFilter, todosQuery } from "@omnifront/example-shared"
+import { useMutation, useQuery, useQueryClient, useStore } from "@omnifront/vue"
 import { computed, ref, watch } from "vue"
 
 const client = useQueryClient()
@@ -23,7 +23,7 @@ function submit() {
 
 <template>
 	<main style="font-family: system-ui; max-width: 480px; margin: 2rem auto">
-		<h1>unicore + Vue</h1>
+		<h1>omnifront + Vue</h1>
 
 		<p>
 			status: <b>{{ status }}</b> · fetching: <b>{{ isFetching }}</b> · stale: <b>{{ isStale }}</b> · failures:

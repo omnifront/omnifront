@@ -1,11 +1,11 @@
-# @unicore/query-infinite
+# @omnifront/query-infinite
 
-Infinite and paginated queries for unicore: fetchNextPage, fetchPreviousPage and cursors, built on the normal query cache.
+Infinite and paginated queries for omnifront: fetchNextPage, fetchPreviousPage and cursors, built on the normal query cache.
 
 > Pre-release: not published to npm yet, and the API can still change.
 
 ```ts
-import { InfiniteQueryObserver } from "@unicore/query-infinite"
+import { InfiniteQueryObserver } from "@omnifront/query-infinite"
 
 const feed = new InfiniteQueryObserver(client, {
 	queryKey: ["feed"],
@@ -13,7 +13,7 @@ const feed = new InfiniteQueryObserver(client, {
 	initialPageParam: 0,
 	getNextPageParam: (last) => last.nextCursor,
 })
-// Frameworks: import { useInfiniteQuery } from "@unicore/react/infinite" (also vue, angular)
+// Frameworks: import { useInfiniteQuery } from "@omnifront/react/infinite" (also vue, angular)
 ```
 
-Documentation: [unicore docs](https://github.com/AMHB-DEV/unicore/tree/main/apps/docs) and the [repository README](https://github.com/AMHB-DEV/unicore#readme).
+Documentation: [omnifront docs](https://github.com/omnifront/omnifront/tree/main/apps/docs) and the [repository README](https://github.com/omnifront/omnifront#readme).

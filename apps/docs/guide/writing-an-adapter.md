@@ -1,6 +1,6 @@
 # Writing an adapter
 
-Everything a UI can listen to in unicore (a `QueryObserver`, a `Mutation`, a `Store`, a `derive`d slice) implements one small contract, [ADR-0001](https://github.com/AMHB-DEV/unicore/blob/main/docs/adr/0001-subscribable-contract.md):
+Everything a UI can listen to in omnifront (a `QueryObserver`, a `Mutation`, a `Store`, a `derive`d slice) implements one small contract, [ADR-0001](https://github.com/omnifront/omnifront/blob/main/docs/adr/0001-subscribable-contract.md):
 
 ```ts
 interface Subscribable<TSnapshot> {
@@ -42,4 +42,4 @@ Observers expose `setOptions(options)`: it switches to another cache entry if th
 
 ## Prove it with the conformance suite
 
-The repository's private `@unicore/conformance` package contains the behaviour every adapter must have. Implement its `Harness` (mount a query, mount a mutation, mount a store slice, and an `act` that lets your framework flush updates) and call `defineConformanceSuite("my-framework", harness)`. The React, Vue and Angular adapters pass the identical suite, which is how the contract was validated.
+The repository's private `@omnifront/conformance` package contains the behaviour every adapter must have. Implement its `Harness` (mount a query, mount a mutation, mount a store slice, and an `act` that lets your framework flush updates) and call `defineConformanceSuite("my-framework", harness)`. The React, Vue and Angular adapters pass the identical suite, which is how the contract was validated.

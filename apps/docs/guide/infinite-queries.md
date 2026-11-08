@@ -1,13 +1,13 @@
 # Infinite and paginated queries
 
-`@unicore/query-infinite` adds lists that grow page by page ("load more", infinite scroll, bidirectional feeds). It is a separate package so the main query core stays small, and the adapters expose it from an `/infinite` entry.
+`@omnifront/query-infinite` adds lists that grow page by page ("load more", infinite scroll, bidirectional feeds). It is a separate package so the main query core stays small, and the adapters expose it from an `/infinite` entry.
 
 ::: info Pre-release
-Not on npm yet. Once published: `npm install @unicore/query-infinite` (React, Vue and Angular also import their `/infinite` entry).
+Not on npm yet. Once published: `npm install @omnifront/query-infinite` (React, Vue and Angular also import their `/infinite` entry).
 :::
 
 ```tsx
-import { useInfiniteQuery } from "@unicore/react/infinite"
+import { useInfiniteQuery } from "@omnifront/react/infinite"
 
 function Feed() {
 	const feed = useInfiniteQuery({
@@ -28,7 +28,7 @@ function Feed() {
 }
 ```
 
-Vue: `useInfiniteQuery` from `@unicore/vue/infinite` (refs). Angular: `injectInfiniteQuery` from `@unicore/angular/infinite` (signals). Framework-free: `new InfiniteQueryObserver(client, options)`.
+Vue: `useInfiniteQuery` from `@omnifront/vue/infinite` (refs). Angular: `injectInfiniteQuery` from `@omnifront/angular/infinite` (signals). Framework-free: `new InfiniteQueryObserver(client, options)`.
 
 ## How it works
 

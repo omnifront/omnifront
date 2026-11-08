@@ -1,4 +1,4 @@
-import { BaseSubscribable } from "@unicore/core"
+import { BaseSubscribable } from "@omnifront/core"
 import { noop } from "./resolve"
 
 export type MutationStatus = "idle" | "pending" | "success" | "error"

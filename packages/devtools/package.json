@@ -1,22 +1,22 @@
 {
-	"name": "@unicore/devtools",
+	"name": "@omnifront/devtools",
 	"version": "0.0.0",
-	"description": "Inspect the unicore query cache: a headless model plus a framework-free DOM panel.",
+	"description": "Inspect the omnifront query cache: a headless model plus a framework-free DOM panel.",
 	"license": "MIT",
 	"keywords": [
-		"unicore",
+		"omnifront",
 		"devtools",
 		"query",
 		"cache"
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
 		"directory": "packages/devtools"
 	},
-	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/devtools#readme",
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/devtools#readme",
 	"bugs": {
-		"url": "https://github.com/AMHB-DEV/unicore/issues"
+		"url": "https://github.com/omnifront/omnifront/issues"
 	},
 	"type": "module",
 	"sideEffects": false,
@@ -54,7 +54,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/core": "workspace:*",
-		"@unicore/query": "workspace:*"
+		"@omnifront/core": "workspace:*",
+		"@omnifront/query": "workspace:*"
 	}
 }

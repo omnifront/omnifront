@@ -1,5 +1,5 @@
 // A pretend server: in-memory todos, ~600ms latency, and a switch to make it fail.
-let todos = ["Read the ADRs", "Try unicore"]
+let todos = ["Read the ADRs", "Try omnifront"]
 export const server = { failing: false, calls: 0 }
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))

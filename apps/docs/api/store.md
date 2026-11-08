@@ -1,6 +1,6 @@
-# @unicore/store
+# @omnifront/store
 
-A small plain-object store. About 0.4 KB gzipped (excluding `@unicore/core`). See the [store guide](/guide/store).
+A small plain-object store. About 0.4 KB gzipped (excluding `@omnifront/core`). See the [store guide](/guide/store).
 
 ### `createStore`
 

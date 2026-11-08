@@ -1,10 +1,10 @@
 # Testing
 
-Nothing in unicore calls `setTimeout` or `Date.now` directly. Time comes from an injectable `Scheduler`, and `@unicore/core/testing` provides `FakeScheduler`, where time moves only when you say so.
+Nothing in omnifront calls `setTimeout` or `Date.now` directly. Time comes from an injectable `Scheduler`, and `@omnifront/core/testing` provides `FakeScheduler`, where time moves only when you say so.
 
 ```ts
-import { QueryClient, QueryObserver } from "@unicore/query"
-import { FakeScheduler } from "@unicore/core/testing"
+import { QueryClient, QueryObserver } from "@omnifront/query"
+import { FakeScheduler } from "@omnifront/core/testing"
 
 it("goes stale after staleTime and is collected after gcTime", async () => {
 	const scheduler = new FakeScheduler()
@@ -33,7 +33,7 @@ it("goes stale after staleTime and is collected after gcTime", async () => {
 
 ## Testing against a real framework
 
-The `@unicore/conformance` package in the repository (private, not published) contains the behaviour suite that every adapter must pass: loading and data, deduplication, key changes, `enabled`, staleness, invalidation, retries, unmount and gc, mutations, and stores. To test an adapter, implement its small `Harness`; see `packages/react/test/react.conformance.test.tsx`.
+The `@omnifront/conformance` package in the repository (private, not published) contains the behaviour suite that every adapter must pass: loading and data, deduplication, key changes, `enabled`, staleness, invalidation, retries, unmount and gc, mutations, and stores. To test an adapter, implement its small `Harness`; see `packages/react/test/react.conformance.test.tsx`.
 
 ## Type tests
 

@@ -1,4 +1,4 @@
-import { BaseSubscribable, type TimerHandle } from "@unicore/core"
+import { BaseSubscribable, type TimerHandle } from "@omnifront/core"
 import { focusManager, onlineManager } from "./environment"
 import { hashKey, type QueryKey } from "./hash-key"
 import type { Query, QueryFn, QueryState } from "./query"

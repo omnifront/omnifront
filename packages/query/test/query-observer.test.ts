@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
-import { FakeScheduler } from "@unicore/core/testing"
+import { FakeScheduler } from "@omnifront/core/testing"
 import { QueryClient } from "../src/query-client"
 import { QueryObserver } from "../src/query-observer"
 

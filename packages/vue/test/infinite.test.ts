@@ -1,5 +1,5 @@
-import { FakeScheduler } from "@unicore/core/testing"
-import { QueryClient } from "@unicore/query"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { QueryClient } from "@omnifront/query"
 import { describe, expect, it } from "vitest"
 import { useInfiniteQuery } from "../src/infinite"
 import { mountComposable } from "./mount"

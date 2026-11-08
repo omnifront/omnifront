@@ -1,5 +1,5 @@
-import { createServerQueryClient, dehydrate, type DehydratedState } from "@unicore/next"
-import { HydrationBoundary } from "@unicore/next/client"
+import { createServerQueryClient, dehydrate, type DehydratedState } from "@omnifront/next"
+import { HydrationBoundary } from "@omnifront/next/client"
 import type { GetServerSideProps } from "next"
 import Link from "next/link"
 import { Todos } from "../components/todos"

@@ -1,10 +1,10 @@
-import { FakeScheduler } from "@unicore/core/testing"
-import { QueryClient } from "@unicore/query"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { QueryClient } from "@omnifront/query"
 import { act, render, renderHook, screen } from "@testing-library/react"
 import { createElement, StrictMode, type ReactNode } from "react"
 import { renderToString } from "react-dom/server"
 import { describe, expect, it, vi } from "vitest"
-import { createStore } from "@unicore/store"
+import { createStore } from "@omnifront/store"
 import { QueryProvider, useQuery, useQueryClient, useStore } from "../src"
 
 const newClient = () => new QueryClient({ scheduler: new FakeScheduler() })

@@ -1,5 +1,5 @@
 ---
-"@unicore/vue": minor
+"@omnifront/vue": minor
 ---
 
-Add @unicore/vue (QueryPlugin, provideQueryClient, useQuery, useMutation) with reactive options.
+Add @omnifront/vue (QueryPlugin, provideQueryClient, useQuery, useMutation) with reactive options.

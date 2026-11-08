@@ -1,21 +1,21 @@
 {
-	"name": "@unicore/store",
+	"name": "@omnifront/store",
 	"version": "0.0.0",
-	"description": "A tiny framework-agnostic store with selectors, for use with unicore adapters.",
+	"description": "A tiny framework-agnostic store with selectors, for use with omnifront adapters.",
 	"license": "MIT",
 	"keywords": [
-		"unicore",
+		"omnifront",
 		"store",
 		"state"
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
 		"directory": "packages/store"
 	},
-	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/store#readme",
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/store#readme",
 	"bugs": {
-		"url": "https://github.com/AMHB-DEV/unicore/issues"
+		"url": "https://github.com/omnifront/omnifront/issues"
 	},
 	"type": "module",
 	"sideEffects": false,
@@ -43,6 +43,6 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/core": "workspace:*"
+		"@omnifront/core": "workspace:*"
 	}
 }

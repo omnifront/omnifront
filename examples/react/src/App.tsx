@@ -1,5 +1,5 @@
-import { addTodoMutation, matchesFilter, server, todoFilter, todosQuery } from "@unicore/example-shared"
-import { useMutation, useQuery, useQueryClient, useStore } from "@unicore/react"
+import { addTodoMutation, matchesFilter, server, todoFilter, todosQuery } from "@omnifront/example-shared"
+import { useMutation, useQuery, useQueryClient, useStore } from "@omnifront/react"
 import { useState } from "react"
 
 const selectFilter = (s: { filter: string }) => s.filter
@@ -16,7 +16,7 @@ export function App() {
 
 	return (
 		<main style={{ fontFamily: "system-ui", maxWidth: 480, margin: "2rem auto" }}>
-			<h1>unicore + React</h1>
+			<h1>omnifront + React</h1>
 
 			<p>
 				status: <b>{todos.status}</b> · fetching: <b>{String(todos.isFetching)}</b> · stale:{" "}

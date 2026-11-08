@@ -1,7 +1,7 @@
-import { FakeScheduler } from "@unicore/core/testing"
-import { QueryClient } from "@unicore/query"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { QueryClient } from "@omnifront/query"
 import { describe, expect, it } from "vitest"
-import { provideUnicore } from "../src"
+import { provideOmnifront } from "../src"
 import { injectInfiniteQuery } from "../src/infinite"
 import { mountInjectable } from "./mount"
 
@@ -19,7 +19,7 @@ describe("injectInfiniteQuery", () => {
 					staleTime: Infinity,
 					retry: false,
 				}),
-			[provideUnicore(client)],
+			[provideOmnifront(client)],
 		)
 		await new Promise((resolve) => setTimeout(resolve, 0))
 		expect(r.data()?.pages).toEqual([2])

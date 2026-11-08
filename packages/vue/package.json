@@ -1,21 +1,21 @@
 {
-	"name": "@unicore/vue",
+	"name": "@omnifront/vue",
 	"version": "0.0.0",
-	"description": "Vue 3 adapter for unicore: a plugin plus useQuery, useMutation and useStore composables.",
+	"description": "Vue 3 adapter for omnifront: a plugin plus useQuery, useMutation and useStore composables.",
 	"license": "MIT",
 	"keywords": [
-		"unicore",
+		"omnifront",
 		"vue",
 		"composables"
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
 		"directory": "packages/vue"
 	},
-	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/vue#readme",
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/vue#readme",
 	"bugs": {
-		"url": "https://github.com/AMHB-DEV/unicore/issues"
+		"url": "https://github.com/omnifront/omnifront/issues"
 	},
 	"type": "module",
 	"sideEffects": false,
@@ -63,17 +63,17 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/query": "workspace:*",
-		"@unicore/core": "workspace:*",
-		"@unicore/query-infinite": "workspace:*"
+		"@omnifront/query": "workspace:*",
+		"@omnifront/core": "workspace:*",
+		"@omnifront/query-infinite": "workspace:*"
 	},
 	"peerDependencies": {
 		"vue": ">=3.3"
 	},
 	"devDependencies": {
-		"@unicore/conformance": "workspace:*",
+		"@omnifront/conformance": "workspace:*",
 		"jsdom": "^31.0.0",
 		"vue": ">=3.3",
-		"@unicore/store": "workspace:*"
+		"@omnifront/store": "workspace:*"
 	}
 }

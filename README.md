@@ -1,10 +1,10 @@
-# unicore
+# omnifront
 
 **One data layer for React, Next.js, Vue and Angular.** Queries (fetching, caching, deduplication, retries, invalidation), mutations and a tiny store, written once in a framework-free core with thin adapters on top.
 
 > **Status: pre-release.** Not on npm yet and the API can still change. Everything below is covered by tests and runs in the example apps.
 >
-> **Name:** `unicore` is a working name. The `@unicore` scope is already taken on npm, so the project will be renamed before its first publish; see [`docs/PUBLISHING.md`](docs/PUBLISHING.md).
+> **Name:** `omnifront` is a working name. The `@omnifront` scope is already taken on npm, so the project will be renamed before its first publish; see [`docs/PUBLISHING.md`](docs/PUBLISHING.md).
 
 ## Why
 
@@ -38,16 +38,16 @@ Mutations (`useMutation` / `injectMutation`), stores (`createStore`, `useStore` 
 
 | Package | What | Size (min+gzip) |
 |---|---|---:|
-| [`@unicore/core`](packages/core) | `Subscribable` contract, `notifyManager`, injectable `Scheduler`, `derive` | ~0.8 KB |
-| [`@unicore/query`](packages/query) | `QueryClient`, `QueryObserver`, `Mutation`, hydration | ~3.0 KB |
-| [`@unicore/store`](packages/store) | `createStore` | ~0.4 KB |
-| [`@unicore/react`](packages/react) | `QueryProvider`, `useQuery`, `useMutation`, `useStore`, `HydrationBoundary` | ~0.8 KB |
-| [`@unicore/vue`](packages/vue) | `QueryPlugin`, `useQuery`, `useMutation`, `useStore` | ~0.8 KB |
-| [`@unicore/angular`](packages/angular) | `provideUnicore`, `injectQuery`, `injectMutation`, `injectStore` | ~0.8 KB |
-| [`@unicore/next`](packages/next) | server helpers and a `"use client"` entry for Next.js 14+ | ~0.3 KB each |
-| [`@unicore/query-infinite`](packages/query-infinite) | infinite and paginated queries (`fetchNextPage`, cursors); adapters expose `/infinite` | ~1.0 KB |
-| [`@unicore/persist`](packages/persist) | keep the cache across page loads (localStorage, IndexedDB, any storage) | ~0.9 KB |
-| [`@unicore/devtools`](packages/devtools) | cache inspector: headless model + framework-free panel | ~0.6 KB model, ~2.2 KB panel |
+| [`@omnifront/core`](packages/core) | `Subscribable` contract, `notifyManager`, injectable `Scheduler`, `derive` | ~0.8 KB |
+| [`@omnifront/query`](packages/query) | `QueryClient`, `QueryObserver`, `Mutation`, hydration | ~3.0 KB |
+| [`@omnifront/store`](packages/store) | `createStore` | ~0.4 KB |
+| [`@omnifront/react`](packages/react) | `QueryProvider`, `useQuery`, `useMutation`, `useStore`, `HydrationBoundary` | ~0.8 KB |
+| [`@omnifront/vue`](packages/vue) | `QueryPlugin`, `useQuery`, `useMutation`, `useStore` | ~0.8 KB |
+| [`@omnifront/angular`](packages/angular) | `provideOmnifront`, `injectQuery`, `injectMutation`, `injectStore` | ~0.8 KB |
+| [`@omnifront/next`](packages/next) | server helpers and a `"use client"` entry for Next.js 14+ | ~0.3 KB each |
+| [`@omnifront/query-infinite`](packages/query-infinite) | infinite and paginated queries (`fetchNextPage`, cursors); adapters expose `/infinite` | ~1.0 KB |
+| [`@omnifront/persist`](packages/persist) | keep the cache across page loads (localStorage, IndexedDB, any storage) | ~0.9 KB |
+| [`@omnifront/devtools`](packages/devtools) | cache inspector: headless model + framework-free panel | ~0.6 KB model, ~2.2 KB panel |
 
 Only the adapters may import `react`, `vue` or `@angular/*`; CI enforces it.
 
@@ -57,7 +57,7 @@ The docs site lives in [`apps/docs`](apps/docs) (VitePress):
 
 ```bash
 pnpm install && pnpm build
-pnpm --filter @unicore/docs dev
+pnpm --filter @omnifront/docs dev
 ```
 
 Start with the Introduction, the guide for your framework, then Queries. The API reference is checked against the built packages in CI, so it cannot silently drift.
@@ -70,13 +70,13 @@ Start with the Introduction, the guide for your framework, then Queries. The API
 
 | Example | Run |
 |---|---|
-| [`examples/react`](examples/react) | `pnpm --filter @unicore/example-react dev` |
-| [`examples/vue`](examples/vue) | `pnpm --filter @unicore/example-vue dev` |
-| [`examples/angular`](examples/angular) | `pnpm --filter @unicore/example-angular dev` |
-| [`examples/next`](examples/next) | `pnpm --filter @unicore/example-next dev` (App Router and Pages Router) |
-| [`examples/vue-ssr`](examples/vue-ssr) | `pnpm --filter @unicore/example-vue-ssr dev` (Vite SSR server) |
-| [`examples/nuxt`](examples/nuxt) | `pnpm --filter @unicore/example-nuxt dev` (Nuxt 4) |
-| [`examples/angular-ssr`](examples/angular-ssr) | `pnpm --filter @unicore/example-angular-ssr build && pnpm --filter @unicore/example-angular-ssr start` (`@angular/ssr`) |
+| [`examples/react`](examples/react) | `pnpm --filter @omnifront/example-react dev` |
+| [`examples/vue`](examples/vue) | `pnpm --filter @omnifront/example-vue dev` |
+| [`examples/angular`](examples/angular) | `pnpm --filter @omnifront/example-angular dev` |
+| [`examples/next`](examples/next) | `pnpm --filter @omnifront/example-next dev` (App Router and Pages Router) |
+| [`examples/vue-ssr`](examples/vue-ssr) | `pnpm --filter @omnifront/example-vue-ssr dev` (Vite SSR server) |
+| [`examples/nuxt`](examples/nuxt) | `pnpm --filter @omnifront/example-nuxt dev` (Nuxt 4) |
+| [`examples/angular-ssr`](examples/angular-ssr) | `pnpm --filter @omnifront/example-angular-ssr build && pnpm --filter @omnifront/example-angular-ssr start` (`@angular/ssr`) |
 
 ## Development
 

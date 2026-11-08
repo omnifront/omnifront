@@ -1,27 +1,27 @@
 # Next.js
 
 ::: info Pre-release
-Not on npm yet. Once published: `npm install @unicore/next` (Next 14 or newer). It builds on `@unicore/react`.
+Not on npm yet. Once published: `npm install @omnifront/next` (Next 14 or newer). It builds on `@omnifront/react`.
 :::
 
-`@unicore/next` has two entry points:
+`@omnifront/next` has two entry points:
 
 | Import | Use in | Contains |
 |---|---|---|
-| `@unicore/next` | Server Components, route handlers, `getServerSideProps` | `getQueryClient`, `createServerQueryClient`, `dehydrate` |
-| `@unicore/next/client` | Client Components (it starts with `"use client"`) | `UnicoreProvider`, `HydrationBoundary`, `useQuery`, `useMutation`, `useStore`, ... |
+| `@omnifront/next` | Server Components, route handlers, `getServerSideProps` | `getQueryClient`, `createServerQueryClient`, `dehydrate` |
+| `@omnifront/next/client` | Client Components (it starts with `"use client"`) | `OmnifrontProvider`, `HydrationBoundary`, `useQuery`, `useMutation`, `useStore`, ... |
 
 ## App Router
 
 ```tsx
 // app/layout.tsx  (Server Component)
-import { UnicoreProvider } from "@unicore/next/client"
+import { OmnifrontProvider } from "@omnifront/next/client"
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang="en">
 			<body>
-				<UnicoreProvider>{children}</UnicoreProvider>
+				<OmnifrontProvider>{children}</OmnifrontProvider>
 			</body>
 		</html>
 	)
@@ -30,8 +30,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ```tsx
 // app/page.tsx  (Server Component): prefetch, then hand the cache to the client
-import { dehydrate, getQueryClient } from "@unicore/next"
-import { HydrationBoundary } from "@unicore/next/client"
+import { dehydrate, getQueryClient } from "@omnifront/next"
+import { HydrationBoundary } from "@omnifront/next/client"
 import { Todos } from "./todos"
 
 export default async function Page() {
@@ -48,7 +48,7 @@ export default async function Page() {
 ```tsx
 // app/todos.tsx
 "use client"
-import { useQuery } from "@unicore/next/client"
+import { useQuery } from "@omnifront/next/client"
 
 export function Todos() {
 	const todos = useQuery({
@@ -66,9 +66,9 @@ The page arrives with the list already in the HTML, and as long as the data is y
 
 ```tsx
 // pages/_app.tsx
-import { UnicoreProvider } from "@unicore/next/client"
+import { OmnifrontProvider } from "@omnifront/next/client"
 export default function App({ Component, pageProps }: AppProps) {
-	return <UnicoreProvider><Component {...pageProps} /></UnicoreProvider>
+	return <OmnifrontProvider><Component {...pageProps} /></OmnifrontProvider>
 }
 
 // pages/todos.tsx

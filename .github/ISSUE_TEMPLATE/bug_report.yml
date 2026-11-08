@@ -19,8 +19,8 @@ body:
     id: versions
     attributes:
       label: Versions
-      description: "@unicore/* packages, framework (React/Vue/Angular/Next/Nuxt), Node, browser"
-      placeholder: "@unicore/react 0.1.0, React 19.1, Next 15.3, Node 24"
+      description: "@omnifront/* packages, framework (React/Vue/Angular/Next/Nuxt), Node, browser"
+      placeholder: "@omnifront/react 0.1.0, React 19.1, Next 15.3, Node 24"
     validations:
       required: true
   - type: textarea

@@ -1,5 +1,5 @@
 {
-	"name": "@unicore/conformance",
+	"name": "@omnifront/conformance",
 	"version": "0.0.0",
 	"private": true,
 	"type": "module",
@@ -10,9 +10,9 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/core": "workspace:*",
-		"@unicore/query": "workspace:*",
-		"@unicore/store": "workspace:*",
-		"@unicore/query-infinite": "workspace:*"
+		"@omnifront/core": "workspace:*",
+		"@omnifront/query": "workspace:*",
+		"@omnifront/store": "workspace:*",
+		"@omnifront/query-infinite": "workspace:*"
 	}
 }

@@ -1,21 +1,21 @@
 {
-	"name": "@unicore/next",
+	"name": "@omnifront/next",
 	"version": "0.0.0",
-	"description": "Next.js helpers for unicore: per-request query clients, dehydrate/hydrate and a client entry for the App Router and Pages Router.",
+	"description": "Next.js helpers for omnifront: per-request query clients, dehydrate/hydrate and a client entry for the App Router and Pages Router.",
 	"license": "MIT",
 	"keywords": [
-		"unicore",
+		"omnifront",
 		"nextjs",
 		"ssr"
 	],
 	"repository": {
 		"type": "git",
-		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
 		"directory": "packages/next"
 	},
-	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/next#readme",
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/next#readme",
 	"bugs": {
-		"url": "https://github.com/AMHB-DEV/unicore/issues"
+		"url": "https://github.com/omnifront/omnifront/issues"
 	},
 	"type": "module",
 	"sideEffects": false,
@@ -47,8 +47,8 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@unicore/query": "workspace:*",
-		"@unicore/react": "workspace:*"
+		"@omnifront/query": "workspace:*",
+		"@omnifront/react": "workspace:*"
 	},
 	"peerDependencies": {
 		"next": ">=14",
@@ -59,7 +59,7 @@
 		"@testing-library/react": "^16.3.3",
 		"@types/react": "^19.3.0",
 		"@types/react-dom": "^19.3.0",
-		"@unicore/core": "workspace:*",
+		"@omnifront/core": "workspace:*",
 		"jsdom": "^31.0.0",
 		"react": ">=18",
 		"react-dom": "^19.3.1"

@@ -3,8 +3,8 @@ import {
 	type Harness,
 	type MutationHandle,
 	type QueryHandle,
-} from "@unicore/conformance"
-import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicore/query"
+} from "@omnifront/conformance"
+import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifront/query"
 import { nextTick, shallowRef } from "vue"
 import { useMutation, useQuery, useStore } from "../src"
 import { useInfiniteQuery } from "../src/infinite"

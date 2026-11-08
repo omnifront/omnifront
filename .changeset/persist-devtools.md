@@ -1,6 +1,6 @@
 ---
-"@unicore/persist": minor
-"@unicore/devtools": minor
+"@omnifront/persist": minor
+"@omnifront/devtools": minor
 ---
 
-Add `@unicore/persist` (restore and save the query cache; localStorage, IndexedDB or any storage) and `@unicore/devtools` (headless cache model and a framework-free inspector panel).
+Add `@omnifront/persist` (restore and save the query cache; localStorage, IndexedDB or any storage) and `@omnifront/devtools` (headless cache model and a framework-free inspector panel).

@@ -1,6 +1,6 @@
 import "fake-indexeddb/auto"
-import { FakeScheduler } from "@unicore/core/testing"
-import { QueryClient } from "@unicore/query"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { QueryClient } from "@omnifront/query"
 import { describe, expect, it } from "vitest"
 import { persistQueryClient } from "../src"
 import { createIndexedDBStorage } from "../src/indexeddb"
@@ -34,7 +34,7 @@ describe("createIndexedDBStorage", () => {
 		expect(second.getQueryData(["k"])).toEqual({ hello: "world" })
 		p2.stop()
 		await flush()
-		expect(await createIndexedDBStorage({ dbName: "other" }).getItem("unicore-cache")).toBeUndefined()
+		expect(await createIndexedDBStorage({ dbName: "other" }).getItem("omnifront-cache")).toBeUndefined()
 	})
 
 	it("rejects when the database cannot be opened", async () => {

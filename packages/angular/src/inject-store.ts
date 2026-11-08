@@ -1,5 +1,5 @@
 import { DestroyRef, inject, signal, type Signal } from "@angular/core"
-import { derive, type Subscribable } from "@unicore/core"
+import { derive, type Subscribable } from "@omnifront/core"
 
 const identity = <T>(value: T): T => value
 

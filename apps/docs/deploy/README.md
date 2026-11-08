@@ -9,7 +9,7 @@ docker compose -f apps/docs/deploy/docker-compose.yml up -d --build
 ```
 
 - Port: `DOCS_PORT=9000 docker compose ... up -d --build`.
-- Sub-path (for example behind a reverse proxy at `/unicore/`): `DOCS_BASE=/unicore/ docker compose ... up -d --build`.
+- Sub-path (for example behind a reverse proxy at `/omnifront/`): `DOCS_BASE=/omnifront/ docker compose ... up -d --build`.
 - TLS: terminate it in your reverse proxy (Caddy, Traefik, nginx) in front of port 8080.
 - Update: `git pull && docker compose -f apps/docs/deploy/docker-compose.yml up -d --build`.
 

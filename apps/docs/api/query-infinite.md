@@ -1,4 +1,4 @@
-# @unicore/query-infinite
+# @omnifront/query-infinite
 
 Infinite and paginated queries. About 1 KB gzipped (excluding core and query). See the [infinite queries guide](/guide/infinite-queries).
 

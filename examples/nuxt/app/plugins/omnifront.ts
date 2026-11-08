@@ -1,6 +1,6 @@
-import { QueryClient } from "@unicore/query"
-import { dehydrate, hydrate, type DehydratedState } from "@unicore/query/hydration"
-import { QueryPlugin } from "@unicore/vue"
+import { QueryClient } from "@omnifront/query"
+import { dehydrate, hydrate, type DehydratedState } from "@omnifront/query/hydration"
+import { QueryPlugin } from "@omnifront/vue"
 
 // One QueryClient per request on the server (this plugin runs once per request) and one for the
 // whole session in the browser. The cache travels in Nuxt's payload.
@@ -10,10 +10,10 @@ export default defineNuxtPlugin((nuxtApp) => {
 
 	if (import.meta.server) {
 		nuxtApp.hooks.hook("app:rendered", () => {
-			nuxtApp.payload.unicore = dehydrate(client) // after rendering: every prefetch has finished
+			nuxtApp.payload.omnifront = dehydrate(client) // after rendering: every prefetch has finished
 		})
-	} else if (nuxtApp.payload.unicore) {
-		hydrate(client, nuxtApp.payload.unicore as DehydratedState)
+	} else if (nuxtApp.payload.omnifront) {
+		hydrate(client, nuxtApp.payload.omnifront as DehydratedState)
 	}
 	return { provide: { queryClient: client } }
 })

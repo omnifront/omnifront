@@ -1,4 +1,4 @@
-import { BaseSubscribable } from "@unicore/core"
+import { BaseSubscribable } from "@omnifront/core"
 
 /** A partial state to merge, or a function computing one from the current state. */
 export type StateUpdate<T> = Partial<T> | ((state: T) => Partial<T>)

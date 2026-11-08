@@ -11,7 +11,7 @@ ADR-0001 گفته بود چون Subscribable فقط کل snapshot را می‌د
 
 1. **`derive(source, selector, equals?)` در core** (نه در store). هر `Subscribable` (Store، QueryObserver، ...) را می‌گیرد و یک `Subscribable` از یک برش آن برمی‌گرداند. فقط وقتی listener صدا زده می‌شود که برش تغییر کرده باشد (`Object.is` یا `shallowEqual`). چون روی خود قرارداد کار می‌کند، یک مدل ذهنی برای query و store است و آداپترها فقط یک تابع (`useStore` / `useStore` / `injectStore`) دارند.
 2. **`getServerSnapshot` در `derive` پیاده شد**: برش snapshot سروری منبع را (یا در نبودش snapshot زنده را) با cache جدا و پایدار برمی‌گرداند. React در hydration از آن استفاده می‌کند.
-3. **پکیج `@unicore/store`**: `Store` (کلاس) و `createStore(initial | (set, get) => state)`. state یک آبجکت ساده است و action ها داخل آن (سبک zustand). هر `setState` یک snapshot جدید می‌سازد، تغییر بی‌اثر نادیده گرفته می‌شود، و `getServerSnapshot()` همیشه state اولیه است. `reset()` هم هست.
+3. **پکیج `@omnifront/store`**: `Store` (کلاس) و `createStore(initial | (set, get) => state)`. state یک آبجکت ساده است و action ها داخل آن (سبک zustand). هر `setState` یک snapshot جدید می‌سازد، تغییر بی‌اثر نادیده گرفته می‌شود، و `getServerSnapshot()` همیشه state اولیه است. `reset()` هم هست.
 4. **آداپترها**: `useStore(source, selector?, equals?)` در React و Vue، `injectStore(...)` در Angular. selector باید پایدار باشد (در React)؛ وگرنه فقط هر رندر دوباره subscribe می‌شود.
 
 ## گزینه‌های ردشده
@@ -27,4 +27,4 @@ ADR-0001 گفته بود چون Subscribable فقط کل snapshot را می‌د
 
 ## معیار بازبینی
 
-اگر بودجه‌ی core از ۱KB گذشت، `derive` به پکیج جدا (`@unicore/select`) برود یا بودجه عوض شود. اگر فاز SSR نشان داد snapshot سروری برای query هم باید serialize شود، این ADR و ADR-0001 دوباره باز می‌شوند.
+اگر بودجه‌ی core از ۱KB گذشت، `derive` به پکیج جدا (`@omnifront/select`) برود یا بودجه عوض شود. اگر فاز SSR نشان داد snapshot سروری برای query هم باید serialize شود، این ADR و ADR-0001 دوباره باز می‌شوند.

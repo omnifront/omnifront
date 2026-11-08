@@ -3,7 +3,7 @@ import { createElement } from "react"
 import { renderToString } from "react-dom/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { createServerQueryClient, dehydrate, getQueryClient, hydrate, QueryClient } from "../src"
-import { HydrationBoundary, UnicoreProvider, useQuery, useQueryClient } from "../src/client"
+import { HydrationBoundary, OmnifrontProvider, useQuery, useQueryClient } from "../src/client"
 
 afterEach(() => {
 	vi.useRealTimers()
@@ -39,11 +39,11 @@ describe("client entry", () => {
 		return createElement("p", null, q.data?.join(",") ?? q.status)
 	}
 
-	it("UnicoreProvider gives each render tree its own client and HydrationBoundary fills it", () => {
+	it("OmnifrontProvider gives each render tree its own client and HydrationBoundary fills it", () => {
 		const server = createServerQueryClient()
 		server.setQueryData(["todos"], ["from-server"])
 		const state = JSON.parse(JSON.stringify(dehydrate(server)))
-		const ui = createElement(UnicoreProvider, null, createElement(HydrationBoundary, { state }, createElement(Show)))
+		const ui = createElement(OmnifrontProvider, null, createElement(HydrationBoundary, { state }, createElement(Show)))
 		expect(renderToString(ui)).toBe("<p>from-server</p>")
 		expect(renderToString(ui)).toBe("<p>from-server</p>")
 	})
@@ -54,12 +54,12 @@ describe("client entry", () => {
 			seen = useQueryClient()
 			return null
 		}
-		const { rerender } = render(createElement(UnicoreProvider, { gcTime: 1000 }, createElement(Probe)))
+		const { rerender } = render(createElement(OmnifrontProvider, { gcTime: 1000 }, createElement(Probe)))
 		const first = seen
-		rerender(createElement(UnicoreProvider, { gcTime: 1000 }, createElement(Probe)))
+		rerender(createElement(OmnifrontProvider, { gcTime: 1000 }, createElement(Probe)))
 		expect(seen).toBe(first)
 		await act(async () => {})
-		render(createElement(UnicoreProvider, null, createElement(Show)))
+		render(createElement(OmnifrontProvider, null, createElement(Show)))
 		expect(screen.getAllByText(/loading|a/).length).toBeGreaterThan(0)
 	})
 
@@ -70,7 +70,7 @@ describe("client entry", () => {
 			useQueryClient().setQueryData(["k"], 1)
 			return null
 		}
-		renderToString(createElement(UnicoreProvider, null, createElement(Fill)))
+		renderToString(createElement(OmnifrontProvider, null, createElement(Fill)))
 		expect(vi.getTimerCount()).toBe(0)
 	})
 })

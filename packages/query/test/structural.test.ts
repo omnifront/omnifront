@@ -1,4 +1,4 @@
-import { FakeScheduler } from "@unicore/core/testing"
+import { FakeScheduler } from "@omnifront/core/testing"
 import { describe, expect, it } from "vitest"
 import { QueryClient, QueryObserver } from "../src"
 import { replaceEqualDeep } from "../src/structural"

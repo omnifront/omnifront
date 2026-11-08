@@ -1,5 +1,5 @@
-import { FakeScheduler } from "@unicore/core/testing"
-import { QueryClient, QueryObserver } from "@unicore/query"
+import { FakeScheduler } from "@omnifront/core/testing"
+import { QueryClient, QueryObserver } from "@omnifront/query"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { mountDevtools, type DevtoolsPanel } from "../src/panel"
 
@@ -8,7 +8,7 @@ const panels: DevtoolsPanel[] = []
 const mount = (client: QueryClient, options?: Parameters<typeof mountDevtools>[1]) => {
 	const panel = mountDevtools(client, options)
 	panels.push(panel)
-	const host = document.querySelector("[data-unicore-devtools]") as HTMLElement
+	const host = document.querySelector("[data-omnifront-devtools]") as HTMLElement
 	return { panel, root: host.shadowRoot as ShadowRoot }
 }
 const newClient = () => {
@@ -29,7 +29,7 @@ describe("mountDevtools", () => {
 		client.setQueryData(["todos"], ["a"])
 		client.setQueryData(["user", 1], { name: "Sam" })
 		const { root } = mount(client)
-		expect(text(root)).toContain("unicore · 2")
+		expect(text(root)).toContain("omnifront · 2")
 		click(root, ".toggle")
 		expect(text(root)).toContain('["todos"]')
 		expect(text(root)).toContain('["user",1]')
@@ -114,7 +114,7 @@ describe("mountDevtools", () => {
 		panel.open()
 		expect(scheduler.pendingTimers).toBe(1)
 		panel.destroy()
-		expect(document.querySelector("[data-unicore-devtools]")).toBeNull()
+		expect(document.querySelector("[data-omnifront-devtools]")).toBeNull()
 		expect(scheduler.pendingTimers).toBe(0)
 	})
 
@@ -136,7 +136,7 @@ describe("mountDevtools", () => {
 		document.body.append(container)
 		const panel = mountDevtools(client, { initiallyOpen: true, container })
 		panels.push(panel)
-		const root = (container.querySelector("[data-unicore-devtools]") as HTMLElement).shadowRoot as ShadowRoot
+		const root = (container.querySelector("[data-omnifront-devtools]") as HTMLElement).shadowRoot as ShadowRoot
 		click(root, ".row")
 		expect(text(root)).toContain("(truncated)")
 	})

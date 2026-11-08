@@ -1,4 +1,4 @@
-import { createStore } from "@unicore/store"
+import { createStore } from "@omnifront/store"
 import { describe, expect, expectTypeOf, it } from "vitest"
 import { useMutation, useQuery, useStore, type UseMutationResult, type UseQueryResult } from "../src"
 

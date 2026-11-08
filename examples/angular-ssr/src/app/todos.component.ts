@@ -1,12 +1,12 @@
 import { Component, PLATFORM_ID, inject } from "@angular/core"
 import { isPlatformServer } from "@angular/common"
-import { injectMutation, injectQuery, injectQueryClient } from "@unicore/angular"
+import { injectMutation, injectQuery, injectQueryClient } from "@omnifront/angular"
 
 @Component({
 	selector: "app-todos",
 	template: `
 		<main style="font-family: system-ui; max-width: 480px; margin: 2rem auto">
-			<h1>unicore + Angular SSR</h1>
+			<h1>omnifront + Angular SSR</h1>
 			<p data-testid="flags">status={{ todos.status() }} stale={{ todos.isStale() }} fetching={{ todos.isFetching() }}</p>
 			<ul>
 				@for (t of todos.data(); track t) {
@@ -25,7 +25,7 @@ export class TodosComponent {
 	private onServer = isPlatformServer(inject(PLATFORM_ID))
 
 	// On the server the query reads the database directly; in the browser it calls the API.
-	// provideUnicoreSsr() makes the server wait for it and sends the result along with the page.
+	// provideOmnifrontSsr() makes the server wait for it and sends the result along with the page.
 	todos = injectQuery({
 		queryKey: ["todos"],
 		queryFn: async () =>

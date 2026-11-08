@@ -1,4 +1,4 @@
-import type { QueryClient } from "@unicore/query"
+import type { QueryClient } from "@omnifront/query"
 import { createDevtoolsModel, type DevtoolsQuery } from "./index"
 
 export interface DevtoolsPanelOptions {
@@ -54,7 +54,7 @@ const show = (value: unknown): string => {
 export function mountDevtools(client: QueryClient, options: DevtoolsPanelOptions = {}): DevtoolsPanel {
 	const model = createDevtoolsModel(client, options.interval)
 	const host = document.createElement("div")
-	host.setAttribute("data-unicore-devtools", "")
+	host.setAttribute("data-omnifront-devtools", "")
 	const root = host.attachShadow({ mode: "open" })
 	const style = document.createElement("style")
 	style.textContent = STYLE
@@ -107,14 +107,14 @@ export function mountDevtools(client: QueryClient, options: DevtoolsPanelOptions
 		view.replaceChildren()
 		const { queries } = model.getSnapshot()
 		if (!opened) {
-			const toggle = el("button", "toggle", `unicore · ${queries.length}`)
+			const toggle = el("button", "toggle", `omnifront · ${queries.length}`)
 			toggle.addEventListener("click", () => panel.open())
 			view.append(toggle)
 			return
 		}
 		const panelEl = el("div", "panel")
 		const head = el("div", "head")
-		head.append(el("span", undefined, `unicore · ${queries.length} ${queries.length === 1 ? "query" : "queries"}`))
+		head.append(el("span", undefined, `omnifront · ${queries.length} ${queries.length === 1 ? "query" : "queries"}`))
 		const close = el("button", undefined, "×")
 		close.setAttribute("aria-label", "Close")
 		close.addEventListener("click", () => panel.close())

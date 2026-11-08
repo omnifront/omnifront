@@ -1,14 +1,14 @@
 # Vue
 
 ::: info Pre-release
-Not on npm yet. Once published: `npm install @unicore/vue @unicore/query` (Vue 3.3 or newer).
+Not on npm yet. Once published: `npm install @omnifront/vue @omnifront/query` (Vue 3.3 or newer).
 :::
 
 ## Set up
 
 ```ts
-import { QueryClient } from "@unicore/query"
-import { QueryPlugin } from "@unicore/vue"
+import { QueryClient } from "@omnifront/query"
+import { QueryPlugin } from "@omnifront/vue"
 import { createApp } from "vue"
 import App from "./App.vue"
 
@@ -21,7 +21,7 @@ createApp(App).use(QueryPlugin, new QueryClient()).mount("#app")
 
 ```vue
 <script setup lang="ts">
-import { useQuery } from "@unicore/vue"
+import { useQuery } from "@omnifront/vue"
 
 // Each field is its own ref, so you can destructure and use them directly in the template.
 const { data, status, error, isFetching, refetch } = useQuery({
@@ -54,7 +54,7 @@ id.value = 2 // fetches (or reads from cache) user 2
 ## Change data
 
 ```ts
-import { useMutation, useQueryClient } from "@unicore/vue"
+import { useMutation, useQueryClient } from "@omnifront/vue"
 
 const client = useQueryClient()
 const add = useMutation({
@@ -69,7 +69,7 @@ add.mutate("Write docs")        // add.status.value, add.error.value, ...
 `useStore(store, selector)` returns a read-only `ComputedRef` of the selected slice.
 
 ```ts
-import { useStore } from "@unicore/vue"
+import { useStore } from "@omnifront/vue"
 const text = useStore(filter, (s) => s.text) // ComputedRef<string>
 ```
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMutation, useQuery, useQueryClient } from "@unicore/next/client"
+import { useMutation, useQuery, useQueryClient } from "@omnifront/next/client"
 import { useState } from "react"
 import { todosQuery } from "../lib/queries"
 
@@ -17,7 +17,7 @@ export function Todos({ where }: { where: string }) {
 
 	return (
 		<section style={{ fontFamily: "system-ui", maxWidth: 480, margin: "2rem auto" }}>
-			<h1>unicore + Next ({where})</h1>
+			<h1>omnifront + Next ({where})</h1>
 			<p data-testid="flags">
 				{`status=${todos.status} stale=${todos.isStale} fetching=${todos.isFetching}`}
 			</p>

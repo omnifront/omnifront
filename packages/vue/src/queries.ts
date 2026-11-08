@@ -1,5 +1,5 @@
-import { combine } from "@unicore/core"
-import { hashKey, QueryObserver, type QueryObserverOptions } from "@unicore/query"
+import { combine } from "@omnifront/core"
+import { hashKey, QueryObserver, type QueryObserverOptions } from "@omnifront/query"
 import {
 	computed,
 	getCurrentInstance,

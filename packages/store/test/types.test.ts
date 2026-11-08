@@ -1,4 +1,4 @@
-import { derive, shallowEqual } from "@unicore/core"
+import { derive, shallowEqual } from "@omnifront/core"
 import { describe, expect, expectTypeOf, it } from "vitest"
 import { createStore, Store } from "../src"
 

@@ -3,7 +3,7 @@ import { TestBed } from "@angular/core/testing"
 import { tick } from "./compat"
 
 /** Run `setup` in its own injector (like a component would have); `unmount` destroys it. */
-export function mountInjectable<T>(setup: () => T, providers: Array<Provider | ReturnType<typeof import("../src").provideUnicore>> = []) {
+export function mountInjectable<T>(setup: () => T, providers: Array<Provider | ReturnType<typeof import("../src").provideOmnifront>> = []) {
 	const injector = createEnvironmentInjector(providers as Provider[], TestBed.inject(EnvironmentInjector))
 	const result = runInInjectionContext(injector, setup)
 	return { result, injector, unmount: () => injector.destroy() }

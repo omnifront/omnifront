@@ -2,8 +2,8 @@
  * The data layer of the todo demo, written once and used unchanged by the React, Vue and Angular
  * examples. Only the thin rendering code differs per framework.
  */
-import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicore/query"
-import { createStore } from "@unicore/store"
+import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifront/query"
+import { createStore } from "@omnifront/store"
 import { addTodo, listTodos } from "./api"
 
 export { server } from "./api"

@@ -1,4 +1,4 @@
-import { Mutation, type MutationOptions, type MutationState } from "@unicore/query"
+import { Mutation, type MutationOptions, type MutationState } from "@omnifront/query"
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react"
 
 export interface UseMutationResult<TData, TVariables> extends MutationState<TData, TVariables> {
