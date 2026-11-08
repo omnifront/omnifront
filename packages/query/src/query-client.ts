@@ -2,6 +2,7 @@ import { defaultScheduler, notifyManager, type Scheduler } from "@unicore/core"
 import { hashKey, matchesKey, type QueryKey } from "./hash-key"
 import { DEFAULT_GC_TIME, Query, type QueryFn, type QueryState } from "./query"
 import type { RetryOptions } from "./retry"
+import { resolve } from "./resolve"
 
 export interface QueryClientOptions {
 	scheduler?: Scheduler
@@ -89,8 +90,10 @@ export class QueryClient {
 		return this.getQueryState<TData>(key)?.data
 	}
 
-	setQueryData<TData>(key: QueryKey, data: TData): void {
-		this.getQuery<TData>(key).setData(data)
+	/** Pass the new data, or a function from the old data (`undefined` if none) to the new. */
+	setQueryData<TData>(key: QueryKey, data: TData | ((old: TData | undefined) => TData)): void {
+		const query = this.getQuery<TData>(key)
+		query.setData(resolve(data, query.getSnapshot().data))
 	}
 
 	clear(): void {

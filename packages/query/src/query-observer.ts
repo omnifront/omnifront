@@ -1,6 +1,8 @@
 import { BaseSubscribable, type TimerHandle } from "@unicore/core"
+import { focusManager, onlineManager } from "./environment"
 import { hashKey, type QueryKey } from "./hash-key"
 import type { Query, QueryFn, QueryState } from "./query"
+import { resolve } from "./resolve"
 import type { RetryOptions } from "./retry"
 import type { QueryClient } from "./query-client"
 
@@ -13,19 +15,38 @@ export interface QueryObserverOptions<TData> extends RetryOptions {
 	gcTime?: number
 	/** Set false to never fetch automatically. Default true. */
 	enabled?: boolean
+	/** Refetch stale data when the page becomes visible again. Default true. */
+	refetchOnWindowFocus?: boolean | undefined
+	/** Refetch stale data when the network comes back. Default true. */
+	refetchOnReconnect?: boolean | undefined
+	/** Refetch every N ms while observed and the page is visible. Fetches even if the data is fresh. */
+	refetchInterval?: number | undefined
+	/** Data to start with when the cache has none. Stored in the cache like fetched data. */
+	initialData?: TData | (() => TData) | undefined
+	/**
+	 * Shown as `data` (with `isPlaceholderData: true`) while there is none. Never stored in the cache.
+	 * A function receives the data this observer showed before, e.g. `keepPreviousData`.
+	 */
+	placeholderData?: TData | ((previousData: TData | undefined) => TData | undefined) | undefined
 }
+
+/** `placeholderData: keepPreviousData` keeps showing the previous key's data while the next loads. */
+export const keepPreviousData = <TData>(previousData: TData | undefined): TData | undefined => previousData
 
 export interface QueryResult<TData> extends QueryState<TData> {
 	isStale: boolean
+	/** `data` is the `placeholderData`, not real data. */
+	isPlaceholderData: boolean
 }
 
-// Longest delay setTimeout supports; longer waits are re-armed on expiry.
 interface SnapshotSlot<TData> {
 	result?: QueryResult<TData>
 	source?: QueryState<TData>
 	optimistic?: boolean
+	previous?: TData | undefined
 }
 
+// Longest delay setTimeout supports; longer waits are re-armed on expiry.
 const MAX_TIMEOUT = 2 ** 31 - 1
 const noop = (): void => {}
 
@@ -35,7 +56,10 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	private readonly live: SnapshotSlot<TData> = {}
 	private readonly server: SnapshotSlot<TData> = {}
 	private detachQuery: (() => void) | undefined
+	private detachEnvironment: Array<() => void> = []
 	private staleTimer: TimerHandle | undefined
+	private pollTimer: TimerHandle | undefined
+	private lastData: TData | undefined
 
 	constructor(
 		private readonly client: QueryClient,
@@ -43,6 +67,15 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	) {
 		super()
 		this.query = client.getQuery<TData>(options.queryKey, options.gcTime)
+		this.seed()
+	}
+
+	/** `initialData` goes into the cache like fetched data, unless the cache already has some. */
+	private seed(): void {
+		const { initialData } = this.options
+		if (initialData !== undefined && this.query.getSnapshot().data === undefined) {
+			this.query.setData(resolve(initialData))
+		}
 	}
 
 	/**
@@ -77,16 +110,38 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 		isStale: boolean,
 		optimistic: boolean,
 	): QueryResult<TData> {
+		if (state.data !== undefined) this.lastData = state.data
 		const previous = slot.result
-		if (previous && slot.source === state && previous.isStale === isStale && slot.optimistic === optimistic) {
+		if (
+			previous &&
+			slot.source === state &&
+			previous.isStale === isStale &&
+			slot.optimistic === optimistic &&
+			slot.previous === this.lastData
+		) {
 			return previous
 		}
 		slot.source = state
 		slot.optimistic = optimistic
-		slot.result = optimistic
-			? { ...state, status: state.status === "idle" ? "loading" : state.status, isFetching: true, isStale }
-			: { ...state, isStale }
+		slot.previous = this.lastData
+		const base = optimistic
+			? { ...state, status: state.status === "idle" ? ("loading" as const) : state.status, isFetching: true }
+			: state
+		// Placeholder: only while there is no real data. Computed here, not on every read, so a
+		// placeholder function that builds a new object still gives a stable snapshot.
+		const { placeholderData } = this.options
+		const placeholder =
+			state.data === undefined && placeholderData !== undefined ? resolve(placeholderData, this.lastData) : undefined
+		slot.result =
+			placeholder === undefined
+				? { ...base, isStale, isPlaceholderData: false }
+				: { ...base, status: "success", data: placeholder, isStale, isPlaceholderData: true }
 		return slot.result
+	}
+
+	/** For adapters that make a new observer per key: carry over what `placeholderData` calls "previous". */
+	inherit(from: QueryObserver<TData>): void {
+		this.lastData = from.lastData
 	}
 
 	/** Observers retry failed fetches 3 times by default (unlike imperative fetchQuery). */
@@ -109,6 +164,7 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 		if (keyChanged) {
 			if (active) this.detach()
 			this.query = this.client.getQuery<TData>(options.queryKey, options.gcTime)
+			this.seed()
 			if (active) {
 				this.attach()
 				this.notify()
@@ -121,6 +177,7 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 				this.scheduleStale()
 				this.notify()
 			}
+			if (previous.refetchInterval !== options.refetchInterval) this.schedulePoll()
 		}
 	}
 
@@ -140,14 +197,50 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 			if (state.isInvalidated && !state.isFetching) this.maybeFetch()
 			this.notify()
 		})
+		// Refetch stale data when the page is shown again / the network is back.
+		this.detachEnvironment = (
+			[
+				[focusManager, "refetchOnWindowFocus"],
+				[onlineManager, "refetchOnReconnect"],
+			] as const
+		).map(([manager, option]) =>
+			manager.subscribe(() => {
+				if (manager.getSnapshot() && this.options[option] !== false) this.maybeFetch()
+			}),
+		)
 		this.scheduleStale()
+		this.schedulePoll()
 		this.maybeFetch()
 	}
 
 	private detach(): void {
 		this.detachQuery?.()
 		this.detachQuery = undefined
+		this.detachEnvironment.forEach((off) => off())
+		this.detachEnvironment = []
 		this.clearStale()
+		this.clearPoll()
+	}
+
+	/** Polling: refetch every `refetchInterval` ms, skipping ticks while the page is hidden. */
+	private schedulePoll(): void {
+		this.clearPoll()
+		const { refetchInterval } = this.options
+		if (!(refetchInterval && refetchInterval > 0) || !this.hasListeners) return
+		this.pollTimer = this.client.scheduler.setTimeout(() => {
+			this.pollTimer = undefined
+			if (this.options.enabled !== false && focusManager.getSnapshot()) this.fetchQuery().catch(noop)
+			this.schedulePoll()
+		}, Math.min(refetchInterval, MAX_TIMEOUT))
+	}
+
+	private clearPoll(): void {
+		this.clearTimer(this.pollTimer)
+		this.pollTimer = undefined
+	}
+
+	private clearTimer(handle: TimerHandle | undefined): void {
+		if (handle !== undefined) this.client.scheduler.clearTimeout(handle)
 	}
 
 	private isStale(state: QueryState<TData>): boolean {
@@ -177,7 +270,7 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	}
 
 	private clearStale(): void {
-		if (this.staleTimer !== undefined) this.client.scheduler.clearTimeout(this.staleTimer)
+		this.clearTimer(this.staleTimer)
 		this.staleTimer = undefined
 	}
 }

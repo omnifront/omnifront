@@ -142,3 +142,50 @@ describe("Mutation", () => {
 		expect(l).toHaveBeenCalledTimes(2) // pending, success
 	})
 })
+
+describe("Mutation onMutate / context", () => {
+	it("passes onMutate's result to every callback, after awaiting it and before mutationFn", async () => {
+		const log: string[] = []
+		const m = new Mutation<string, number, { snapshot: string }>({
+			onMutate: async (n) => {
+				log.push(`mutate:${n}`)
+				return { snapshot: `s${n}` }
+			},
+			mutationFn: (n) => {
+				log.push("fn")
+				return Promise.resolve(`#${n}`)
+			},
+			onSuccess: (data, v, ctx) => void log.push(`success:${data}:${v}:${ctx.snapshot}`),
+			onSettled: (data, e, v, ctx) => void log.push(`settled:${data}:${String(e)}:${ctx?.snapshot}`),
+		})
+		await m.mutateAsync(1)
+		expect(log).toEqual(["mutate:1", "fn", "success:#1:1:s1", "settled:#1:undefined:s1"])
+	})
+
+	it("on failure, onError gets the context so it can roll back", async () => {
+		let rolledBack = ""
+		const m = new Mutation<void, void, string>({
+			onMutate: () => "previous",
+			mutationFn: () => Promise.reject(new Error("no")),
+			onError: (_e, _v, ctx) => void (rolledBack = ctx ?? "none"),
+		})
+		await expect(m.mutateAsync()).rejects.toThrow("no")
+		expect(rolledBack).toBe("previous")
+	})
+
+	it("a throwing onMutate skips mutationFn, errors, and onError gets undefined context", async () => {
+		const fn = vi.fn(() => Promise.resolve(1))
+		let seen: unknown = "unset"
+		const m = new Mutation<number, void, string>({
+			onMutate: () => {
+				throw new Error("mutate failed")
+			},
+			mutationFn: fn,
+			onError: (_e, _v, ctx) => void (seen = ctx),
+		})
+		await expect(m.mutateAsync()).rejects.toThrow("mutate failed")
+		expect(fn).not.toHaveBeenCalled()
+		expect(seen).toBeUndefined()
+		expect(m.getSnapshot().status).toBe("error")
+	})
+})

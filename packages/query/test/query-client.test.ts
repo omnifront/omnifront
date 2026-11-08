@@ -89,3 +89,12 @@ describe("QueryClient cancel", () => {
 		await assertion
 	})
 })
+
+describe("setQueryData updater", () => {
+	it("accepts a function from the old data (undefined when empty) to the new", () => {
+		const c = new QueryClient({ scheduler: new FakeScheduler(), gcTime: Infinity })
+		c.setQueryData<number[]>(["n"], (old) => [...(old ?? []), 1])
+		c.setQueryData<number[]>(["n"], (old) => [...(old ?? []), 2])
+		expect(c.getQueryData(["n"])).toEqual([1, 2])
+	})
+})

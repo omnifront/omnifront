@@ -7,7 +7,7 @@ import {
 	type QueryObserverOptions,
 	type QueryResult,
 } from "@unicore/query"
-import { QueryObserver } from "@unicore/query"
+import { focusManager, keepPreviousData, QueryObserver } from "@unicore/query"
 import { createStore } from "@unicore/store"
 import { describe, expect, it, vi } from "vitest"
 
@@ -35,7 +35,9 @@ export interface StoreHandle<TSelected> {
 /** What an adapter package must provide so the shared behaviour tests can drive it. */
 export interface Harness {
 	mountQuery<TData>(client: QueryClient, options: QueryObserverOptions<TData>): QueryHandle<TData>
-	mountMutation<TData, TVariables>(options: MutationOptions<TData, TVariables>): MutationHandle<TData, TVariables>
+	mountMutation<TData, TVariables, TContext = unknown>(
+		options: MutationOptions<TData, TVariables, TContext>,
+	): MutationHandle<TData, TVariables>
 	/** Bind a slice of any Subscribable (store, query observer, ...) to the framework's reactivity. */
 	mountStore<TState, TSelected>(
 		source: Subscribable<TState>,
@@ -176,7 +178,94 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 		})
 	})
 
+	describe(`${adapterName}: query features conformance`, () => {
+		it("refetches stale data when the page becomes visible again", async () => {
+			const { client } = setup()
+			const fn = counter()
+			const q = h.mountQuery(client, { queryKey: ["k"], queryFn: fn })
+			await settle()
+			expect(q.current().data).toBe(1)
+			await h.act(() => {
+				focusManager.set(false)
+				focusManager.set(true)
+			})
+			await settle()
+			expect(q.current().data).toBe(2)
+			q.unmount()
+		})
+
+		it("polls with refetchInterval and stops on unmount", async () => {
+			const { client, scheduler } = setup()
+			const fn = counter()
+			const q = h.mountQuery(client, { queryKey: ["k"], queryFn: fn, staleTime: Infinity, refetchInterval: 1000 })
+			await settle()
+			await h.act(() => scheduler.advance(1000))
+			await settle()
+			expect(q.current().data).toBe(2)
+			q.unmount()
+			await h.act(() => scheduler.advance(5000))
+			await settle()
+			expect(fn).toHaveBeenCalledTimes(2)
+		})
+
+		it("shows initialData without fetching, and a flagged placeholder while a new key loads", async () => {
+			const { client } = setup()
+			const fn = counter()
+			const start = h.mountQuery(client, { queryKey: ["init"], queryFn: fn, initialData: 99, staleTime: Infinity })
+			await settle()
+			expect(start.current()).toMatchObject({ data: 99, isPlaceholderData: false })
+			expect(fn).not.toHaveBeenCalled()
+			start.unmount()
+
+			let release!: () => void
+			const gate = new Promise<void>((resolve) => (release = resolve))
+			const page = (n: number): QueryObserverOptions<string> => ({
+				queryKey: ["page", n],
+				queryFn: async () => {
+					if (n === 2) await gate // page 2 stays loading until we let it go
+					return `page-${n}`
+				},
+				staleTime: Infinity,
+				placeholderData: keepPreviousData,
+			})
+			const q = h.mountQuery(client, page(1))
+			await settle()
+			expect(q.current().data).toBe("page-1")
+			q.update(page(2))
+			await h.act(() => {}) // let the framework switch to the new key
+			expect(q.current()).toMatchObject({ data: "page-1", isPlaceholderData: true, isFetching: true })
+			release()
+			await settle()
+			expect(q.current()).toMatchObject({ data: "page-2", isPlaceholderData: false })
+			q.unmount()
+		})
+	})
+
 	describe(`${adapterName}: mutation conformance`, () => {
+		it("supports optimistic updates with rollback through onMutate", async () => {
+			const { client } = setup()
+			let fail = false
+			const q = h.mountQuery(client, { queryKey: ["todos"], queryFn: () => Promise.resolve(["a"]), staleTime: Infinity })
+			await settle()
+			const m = h.mountMutation<void, string, string[] | undefined>({
+				onMutate: (item) => {
+					const previous = client.getQueryData<string[]>(["todos"])
+					client.setQueryData<string[]>(["todos"], (old) => [...(old ?? []), item])
+					return previous
+				},
+				mutationFn: () => (fail ? Promise.reject(new Error("server said no")) : Promise.resolve()),
+				onError: (_error, _item, previous) => client.setQueryData(["todos"], previous),
+			})
+			await m.mutateAsync("b")
+			expect(q.current().data).toEqual(["a", "b"])
+			fail = true
+			await expect(m.mutateAsync("c")).rejects.toThrow("server said no")
+			expect(q.current().data).toEqual(["a", "b"]) // rolled back
+			expect(m.current().status).toBe("error")
+			q.unmount()
+			m.unmount()
+		})
+
 		it("goes pending then success, with the variables and result", async () => {
 			const m = h.mountMutation<string, number>({ mutationFn: (n) => Promise.resolve(`#${n}`) })
 			expect(m.current().status).toBe("idle")

@@ -12,15 +12,20 @@ export interface MutationState<TData = unknown, TVariables = void> {
 
 type MaybePromise<T> = T | Promise<T>
 
-export interface MutationOptions<TData, TVariables = void> {
+export interface MutationOptions<TData, TVariables = void, TContext = unknown> {
 	mutationFn: (variables: TVariables) => Promise<TData>
+	/**
+	 * Runs (and is awaited) before `mutationFn`. Return whatever you need later, typically a snapshot
+	 * to roll back to: it arrives as the last argument of the other callbacks.
+	 */
+	onMutate?: ((variables: TVariables) => MaybePromise<TContext>) | undefined
 	/** Awaited before the mutation counts as successful: return e.g. `client.invalidateQueries(...)`. */
-	onSuccess?: ((data: TData, variables: TVariables) => MaybePromise<unknown>) | undefined
-	/** Awaited before the mutation counts as failed. Also runs if `onSuccess` throws. */
-	onError?: ((error: unknown, variables: TVariables) => MaybePromise<unknown>) | undefined
+	onSuccess?: ((data: TData, variables: TVariables, context: TContext) => MaybePromise<unknown>) | undefined
+	/** Awaited before the mutation counts as failed. Also runs if `onMutate` or `onSuccess` throws. */
+	onError?: ((error: unknown, variables: TVariables, context: TContext | undefined) => MaybePromise<unknown>) | undefined
 	/** After either outcome. */
 	onSettled?:
-		| ((data: TData | undefined, error: unknown, variables: TVariables) => MaybePromise<unknown>)
+		| ((data: TData | undefined, error: unknown, variables: TVariables, context: TContext | undefined) => MaybePromise<unknown>)
 		| undefined
 }
 
@@ -30,11 +35,11 @@ const noop = (): void => {}
  * One mutation slot, reused across calls (what a UI hook holds on to).
  * If `mutate` is called again before the previous run finishes, only the latest run drives `state`.
  */
-export class Mutation<TData, TVariables = void> extends BaseSubscribable<MutationState<TData, TVariables>> {
+export class Mutation<TData, TVariables = void, TContext = unknown> extends BaseSubscribable<MutationState<TData, TVariables>> {
 	private state: MutationState<TData, TVariables> = idle()
 	private runs = 0
 
-	constructor(private options: MutationOptions<TData, TVariables>) {
+	constructor(private options: MutationOptions<TData, TVariables, TContext>) {
 		super()
 	}
 
@@ -43,7 +48,7 @@ export class Mutation<TData, TVariables = void> extends BaseSubscribable<Mutatio
 	}
 
 	/** Callbacks may change between renders; the next run uses the latest. */
-	setOptions(options: MutationOptions<TData, TVariables>): void {
+	setOptions(options: MutationOptions<TData, TVariables, TContext>): void {
 		this.options = options
 	}
 
@@ -55,23 +60,25 @@ export class Mutation<TData, TVariables = void> extends BaseSubscribable<Mutatio
 	/** Run the mutation; resolves with the data, rejects with the error. */
 	async mutateAsync(variables: TVariables): Promise<TData> {
 		const run = ++this.runs
-		const { mutationFn, onSuccess, onError, onSettled } = this.options
+		const { mutationFn, onMutate, onSuccess, onError, onSettled } = this.options
 		this.update(run, { status: "pending", data: undefined, error: undefined, variables })
+		let context: TContext | undefined
 		let data: TData
 		try {
+			context = await onMutate?.(variables)
 			data = await mutationFn(variables)
-			await onSuccess?.(data, variables)
+			await onSuccess?.(data, variables, context as TContext)
 		} catch (error) {
 			try {
-				await onError?.(error, variables)
+				await onError?.(error, variables, context)
 			} finally {
 				this.update(run, { status: "error", error })
 			}
-			await onSettled?.(undefined, error, variables)
+			await onSettled?.(undefined, error, variables, context)
 			throw error
 		}
 		this.update(run, { status: "success", data })
-		await onSettled?.(data, undefined, variables)
+		await onSettled?.(data, undefined, variables, context)
 		return data
 	}
 
