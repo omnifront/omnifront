@@ -1,0 +1,45 @@
+<script setup lang="ts">
+import { useMutation, useQuery, useQueryClient } from "@unicore/vue"
+import { ref } from "vue"
+
+const client = useQueryClient()
+const title = ref("")
+
+// On the server the query runs against the database directly; in the browser it calls the API.
+// Vue waits for it (onServerPrefetch inside useQuery) before rendering, so the HTML has the list.
+const { data, status, isFetching, isStale } = useQuery({
+	queryKey: ["todos"],
+	queryFn: async () =>
+		import.meta.env.SSR
+			? (await import("./db")).listTodos()
+			: ((await fetch("/api/todos").then((r) => r.json())) as string[]),
+	staleTime: 10_000,
+})
+
+const add = useMutation({
+	mutationFn: async (value: string) => {
+		await fetch("/api/todos", { method: "POST", body: JSON.stringify({ title: value }) })
+	},
+	onSuccess: () => client.invalidateQueries({ queryKey: ["todos"] }),
+})
+
+function submit() {
+	if (!title.value) return
+	add.mutate(title.value)
+	title.value = ""
+}
+</script>
+
+<template>
+	<main style="font-family: system-ui; max-width: 480px; margin: 2rem auto">
+		<h1>unicore + Vue SSR</h1>
+		<p data-testid="flags">status={{ status }} stale={{ isStale }} fetching={{ isFetching }}</p>
+		<ul>
+			<li v-for="t in data" :key="t">{{ t }}</li>
+		</ul>
+		<form @submit.prevent="submit">
+			<input v-model="title" placeholder="New todo" />
+			<button :disabled="add.status.value === 'pending'">{{ add.status.value === "pending" ? "Saving…" : "Add" }}</button>
+		</form>
+	</main>
+</template>

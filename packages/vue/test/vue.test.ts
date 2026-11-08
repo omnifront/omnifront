@@ -1,6 +1,6 @@
 import { FakeScheduler } from "@unicore/core/testing"
 import { QueryClient } from "@unicore/query"
-import { computed, createApp, defineComponent, h, nextTick, ref } from "vue"
+import { computed, createApp, createSSRApp, defineComponent, h, nextTick, ref } from "vue"
 import { renderToString } from "vue/server-renderer"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { createStore } from "@unicore/store"
@@ -110,18 +110,34 @@ describe("useQuery in a component", () => {
 		expect(fn).toHaveBeenCalledTimes(1)
 	})
 
-	it("does not subscribe or fetch on the server", async () => {
+	it("on the server it fetches before rendering (onServerPrefetch) and never subscribes", async () => {
 		const client = newClient()
 		const fn = vi.fn(() => Promise.resolve("x"))
 		vi.stubGlobal("window", undefined)
 		const Comp = defineComponent({
 			setup() {
-				const { status } = useQuery({ queryKey: ["k"], queryFn: fn })
-				return () => h("p", status.value)
+				const { status, data } = useQuery({ queryKey: ["k"], queryFn: fn })
+				return () => h("p", `${status.value}:${data.value}`)
 			},
 		})
-		const html = await renderToString(createApp(Comp).use(QueryPlugin, client))
-		expect(html).toContain("loading")
+		const html = await renderToString(createSSRApp(Comp).use(QueryPlugin, client))
+		expect(html).toContain("success:x")
+		expect(fn).toHaveBeenCalledTimes(1)
+		expect(client.getQuery(["k"]).hasListeners).toBe(false)
+	})
+
+	it("on the server a fresh cached entry is not fetched again", async () => {
+		const client = newClient()
+		client.setQueryData(["k"], "cached")
+		const fn = vi.fn(() => Promise.resolve("new"))
+		vi.stubGlobal("window", undefined)
+		const Comp = defineComponent({
+			setup() {
+				const { data } = useQuery({ queryKey: ["k"], queryFn: fn, staleTime: Infinity })
+				return () => h("p", String(data.value))
+			},
+		})
+		expect(await renderToString(createSSRApp(Comp).use(QueryPlugin, client))).toContain("cached")
 		expect(fn).not.toHaveBeenCalled()
 	})
 })

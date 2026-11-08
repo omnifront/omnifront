@@ -5,7 +5,19 @@ import {
 	type InfiniteQueryObserverOptions,
 	type InfiniteQueryResult,
 } from "@unicore/query-infinite"
-import { computed, getCurrentScope, onScopeDispose, shallowRef, toValue, watch, type ComputedRef, type MaybeRefOrGetter } from "vue"
+import {
+	computed,
+	getCurrentInstance,
+	getCurrentScope,
+	onMounted,
+	onScopeDispose,
+	onServerPrefetch,
+	shallowRef,
+	toValue,
+	watch,
+	type ComputedRef,
+	type MaybeRefOrGetter,
+} from "vue"
 import { useQueryClient } from "./plugin"
 
 export type { InfiniteData, InfiniteQueryObserverOptions, InfiniteQueryResult }
@@ -31,19 +43,33 @@ export function useInfiniteQuery<TPage, TPageParam = unknown>(
 	options: MaybeRefOrGetter<InfiniteQueryObserverOptions<TPage, TPageParam>>,
 ): UseInfiniteQueryReturn<TPage, TPageParam> {
 	const observer = new InfiniteQueryObserver(useQueryClient(), toValue(options))
-	const snapshot = shallowRef<InfiniteQueryResult<TPage, TPageParam>>(observer.getSnapshot())
-	if (typeof window !== "undefined") {
-		const unsubscribe = observer.subscribe(() => {
-			snapshot.value = observer.getSnapshot()
+	// Same SSR approach as useQuery: server snapshot for the first render, live after mount.
+	let live = !getCurrentInstance()
+	const read = () => (live ? observer.getSnapshot() : observer.getServerSnapshot())
+	const snapshot = shallowRef<InfiniteQueryResult<TPage, TPageParam>>(read())
+	if (typeof window === "undefined") {
+		onServerPrefetch(async () => {
+			if (observer.getServerSnapshot().isFetching) await observer.refetch().catch(() => {})
+			snapshot.value = observer.getServerSnapshot()
 		})
-		snapshot.value = observer.getSnapshot()
-		if (getCurrentScope()) onScopeDispose(unsubscribe)
+	} else {
+		let unsubscribe: (() => void) | undefined
+		const start = () => {
+			live = true
+			unsubscribe = observer.subscribe(() => {
+				snapshot.value = observer.getSnapshot()
+			})
+			snapshot.value = observer.getSnapshot()
+		}
+		if (live) start()
+		else onMounted(start)
+		if (getCurrentScope()) onScopeDispose(() => unsubscribe?.())
 	}
 	watch(
 		() => toValue(options),
 		(next) => {
 			observer.setOptions(next)
-			snapshot.value = observer.getSnapshot()
+			snapshot.value = read()
 		},
 	)
 	const pick = <K extends keyof InfiniteQueryResult<TPage, TPageParam>>(key: K) => computed(() => snapshot.value[key])

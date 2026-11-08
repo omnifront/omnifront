@@ -4,8 +4,22 @@ import {
 	type QueryResult,
 	type QueryStatus,
 } from "@unicore/query"
-import { computed, getCurrentScope, onScopeDispose, shallowRef, toValue, watch, type ComputedRef, type MaybeRefOrGetter } from "vue"
+import {
+	computed,
+	getCurrentInstance,
+	getCurrentScope,
+	onMounted,
+	onScopeDispose,
+	onServerPrefetch,
+	shallowRef,
+	toValue,
+	watch,
+	type ComputedRef,
+	type MaybeRefOrGetter,
+} from "vue"
 import { useQueryClient } from "./plugin"
+
+const noop = (): void => {}
 
 export interface UseQueryReturn<TData> {
 	status: ComputedRef<QueryStatus>
@@ -32,19 +46,38 @@ export function useQuery<TData>(options: MaybeRefOrGetter<QueryObserverOptions<T
 
 	// shallowRef: the snapshot is an immutable object we replace wholesale, so deep reactivity
 	// would only add cost. Each field below is a computed over it, so templates can destructure.
-	const snapshot = shallowRef<QueryResult<TData>>(observer.getSnapshot())
+	//
+	// The first render uses the SERVER snapshot, which never reads the clock, so a server-rendered
+	// page hydrates without mismatches (the server and the browser disagree on "now"). Once the
+	// component is mounted we switch to the live snapshot. Outside a component there is no
+	// hydration, so it is live from the start.
+	let live = !getCurrentInstance()
+	const read = () => (live ? observer.getSnapshot() : observer.getServerSnapshot())
+	const snapshot = shallowRef<QueryResult<TData>>(read())
 
-	// Subscribe right away in setup (not onMounted): this is what starts the fetch, and it makes
-	// the data available to code that runs before mount. On the server there is no unmount, so we
-	// never subscribe there; the server just reads the snapshot (SSR prefetching comes later).
-	if (typeof window !== "undefined") {
-		const unsubscribe = observer.subscribe(() => {
-			snapshot.value = observer.getSnapshot()
+	if (typeof window === "undefined") {
+		// Server: no subscription (nothing would ever unsubscribe it). Vue waits for onServerPrefetch
+		// before rendering this component, so fetch here; the server snapshot says whether a fetch is due.
+		onServerPrefetch(async () => {
+			if (observer.getServerSnapshot().isFetching) await observer.refetch().catch(noop)
+			snapshot.value = observer.getServerSnapshot()
 		})
-		snapshot.value = observer.getSnapshot() // subscribing may have started a fetch
+	} else {
+		// Subscribe once mounted (immediately when there is no component). Doing it in setup() would start
+		// the fetch before the first render, and a hydrating page must render exactly what the server did.
+		let unsubscribe: (() => void) | undefined
+		const start = () => {
+			live = true
+			unsubscribe = observer.subscribe(() => {
+				snapshot.value = observer.getSnapshot()
+			})
+			snapshot.value = observer.getSnapshot()
+		}
+		if (live) start()
+		else onMounted(start)
 		// Tie the subscription to the surrounding component (or effectScope): when it is
 		// destroyed, the last unsubscribe lets the cache entry start its gc timer.
-		if (getCurrentScope()) onScopeDispose(unsubscribe)
+		if (getCurrentScope()) onScopeDispose(() => unsubscribe?.())
 	}
 
 	// Re-run when reactive inputs change. Default flush ("pre") runs before the component
@@ -53,7 +86,7 @@ export function useQuery<TData>(options: MaybeRefOrGetter<QueryObserverOptions<T
 		() => toValue(options),
 		(next) => {
 			observer.setOptions(next)
-			snapshot.value = observer.getSnapshot()
+			snapshot.value = read()
 		},
 	)
 
