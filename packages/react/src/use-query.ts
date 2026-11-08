@@ -20,7 +20,10 @@ export function useQuery<TData>(options: QueryObserverOptions<TData>): UseQueryR
 
 	// Bound on purpose: getSnapshot is a method and React calls it detached.
 	const getSnapshot = useCallback(() => observer.getSnapshot(), [observer])
-	const snapshot = useSyncExternalStore(observer.subscribe, getSnapshot, getSnapshot)
+	// On the server and while hydrating React uses this one. It never looks at the clock, so the
+	// browser's first render produces the same markup the server did.
+	const getServerSnapshot = useCallback(() => observer.getServerSnapshot(), [observer])
+	const snapshot = useSyncExternalStore(observer.subscribe, getSnapshot, getServerSnapshot)
 
 	return useMemo(() => ({ ...snapshot, refetch: () => observer.refetch() }), [snapshot, observer])
 }
