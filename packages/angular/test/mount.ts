@@ -1,5 +1,6 @@
 import { EnvironmentInjector, createEnvironmentInjector, runInInjectionContext, type Provider } from "@angular/core"
 import { TestBed } from "@angular/core/testing"
+import { tick } from "./compat"
 
 /** Run `setup` in its own injector (like a component would have); `unmount` destroys it. */
 export function mountInjectable<T>(setup: () => T, providers: Array<Provider | ReturnType<typeof import("../src").provideUnicore>> = []) {
@@ -10,5 +11,5 @@ export function mountInjectable<T>(setup: () => T, providers: Array<Provider | R
 
 /** Let effects run (Angular normally does this during change detection). */
 export function flushEffects(): void {
-	TestBed.tick()
+	tick()
 }

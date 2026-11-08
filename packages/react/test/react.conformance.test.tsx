@@ -47,10 +47,14 @@ const harness: Harness = {
 		const hook = renderHook((props: typeof options) => useInfiniteQuery(props), { wrapper, initialProps: options })
 		return {
 			current: () => hook.result.current,
-			fetchNextPage: async () => {
-				await act(async () => {
-					await hook.result.current.fetchNextPage()
+			// Start the request inside a synchronous act (so "fetching" renders), and let the test await
+			// its end separately; one long act around the whole wait would overlap the test's own acts.
+			fetchNextPage: () => {
+				let pending!: Promise<void>
+				act(() => {
+					pending = hook.result.current.fetchNextPage()
 				})
+				return pending.then(() => act(async () => {})) as Promise<void>
 			},
 			update: (next) => hook.rerender(next),
 			unmount: () => hook.unmount(),

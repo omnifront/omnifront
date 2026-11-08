@@ -1,12 +1,17 @@
 // @vitest-environment node
 import "@angular/compiler"
-import { Component, provideZonelessChangeDetection } from "@angular/core"
+import * as ng from "@angular/core"
+import { Component } from "@angular/core"
 import { bootstrapApplication, type BootstrapContext } from "@angular/platform-browser"
 import { provideServerRendering, renderApplication } from "@angular/platform-server"
 import { QueryClient } from "@unicore/query"
 import { describe, expect, it } from "vitest"
 import { injectQuery, provideUnicore } from "../src"
 import { provideUnicoreSsr } from "../src/ssr"
+import { zonelessProviders } from "./compat"
+
+// Angular 17 cannot run without zone.js (its server renderer included); newer versions need nothing.
+if (zonelessProviders().length === 0) await import(/* @vite-ignore */ "zone.js" as string)
 
 let requests = 0
 class Todos {
@@ -21,6 +26,7 @@ class Todos {
 }
 // Applying the decorator by hand: esbuild does not run Angular's decorator transform.
 Component({
+	standalone: true,
 	selector: "app-root",
 	template: `<p>{{ todos.status() }}</p><ul>@for (t of todos.data(); track t) { <li>{{ t }}</li> }</ul>`,
 })(Todos)
@@ -30,13 +36,17 @@ const render = (client: QueryClient) =>
 		(context: BootstrapContext) =>
 			bootstrapApplication(
 				Todos,
-				{ providers: [provideZonelessChangeDetection(), provideServerRendering(), provideUnicore(client), provideUnicoreSsr()] },
+				{ providers: [...zonelessProviders(), provideServerRendering(), provideUnicore(client), provideUnicoreSsr()] },
 				context,
 			),
 		{ document: "<app-root></app-root>" },
 	)
 
-describe("Angular server rendering", () => {
+// Waiting for queries on the server needs PendingTasks (Angular 19; ExperimentalPendingTasks in 18).
+// On 17 provideUnicoreSsr still transfers state but cannot hold the render open; that is documented.
+const canWait = "PendingTasks" in ng || "ExperimentalPendingTasks" in ng
+
+describe.skipIf(!canWait)("Angular server rendering", () => {
 	it("waits for the queries, renders their data, and puts the cache into TransferState", async () => {
 		const client = new QueryClient({ gcTime: Infinity })
 		const html = await render(client)
@@ -59,18 +69,18 @@ describe("Angular server rendering", () => {
 	})
 })
 
-describe("Angular server rendering: failures and dependent queries", () => {
+describe.skipIf(!canWait)("Angular server rendering: failures and dependent queries", () => {
 	it("a failing request does not hold the render open through retries", async () => {
 		class Failing {
 			todos = injectQuery({ queryKey: ["failing"], queryFn: () => Promise.reject(new Error("down")) })
 		}
-		Component({ selector: "app-root", template: `<p>{{ todos.status() }}</p>` })(Failing)
+		Component({ standalone: true, selector: "app-root", template: `<p>{{ todos.status() }}</p>` })(Failing)
 		const started = Date.now()
 		const html = await renderApplication(
 			(context: BootstrapContext) =>
 				bootstrapApplication(
 					Failing,
-					{ providers: [provideZonelessChangeDetection(), provideServerRendering(), provideUnicore(new QueryClient({ gcTime: Infinity })), provideUnicoreSsr()] },
+					{ providers: [...zonelessProviders(), provideServerRendering(), provideUnicore(new QueryClient({ gcTime: Infinity })), provideUnicoreSsr()] },
 					context,
 				),
 			{ document: "<app-root></app-root>" },
@@ -89,11 +99,12 @@ describe("Angular server rendering: failures and dependent queries", () => {
 				},
 			})
 		}
-		Component({ selector: "app-detail", template: `<p>{{ detail.data() }}</p>` })(Detail)
+		Component({ standalone: true, selector: "app-detail", template: `<p>{{ detail.data() }}</p>` })(Detail)
 		class Parent {
 			list = injectQuery({ queryKey: ["list"], queryFn: async () => ["x"] })
 		}
 		Component({
+			standalone: true,
 			selector: "app-root",
 			imports: [Detail],
 			template: `@if (list.data()) { <app-detail /> }`,
@@ -102,7 +113,7 @@ describe("Angular server rendering: failures and dependent queries", () => {
 			(context: BootstrapContext) =>
 				bootstrapApplication(
 					Parent,
-					{ providers: [provideZonelessChangeDetection(), provideServerRendering(), provideUnicore(new QueryClient({ gcTime: Infinity })), provideUnicoreSsr()] },
+					{ providers: [...zonelessProviders(), provideServerRendering(), provideUnicore(new QueryClient({ gcTime: Infinity })), provideUnicoreSsr()] },
 					context,
 				),
 			{ document: "<app-root></app-root>" },

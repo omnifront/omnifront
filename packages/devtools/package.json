@@ -20,16 +20,29 @@
 	},
 	"type": "module",
 	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
 		},
 		"./panel": {
-			"types": "./dist/panel.d.ts",
-			"import": "./dist/panel.js",
-			"require": "./dist/panel.cjs"
+			"import": {
+				"types": "./dist/panel.d.ts",
+				"default": "./dist/panel.js"
+			},
+			"require": {
+				"types": "./dist/panel.d.cts",
+				"default": "./dist/panel.cjs"
+			}
 		}
 	},
 	"files": [

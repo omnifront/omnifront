@@ -80,6 +80,7 @@ describe("in a real component", () => {
 		// Applying the decorator by hand: Angular's JIT mode needs it, but esbuild (vitest) does not run
 		// Angular's decorator transform for us.
 		Component({
+			standalone: true,
 			selector: "app-item",
 			template: `<p>{{ item.status() === 'loading' ? 'loading' : item.data() }}</p>`,
 		})(Item)

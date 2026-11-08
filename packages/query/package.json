@@ -21,21 +21,39 @@
 	},
 	"type": "module",
 	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
 		},
 		"./hydration": {
-			"types": "./dist/hydration.d.ts",
-			"import": "./dist/hydration.js",
-			"require": "./dist/hydration.cjs"
+			"import": {
+				"types": "./dist/hydration.d.ts",
+				"default": "./dist/hydration.js"
+			},
+			"require": {
+				"types": "./dist/hydration.d.cts",
+				"default": "./dist/hydration.cjs"
+			}
 		},
 		"./structural": {
-			"types": "./dist/structural.d.ts",
-			"import": "./dist/structural.js",
-			"require": "./dist/structural.cjs"
+			"import": {
+				"types": "./dist/structural.d.ts",
+				"default": "./dist/structural.js"
+			},
+			"require": {
+				"types": "./dist/structural.d.cts",
+				"default": "./dist/structural.cjs"
+			}
 		}
 	},
 	"files": [

@@ -19,16 +19,23 @@
 	},
 	"type": "module",
 	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
 		},
 		"./client": {
-			"types": "./dist/client.d.ts",
-			"import": "./dist/client.js",
-			"require": "./dist/client.cjs"
+			"types": "./dist/client.d.cts",
+			"default": "./dist/client.cjs"
 		}
 	},
 	"files": [

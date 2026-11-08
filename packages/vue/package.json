@@ -19,21 +19,39 @@
 	},
 	"type": "module",
 	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
 		},
 		"./infinite": {
-			"types": "./dist/infinite.d.ts",
-			"import": "./dist/infinite.js",
-			"require": "./dist/infinite.cjs"
+			"import": {
+				"types": "./dist/infinite.d.ts",
+				"default": "./dist/infinite.js"
+			},
+			"require": {
+				"types": "./dist/infinite.d.cts",
+				"default": "./dist/infinite.cjs"
+			}
 		},
 		"./queries": {
-			"types": "./dist/queries.d.ts",
-			"import": "./dist/queries.js",
-			"require": "./dist/queries.cjs"
+			"import": {
+				"types": "./dist/queries.d.ts",
+				"default": "./dist/queries.js"
+			},
+			"require": {
+				"types": "./dist/queries.d.cts",
+				"default": "./dist/queries.cjs"
+			}
 		}
 	},
 	"files": [

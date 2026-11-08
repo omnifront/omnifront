@@ -4,7 +4,7 @@ import { dehydrate } from "@unicore/query/hydration"
 import { act, render, screen } from "@testing-library/react"
 import { Component, Suspense, type ReactNode } from "react"
 import { hydrateRoot } from "react-dom/client"
-import { renderToReadableStream } from "react-dom/server"
+import * as server from "react-dom/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { HydrationBoundary, QueryProvider } from "../src"
 import { useSuspenseInfiniteQuery, useSuspenseQuery } from "../src/suspense"
@@ -14,6 +14,28 @@ const newClient = (clock = 0) => {
 	scheduler.advance(clock)
 	return new QueryClient({ scheduler, gcTime: Infinity })
 }
+/** Render with streaming SSR and return the HTML once every suspended component has its data. */
+async function renderStreaming(ui: ReactNode): Promise<string> {
+	const api = server as unknown as {
+		renderToReadableStream?: (ui: ReactNode) => Promise<ReadableStream & { allReady: Promise<void> }>
+		renderToPipeableStream?: (ui: ReactNode, options: { onAllReady(): void; onError(error: unknown): void }) => { pipe(stream: NodeJS.WritableStream): void }
+	}
+	if (api.renderToReadableStream) {
+		const stream = await api.renderToReadableStream(ui)
+		await stream.allReady
+		return new Response(stream).text()
+	}
+	// React 18's Node build has the pipeable variant only.
+	const { PassThrough } = await import("node:stream")
+	return new Promise<string>((resolve, reject) => {
+		const chunks: Buffer[] = []
+		const out = new PassThrough()
+		out.on("data", (chunk: Buffer) => chunks.push(chunk))
+		out.on("end", () => resolve(Buffer.concat(chunks).toString()))
+		const { pipe } = api.renderToPipeableStream!(ui, { onAllReady: () => pipe(out), onError: reject })
+	})
+}
+
 const flush = () => act(async () => void (await new Promise((r) => setTimeout(r, 0))))
 
 class Boundary extends Component<{ children: ReactNode; onError?: (e: unknown) => void }, { error: unknown }> {
@@ -150,17 +172,15 @@ describe("useSuspenseQuery with streaming SSR", () => {
 		["browser clock far ahead: hydrates cleanly, then refetches the (by its clock) old data", 900_000, false],
 	])("the server waits for the data and the browser hydrates it without a mismatch (%s)", async (_name, browserClock, staysFresh) => {
 		// Server: React streams HTML once every suspended component has its data.
-		const server = newClient(1000)
+		const serverClient = newClient(1000)
 		const queryFn = vi.fn(async () => {
 			await new Promise((r) => setTimeout(r, 10))
 			return ["from-server"]
 		})
-		const stream = await renderToReadableStream(app(server, <Todos queryFn={queryFn} staleTime={5000} />))
-		await stream.allReady
-		const html = await new Response(stream).text()
+		const html = await renderStreaming(app(serverClient, <Todos queryFn={queryFn} staleTime={5000} />))
 		expect(html).toContain("from-server")
 		expect(queryFn).toHaveBeenCalledTimes(1)
-		const state = JSON.parse(JSON.stringify(dehydrate(server)))
+		const state = JSON.parse(JSON.stringify(dehydrate(serverClient)))
 
 		// Browser: hydrate the cache first, then the page; the browser clock is far ahead of the server's.
 		const browser = newClient(browserClock)

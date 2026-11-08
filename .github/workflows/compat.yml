@@ -1,0 +1,62 @@
+name: Compatibility
+
+# Slower checks that the main CI skips: the oldest supported framework versions, the packaging of
+# the npm tarballs, and a real Next.js app built from the packed packages.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 5 * * 1" # Mondays: catch new framework releases breaking us
+  workflow_dispatch:
+
+jobs:
+  oldest-versions:
+    name: ${{ matrix.entry }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        entry: [react18, vue33, angular17, angular18]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: scripts/test-matrix.sh ${{ matrix.entry }}
+
+  packaging:
+    name: npm tarballs (publint + attw)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: scripts/check-packages.sh
+
+  next:
+    name: Next ${{ matrix.next }} / React ${{ matrix.react }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { next: "14.2.35", react: "18.3.1" }
+          - { next: "^15", react: "^19" }
+          - { next: latest, react: latest }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: scripts/consumer-next.sh "${{ matrix.next }}" "${{ matrix.react }}"

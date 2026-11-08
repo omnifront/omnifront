@@ -20,16 +20,29 @@
 	},
 	"type": "module",
 	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
 	"exports": {
 		".": {
-			"types": "./dist/index.d.ts",
-			"import": "./dist/index.js",
-			"require": "./dist/index.cjs"
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
 		},
 		"./indexeddb": {
-			"types": "./dist/indexeddb.d.ts",
-			"import": "./dist/indexeddb.js",
-			"require": "./dist/indexeddb.cjs"
+			"import": {
+				"types": "./dist/indexeddb.d.ts",
+				"default": "./dist/indexeddb.js"
+			},
+			"require": {
+				"types": "./dist/indexeddb.d.cts",
+				"default": "./dist/indexeddb.cjs"
+			}
 		}
 	},
 	"files": [
