@@ -1,0 +1,25 @@
+{
+	"name": "@unicore/benchmarks",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"size": "node size.mjs",
+		"bench": "vitest bench --run",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@unicore/query": "workspace:*",
+		"@unicore/react": "workspace:*",
+		"@unicore/store": "workspace:*"
+	},
+	"devDependencies": {
+		"@tanstack/query-core": "^5.107.1",
+		"@tanstack/react-query": "^5.107.1",
+		"esbuild": "^0.28.2",
+		"react": "^19.3.1",
+		"react-dom": "^19.3.1",
+		"swr": "^2.5.1",
+		"vitest": "^2.1.9"
+	}
+}
