@@ -43,6 +43,8 @@ Mutations (`useMutation` / `injectMutation`), stores (`createStore`, `useStore` 
 | [`@unicore/vue`](packages/vue) | `QueryPlugin`, `useQuery`, `useMutation`, `useStore` | ~0.8 KB |
 | [`@unicore/angular`](packages/angular) | `provideUnicore`, `injectQuery`, `injectMutation`, `injectStore` | ~0.8 KB |
 | [`@unicore/next`](packages/next) | server helpers and a `"use client"` entry for Next.js 14+ | ~0.3 KB each |
+| [`@unicore/persist`](packages/persist) | keep the cache across page loads (localStorage, IndexedDB, any storage) | ~0.9 KB |
+| [`@unicore/devtools`](packages/devtools) | cache inspector: headless model + framework-free panel | ~0.6 KB model, ~2.2 KB panel |
 
 Only the adapters may import `react`, `vue` or `@angular/*`; CI enforces it.
 
@@ -59,7 +61,7 @@ Start with the Introduction, the guide for your framework, then Queries. The API
 
 ## What is not here yet
 
-Infinite and paginated queries, persistence, devtools, structural sharing, Suspense integration, streaming SSR, and SSR helpers for Vue (Nuxt) and Angular. See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
+Infinite and paginated queries, structural sharing, Suspense integration, streaming SSR, and SSR helpers for Vue (Nuxt) and Angular. See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
 
 ## Examples
 

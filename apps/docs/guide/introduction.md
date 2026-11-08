@@ -24,7 +24,7 @@ The hard rule: only the adapters may import `react`, `vue` or `@angular/*`. It i
 
 ## What it does not have (yet)
 
-Infinite and paginated query helpers, persistence, devtools, `useQueries`/dependent-query helpers, structural sharing of results, Suspense integration and streaming SSR. If you need these today, use TanStack Query; see [migrating](/guide/migrating-from-tanstack) for how the APIs line up.
+Infinite and paginated query helpers, `useQueries`/dependent-query helpers, structural sharing of results, Suspense integration and streaming SSR. If you need these today, use TanStack Query; see [migrating](/guide/migrating-from-tanstack) for how the APIs line up.
 
 ## Next steps
 

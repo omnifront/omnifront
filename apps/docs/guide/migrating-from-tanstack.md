@@ -47,4 +47,4 @@ export const todosQuery = {
 
 ## Not in unicore yet
 
-Infinite query helpers (`useInfiniteQuery`; plain pagination works with `placeholderData: keepPreviousData`), `useQueries`, `useIsFetching`, structural sharing of results, persistence, Suspense hooks, devtools, streaming SSR. See the [benchmarks](/benchmarks) for what the smaller feature set buys in bytes.
+Infinite query helpers (`useInfiniteQuery`; plain pagination works with `placeholderData: keepPreviousData`), `useQueries`, `useIsFetching`, structural sharing of results, Suspense hooks, streaming SSR. Persistence and devtools exist as separate packages: [`@unicore/persist`](/guide/persistence) and [`@unicore/devtools`](/guide/devtools). See the [benchmarks](/benchmarks) for what the smaller feature set buys in bytes.

@@ -18,6 +18,8 @@ const pages = {
 	vue: ["vue", ["index.d.ts"]],
 	angular: ["angular", ["index.d.ts"]],
 	next: ["next", ["index.d.ts", "client.d.ts"]],
+	persist: ["persist", ["index.d.ts", "indexeddb.d.ts"]],
+	devtools: ["devtools", ["index.d.ts", "panel.d.ts"]],
 }
 
 function exportsOf(file) {

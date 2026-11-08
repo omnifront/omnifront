@@ -1,0 +1,34 @@
+# @unicore/persist
+
+Persist the query cache. About 0.9 KB gzipped (IndexedDB adapter about 0.3 KB). See the [persistence guide](/guide/persistence).
+
+### `persistQueryClient`
+
+`persistQueryClient(client, options)` restores the stored cache into `client` and starts writing changes. Returns a `Persister`. Options type: `PersistOptions`.
+
+### `Persister`
+
+| Member | |
+|---|---|
+| `restored` | `Promise<boolean>`: resolves when loading is done; `true` if a cache was restored. |
+| `persist()` | Write now (waits for `restored` first). |
+| `stop()` | Stop persisting; leave what is stored. |
+| `clear()` | Stop persisting and delete what is stored. |
+
+### `PersistOptions`
+
+`storage` (required), `key`, `maxAge`, `buster`, `throttle`, `shouldDehydrate`, `serialize`, `deserialize`, `onError`. Defaults are in the [guide](/guide/persistence#options).
+
+### `PersistStorage`
+
+`getItem(key)`, `setItem(key, value)`, `removeItem(key)`, each sync or returning a promise. `localStorage` already fits.
+
+### `PersistedCache`
+
+What is stored: `{ version: 1, timestamp, buster, state }`, where `state` is a [`DehydratedState`](/api/query#dehydratedstate).
+
+## IndexedDB (`@unicore/persist/indexeddb`)
+
+### `createIndexedDBStorage`
+
+`createIndexedDBStorage({ dbName?, storeName? })` returns a `PersistStorage` backed by IndexedDB. Options type: `IndexedDBStorageOptions`.
