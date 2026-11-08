@@ -122,9 +122,13 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 
 	/** The options of the underlying observer: same key and behaviour, but the function loads all pages. */
 	private innerOptions(): QueryObserverOptions<InfiniteData<TPage, TPageParam>> {
-		const { queryFn, initialPageParam, getNextPageParam, getPreviousPageParam, ...rest } = this.options
-		void queryFn, initialPageParam, getNextPageParam, getPreviousPageParam
-		return { ...rest, queryFn: this.loadAll }
+		// Everything except the page-level functions describes the cache entry and is passed through.
+		const rest: Partial<InfiniteQueryObserverOptions<TPage, TPageParam>> = { ...this.options }
+		delete rest.queryFn
+		delete rest.initialPageParam
+		delete rest.getNextPageParam
+		delete rest.getPreviousPageParam
+		return { ...(rest as QueryObserverOptions<InfiniteData<TPage, TPageParam>>), queryFn: this.loadAll }
 	}
 
 	private data(): InfiniteData<TPage, TPageParam> | undefined {
