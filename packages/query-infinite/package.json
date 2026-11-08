@@ -1,0 +1,42 @@
+{
+	"name": "@unicore/query-infinite",
+	"version": "0.0.0",
+	"description": "Infinite and paginated queries for unicore: fetchNextPage, fetchPreviousPage, page cursors.",
+	"license": "MIT",
+	"keywords": [
+		"unicore",
+		"infinite",
+		"pagination",
+		"query"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"directory": "packages/query-infinite"
+	},
+	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/query-infinite#readme",
+	"bugs": {
+		"url": "https://github.com/AMHB-DEV/unicore/issues"
+	},
+	"type": "module",
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts --clean",
+		"test": "vitest run --coverage",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@unicore/core": "workspace:*",
+		"@unicore/query": "workspace:*"
+	}
+}
