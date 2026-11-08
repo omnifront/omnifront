@@ -33,3 +33,17 @@ One `ComputedRef` per field (`status`, `data`, `error`, `isFetching`, `isStale`,
 ### `useStore`
 
 `useStore(source, selector?, equals?)` returns a `ComputedRef` of the selected slice of any `Subscribable`.
+
+## Infinite queries (`@unicore/vue/infinite`)
+
+### `useInfiniteQuery`
+
+`useInfiniteQuery(options)`; options may be an object, a ref or a getter. Returns a `UseInfiniteQueryReturn`.
+
+### `UseInfiniteQueryReturn`
+
+`ComputedRef`s for `status`, `data`, `error`, `isFetching`, `isStale`, `hasNextPage`, `hasPreviousPage`, `isFetchingNextPage`, `isFetchingPreviousPage`, plus `fetchNextPage()`, `fetchPreviousPage()` and `refetch()`.
+
+### `InfiniteQueryObserverOptions`
+
+Re-exported from `@unicore/query-infinite` ([options](/api/query-infinite#infinitequeryobserveroptions)). `InfiniteData` and `InfiniteQueryResult` are re-exported too.

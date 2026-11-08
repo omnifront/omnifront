@@ -15,6 +15,8 @@ The shapes are deliberately close, so most code ports by renaming imports. This 
 | `dehydrate` / `hydrate` / `HydrationBoundary` | the same names |
 | key hashing (object key order ignored, prefix matching) | the same |
 | `QueryClientProvider` | `QueryProvider` (React), `app.use(QueryPlugin, client)` (Vue), `provideUnicore(client)` (Angular) |
+| `useInfiniteQuery({ initialPageParam, getNextPageParam, ... })` | the same options, imported from `@unicore/react/infinite` (also Vue, Angular) |
+| `useSuspenseQuery` | `useSuspenseQuery` from `@unicore/react/suspense` (`staleTime` defaults to 1 s; retry after an error via `invalidateQueries`) |
 
 ## Renamed or changed
 
@@ -47,4 +49,4 @@ export const todosQuery = {
 
 ## Not in unicore yet
 
-Infinite query helpers (`useInfiniteQuery`; plain pagination works with `placeholderData: keepPreviousData`), `useQueries`, `useIsFetching`, structural sharing of results, Suspense hooks, streaming SSR. Persistence and devtools exist as separate packages: [`@unicore/persist`](/guide/persistence) and [`@unicore/devtools`](/guide/devtools). See the [benchmarks](/benchmarks) for what the smaller feature set buys in bytes.
+`useQueries`, `useIsFetching`, structural sharing of results, `useSuspenseInfiniteQuery`, `maxPages` for infinite queries. `useInfiniteQuery` ([`@unicore/query-infinite`](/guide/infinite-queries)) and `useSuspenseQuery` ([Suspense](/guide/suspense)) exist, as does streaming SSR with React. Persistence and devtools exist as separate packages: [`@unicore/persist`](/guide/persistence) and [`@unicore/devtools`](/guide/devtools). See the [benchmarks](/benchmarks) for what the smaller feature set buys in bytes.

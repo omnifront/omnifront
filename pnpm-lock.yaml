@@ -96,6 +96,9 @@ importers:
       '@unicore/query':
         specifier: workspace:*
         version: link:../../packages/query
+      '@unicore/query-infinite':
+        specifier: workspace:*
+        version: link:../../packages/query-infinite
       '@unicore/react':
         specifier: workspace:*
         version: link:../../packages/react
@@ -126,7 +129,7 @@ importers:
     devDependencies:
       '@angular/build':
         specifier: ^22.2.6
-        version: 22.2.6(@angular/compiler-cli@22.2.5(@angular/compiler@22.2.5)(typescript@6.0.3))(@angular/compiler@22.2.5)(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(@angular/platform-browser@22.2.5(@angular/common@22.2.5(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2)))(@types/node@26.6.6)(jiti@2.7.0)(postcss@8.5.32)(rollup@4.67.5)(supports-color@7.2.0)(tslib@2.9.1)(typescript@6.0.3)(vitest@2.1.9(@types/node@26.6.6)(jsdom@31.0.0)(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(supports-color@7.2.0))
+        version: 22.2.6(a594ac918dfe3b41ffc9e7e1d6accb84)
       '@angular/cli':
         specifier: ^22.2.6
         version: 22.2.6(@types/node@26.6.6)(chokidar@5.0.0)
@@ -5283,7 +5286,7 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@angular/build@22.2.6(@angular/compiler-cli@22.2.5(@angular/compiler@22.2.5)(typescript@6.0.3))(@angular/compiler@22.2.5)(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(@angular/platform-browser@22.2.5(@angular/common@22.2.5(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2)))(@types/node@26.6.6)(jiti@2.7.0)(postcss@8.5.32)(rollup@4.67.5)(supports-color@7.2.0)(tslib@2.9.1)(typescript@6.0.3)(vitest@2.1.9(@types/node@26.6.6)(jsdom@31.0.0)(lightningcss@1.33.0)(sass-embedded@1.104.1)(sass@1.104.1)(supports-color@7.2.0))':
+  '@angular/build@22.2.6(a594ac918dfe3b41ffc9e7e1d6accb84)':
     dependencies:
       '@ampproject/remapping': 2.3.0
       '@angular-devkit/architect': 0.2202.6(chokidar@5.0.0)
@@ -5319,6 +5322,7 @@ snapshots:
     optionalDependencies:
       '@angular/core': 22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2)
       '@angular/platform-browser': 22.2.5(@angular/common@22.2.5(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))
+      '@angular/platform-server': 22.2.5(@angular/common@22.2.5(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/compiler@22.2.5)(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(@angular/platform-browser@22.2.5(@angular/common@22.2.5(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2))(rxjs@7.8.2))(@angular/core@22.2.5(@angular/compiler@22.2.5)(rxjs@7.8.2)))(rxjs@7.8.2)
       '@oxc-parser/binding-wasm32-wasi': 0.156.0
       lmdb: 3.5.6
       postcss: 8.5.32

@@ -9,7 +9,7 @@
 - **Share logic across frameworks.** Teams running React *and* Angular, or migrating from one to the other, keep one set of query and store definitions. The three demos in [`examples/`](examples) share a single `examples/shared` package; only the rendering code differs.
 - **Small on purpose.** The query core is about 3 KB gzipped and each adapter under 1 KB (TanStack Query's core is about 9 KB; see [benchmarks](apps/benchmarks/README.md) for exactly what that trade gives up).
 - **One mental model.** A query observer, a store and a derived slice all implement the same `Subscribable` contract ([ADR-0001](docs/adr/0001-subscribable-contract.md)), so `useStore(source, selector)` works on any of them.
-- **SSR that does not mismatch.** `dehydrate`/`hydrate`, a clock-independent server snapshot, and a Next.js package for the App Router and Pages Router.
+- **SSR that does not mismatch.** `dehydrate`/`hydrate`, a clock-independent server snapshot, a Next.js package for the App Router and Pages Router, Vue SSR (`onServerPrefetch`) and Angular SSR (`TransferState`), plus React Suspense.
 
 ## The same query in four frameworks
 
@@ -43,6 +43,7 @@ Mutations (`useMutation` / `injectMutation`), stores (`createStore`, `useStore` 
 | [`@unicore/vue`](packages/vue) | `QueryPlugin`, `useQuery`, `useMutation`, `useStore` | ~0.8 KB |
 | [`@unicore/angular`](packages/angular) | `provideUnicore`, `injectQuery`, `injectMutation`, `injectStore` | ~0.8 KB |
 | [`@unicore/next`](packages/next) | server helpers and a `"use client"` entry for Next.js 14+ | ~0.3 KB each |
+| [`@unicore/query-infinite`](packages/query-infinite) | infinite and paginated queries (`fetchNextPage`, cursors); adapters expose `/infinite` | ~1.0 KB |
 | [`@unicore/persist`](packages/persist) | keep the cache across page loads (localStorage, IndexedDB, any storage) | ~0.9 KB |
 | [`@unicore/devtools`](packages/devtools) | cache inspector: headless model + framework-free panel | ~0.6 KB model, ~2.2 KB panel |
 
@@ -61,7 +62,7 @@ Start with the Introduction, the guide for your framework, then Queries. The API
 
 ## What is not here yet
 
-Infinite and paginated queries, structural sharing, Suspense integration, streaming SSR, and SSR helpers for Vue (Nuxt) and Angular. See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
+`useQueries`, structural sharing, `maxPages` for infinite queries, and a runnable Nuxt / `@angular/ssr` example (Vue and Angular SSR are tested with real server renderers, Vue also in a Vite SSR demo). See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
 
 ## Examples
 
@@ -71,6 +72,7 @@ Infinite and paginated queries, structural sharing, Suspense integration, stream
 | [`examples/vue`](examples/vue) | `pnpm --filter @unicore/example-vue dev` |
 | [`examples/angular`](examples/angular) | `pnpm --filter @unicore/example-angular dev` |
 | [`examples/next`](examples/next) | `pnpm --filter @unicore/example-next dev` (App Router and Pages Router) |
+| [`examples/vue-ssr`](examples/vue-ssr) | `pnpm --filter @unicore/example-vue-ssr dev` (Vite SSR server) |
 
 ## Development
 

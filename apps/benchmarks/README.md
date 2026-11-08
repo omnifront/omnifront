@@ -12,7 +12,7 @@ pnpm --filter @unicore/benchmarks bench   # speed (varies by machine; compare ra
 
 unicore is **much smaller and does much less**. These numbers are not "unicore beats TanStack Query"; they are "what you give up and gain by choosing a small core".
 
-Things TanStack Query has that unicore does **not** (yet): structural sharing of results, infinite and paginated query helpers, the `select` option (use `derive`/`useStore` instead), `useQueries`/dependent-query helpers, a Suspense integration, streaming SSR. Part of the size and speed difference is simply that work not being done. Several of those are on the roadmap and will cost bytes.
+Things TanStack Query has that unicore does **not** (yet): structural sharing of results, the `select` option (use `derive`/`useStore` instead), `useQueries`/dependent-query helpers, `maxPages` for infinite queries. Part of the size and speed difference is simply that work not being done. Several of those are on the roadmap and will cost bytes.
 
 ## Bundle size (minified + gzip, React excluded)
 

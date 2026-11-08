@@ -75,5 +75,5 @@ const text = useStore(filter, (s) => s.text) // ComputedRef<string>
 
 ## Lifecycle notes
 
-- The composables subscribe during `setup()` (not `onMounted`): that is what starts the fetch, and it makes data available to code that runs before mount. The subscription is stopped with `onScopeDispose`, so unmounting the component lets an unused cache entry start its gc timer.
-- On the server (no `window`) they do not subscribe, because there is no unmount to clean up. They just read the current snapshot. Server-side prefetching for Nuxt is not built yet; `dehydrate`/`hydrate` from `@unicore/query/hydration` are framework-free if you want to wire it yourself.
+- The composables subscribe when the component is **mounted** (immediately when used outside a component). The first render uses a clock-independent snapshot, so a page rendered on the server hydrates without a mismatch; right after mount it switches to live data. The subscription is stopped with `onScopeDispose`, so unmounting the component lets an unused cache entry start its gc timer.
+- On the server (no `window`) they do not subscribe. They register `onServerPrefetch`, so Vue waits for the data before rendering. See [Server-side rendering](/guide/ssr#vue) for the full flow and a Nuxt plugin.

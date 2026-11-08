@@ -35,6 +35,57 @@ Components render from `getServerSnapshot()` on the server **and** during hydrat
 
 The repository's tests render on a "server", hydrate on a "browser" whose clock is hundreds of seconds ahead, behind and equal, and fail on any hydration warning.
 
-## Other frameworks
+## Vue
 
-`dehydrate` and `hydrate` are framework-free. The Vue and Angular adapters do not subscribe on the server and have no SSR helpers yet (Nuxt, Angular `TransferState`); you can bridge the dehydrated JSON yourself.
+`useQuery` is SSR-ready on its own. On the server it does not subscribe (nothing would ever unsubscribe it); instead it registers `onServerPrefetch`, which Vue awaits before rendering the component, so the HTML contains the data. In the browser it renders the clock-independent server snapshot first and switches to live data (and starts its subscription) when the component is mounted, so hydration matches the server.
+
+```ts
+// server.ts, once per request
+const client = new QueryClient({ gcTime: Infinity })
+const html = await renderToString(createSSRApp(App).use(QueryPlugin, client))
+const state = dehydrate(client)           // after rendering: every prefetch has finished
+// put `state` in the page, e.g. <script>window.__UNICORE__ = ...</script> (escape "<" as \u003c)
+
+// browser, before mounting
+hydrate(client, window.__UNICORE__)
+createSSRApp(App).use(QueryPlugin, client).mount("#app")
+```
+
+`examples/vue-ssr` is a complete runnable Vite SSR server doing exactly this.
+
+### Nuxt
+
+With Nuxt you only need a plugin that moves the cache through the payload:
+
+```ts
+// plugins/unicore.ts
+import { QueryClient } from "@unicore/query"
+import { dehydrate, hydrate, type DehydratedState } from "@unicore/query/hydration"
+import { QueryPlugin } from "@unicore/vue"
+
+export default defineNuxtPlugin((nuxtApp) => {
+	const client = new QueryClient(import.meta.server ? { gcTime: Infinity } : {})
+	nuxtApp.vueApp.use(QueryPlugin, client)
+	if (import.meta.server) nuxtApp.hooks.hook("app:rendered", () => { nuxtApp.payload.unicore = dehydrate(client) })
+	else if (nuxtApp.payload.unicore) hydrate(client, nuxtApp.payload.unicore as DehydratedState)
+})
+```
+
+This follows Nuxt's documented plugin and payload hooks and uses the same unicore code path as the Vite example, but it has not been run inside a Nuxt app in this repository.
+
+## Angular
+
+Add `provideUnicoreSsr()` (from `@unicore/angular/ssr`) next to `provideUnicore`. It needs Angular 18+ for the server-side wait (`PendingTasks`).
+
+```ts
+// app.config.ts (shared by browser and server)
+providers: [provideUnicore(new QueryClient()), provideUnicoreSsr()]
+```
+
+On the server, after the first render, it holds the application "unstable" until every query that started has finished (queries that start other queries are followed too), and then writes the cache into Angular's `TransferState`; the serialized state ends up in the page's `ng-state` script. In the browser it loads that state before any component asks for data. `injectQuery` itself needs no change.
+
+Use a new `QueryClient` per request: `provideUnicore(new QueryClient())` inside the server `ApplicationConfig` that Angular builds per request, not a module-level singleton shared by all requests. The repository's tests render with Angular's real `renderApplication` (platform-server), including the second request not seeing the first one's data; they do not run a full `@angular/ssr` Express app.
+
+## React and Next.js
+
+See [Next.js](/guide/next); plain React SSR uses `HydrationBoundary` as shown above, and [Suspense](/guide/suspense) works with streaming.

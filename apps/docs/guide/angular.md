@@ -83,4 +83,4 @@ filter = injectStore(filterStore, (s) => s.text) // Signal<string>
 
 - Subscriptions end with `DestroyRef`, i.e. when the component, route or injector that called `injectQuery` is destroyed.
 - Reactive options use `effect` with `untracked`, so the observer's own work never becomes an accidental dependency.
-- Angular SSR is not built yet. `dehydrate`/`hydrate` are framework-free if you want to bridge them to `TransferState`.
+- Server-side rendering: add `provideUnicoreSsr()` from `@unicore/angular/ssr`; see [Server-side rendering](/guide/ssr#angular).

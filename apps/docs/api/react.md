@@ -33,3 +33,27 @@ The state fields plus the three functions.
 ### `HydrationBoundary`
 
 `<HydrationBoundary state={dehydratedState}>`: hydrates server-fetched data into the client's cache before its children render. Props type: `HydrationBoundaryProps`.
+
+## Infinite queries (`@unicore/react/infinite`)
+
+### `useInfiniteQuery`
+
+`useInfiniteQuery(options)` returns a `UseInfiniteQueryResult`. Same per-key observer model as `useQuery`.
+
+### `UseInfiniteQueryResult`
+
+An [`InfiniteQueryResult`](/api/query-infinite#infinitequeryresult) plus `fetchNextPage()`, `fetchPreviousPage()` and `refetch()`.
+
+### `InfiniteQueryObserverOptions`
+
+Re-exported from `@unicore/query-infinite` ([options](/api/query-infinite#infinitequeryobserveroptions)). `InfiniteData` and `InfiniteQueryResult` are re-exported too.
+
+## Suspense (`@unicore/react/suspense`)
+
+### `useSuspenseQuery`
+
+`useSuspenseQuery(options)`: suspends while there is no data, throws errors to the error boundary. See the [Suspense guide](/guide/suspense).
+
+### `UseSuspenseQueryResult`
+
+Like `UseQueryResult` but `data` is always defined and `status` is `"success" | "error"`.

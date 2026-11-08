@@ -82,3 +82,4 @@ function Filter() {
 
 - Works under `<StrictMode>`; the double mount still sends a single request.
 - Rendering on a server? Use `HydrationBoundary`; see [SSR](/guide/ssr). In Next.js use [`@unicore/next`](/guide/next).
+- Prefer `<Suspense>` and error boundaries to `status` checks? See [`useSuspenseQuery`](/guide/suspense). Lists that load page by page: [infinite queries](/guide/infinite-queries).

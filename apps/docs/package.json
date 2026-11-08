@@ -20,6 +20,7 @@
 		"@unicore/angular": "workspace:*",
 		"@unicore/next": "workspace:*",
 		"@unicore/persist": "workspace:*",
-		"@unicore/devtools": "workspace:*"
+		"@unicore/devtools": "workspace:*",
+		"@unicore/query-infinite": "workspace:*"
 	}
 }

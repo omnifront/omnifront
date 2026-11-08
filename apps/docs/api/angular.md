@@ -29,3 +29,23 @@ Returns the provided client; throws a helpful error if `provideUnicore` is missi
 ### `injectStore`
 
 `injectStore(source, selector?, equals?)` returns a read-only `Signal` of the selected slice of any `Subscribable`.
+
+## Infinite queries (`@unicore/angular/infinite`)
+
+### `injectInfiniteQuery`
+
+`injectInfiniteQuery(options)`; options may be an object or a function reading signals. Returns an `InjectInfiniteQueryResult`.
+
+### `InjectInfiniteQueryResult`
+
+`result` and one signal per field (`status`, `data`, `error`, `isFetching`, `isStale`, `hasNextPage`, `hasPreviousPage`, `isFetchingNextPage`, `isFetchingPreviousPage`), plus `fetchNextPage()`, `fetchPreviousPage()` and `refetch()`.
+
+### `InfiniteQueryObserverOptions`
+
+Re-exported from `@unicore/query-infinite` ([options](/api/query-infinite#infinitequeryobserveroptions)). `InfiniteData` and `InfiniteQueryResult` are re-exported too.
+
+## Server rendering (`@unicore/angular/ssr`)
+
+### `provideUnicoreSsr`
+
+Environment providers: on the server, wait for started queries and write the cache into `TransferState`; in the browser, load it. Add next to `provideUnicore`. See [Server-side rendering](/guide/ssr#angular).
