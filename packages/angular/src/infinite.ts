@@ -31,7 +31,11 @@ export interface InjectInfiniteQueryResult<TPage, TPageParam = unknown> {
 export function injectInfiniteQuery<TPage, TPageParam = unknown>(
 	options: InfiniteQueryObserverOptions<TPage, TPageParam> | (() => InfiniteQueryObserverOptions<TPage, TPageParam>),
 ): InjectInfiniteQueryResult<TPage, TPageParam> {
-	const read = () => (typeof options === "function" ? options() : options)
+	// Fail fast on the server instead of retrying with backoff (see injectQuery).
+	const read = () => {
+		const o = typeof options === "function" ? options() : options
+		return typeof window === "undefined" ? { ...o, retry: o.retry ?? false } : o
+	}
 	const observer = new InfiniteQueryObserver(injectQueryClient(), untracked(read))
 	const result = signal(observer.getSnapshot())
 	inject(DestroyRef).onDestroy(observer.subscribe(() => result.set(observer.getSnapshot())))

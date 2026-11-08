@@ -58,8 +58,11 @@ export function provideUnicoreSsr(): EnvironmentProviders {
 }
 
 async function settle(client: ReturnType<typeof injectQueryClient>): Promise<void> {
-	// A finished fetch can start another (dependent queries), so loop until nothing is in flight.
-	while (client.getQueries().some(({ query }) => query.getSnapshot().isFetching)) {
+	for (;;) {
 		await Promise.all(client.getQueries().map(({ query }) => query.settled()))
+		// New data may reveal components that start queries of their own (a waterfall). Give change
+		// detection one macrotask to render them, then look again; stop when nothing is in flight.
+		await new Promise<void>((resolve) => client.scheduler.setTimeout(resolve, 0))
+		if (!client.getQueries().some(({ query }) => query.getSnapshot().isFetching)) return
 	}
 }

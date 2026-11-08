@@ -249,3 +249,17 @@ describe("InfiniteQueryObserver", () => {
 		expect(client.getQuery(["items"]).hasListeners).toBe(false)
 	})
 })
+
+describe("InfiniteQueryObserver with no pages", () => {
+	it("never calls the cursor functions when the cache holds an empty page list", () => {
+		const client = setup()
+		const { options } = makeOptions()
+		const getNextPageParam = vi.fn(options.getNextPageParam)
+		const getPreviousPageParam = vi.fn(options.getPreviousPageParam)
+		client.setQueryData(["items"], { pages: [], pageParams: [] })
+		const o = new InfiniteQueryObserver(client, { ...options, getNextPageParam, getPreviousPageParam })
+		expect(o.getSnapshot()).toMatchObject({ hasNextPage: false, hasPreviousPage: false })
+		expect(getNextPageParam).not.toHaveBeenCalled()
+		expect(getPreviousPageParam).not.toHaveBeenCalled()
+	})
+})

@@ -137,12 +137,14 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 
 	private nextParam(data: InfiniteData<TPage, TPageParam>): TPageParam | undefined | null {
 		const { pages, pageParams } = data
+		if (pages.length === 0) return undefined // nothing loaded: there is no "last page" to ask about
 		const last = pages.length - 1
 		return this.options.getNextPageParam(pages[last] as TPage, pages, pageParams[last] as TPageParam, pageParams)
 	}
 
 	private previousParam(data: InfiniteData<TPage, TPageParam>): TPageParam | undefined | null {
 		const { pages, pageParams } = data
+		if (pages.length === 0) return undefined
 		return this.options.getPreviousPageParam?.(pages[0] as TPage, pages, pageParams[0] as TPageParam, pageParams)
 	}
 

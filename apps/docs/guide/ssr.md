@@ -53,6 +53,8 @@ createSSRApp(App).use(QueryPlugin, client).mount("#app")
 
 `examples/vue-ssr` is a complete runnable Vite SSR server doing exactly this.
 
+On the server a failing request does not retry with backoff (that would hold the render open for several seconds); it renders the error state, `dehydrate` skips it, and the browser fetches it again. Set `retry` explicitly if you want server-side retries.
+
 ### Nuxt
 
 With Nuxt you only need a plugin that moves the cache through the payload:
@@ -82,7 +84,7 @@ Add `provideUnicoreSsr()` (from `@unicore/angular/ssr`) next to `provideUnicore`
 providers: [provideUnicore(new QueryClient()), provideUnicoreSsr()]
 ```
 
-On the server, after the first render, it holds the application "unstable" until every query that started has finished (queries that start other queries are followed too), and then writes the cache into Angular's `TransferState`; the serialized state ends up in the page's `ng-state` script. In the browser it loads that state before any component asks for data. `injectQuery` itself needs no change.
+On the server, after the first render, it holds the application "unstable" until every query that started has finished, and then writes the cache into Angular's `TransferState`; the serialized state ends up in the page's `ng-state` script. In the browser it loads that state before any component asks for data. Queries that only start after other data arrives (a child component behind an `@if`) are followed too: after each round it gives change detection one turn to render what the new data revealed and looks again. As in Vue, a failing request does not retry with backoff on the server. `injectQuery` itself needs no change.
 
 Use a new `QueryClient` per request: `provideUnicore(new QueryClient())` inside the server `ApplicationConfig` that Angular builds per request, not a module-level singleton shared by all requests. The repository's tests render with Angular's real `renderApplication` (platform-server), including the second request not seeing the first one's data; they do not run a full `@angular/ssr` Express app.
 

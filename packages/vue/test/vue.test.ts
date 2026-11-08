@@ -196,3 +196,38 @@ describe("useStore", () => {
 		expect(subscribed).toBe(false)
 	})
 })
+
+describe("useQuery on the server when the request fails", () => {
+	it("fails fast (no retry/backoff holding the render) and the error state is rendered", async () => {
+		const client = newClient() // FakeScheduler: time never moves, so any retry wait would hang this test
+		const queryFn = vi.fn(() => Promise.reject(new Error("down")))
+		vi.stubGlobal("window", undefined)
+		const Comp = defineComponent({
+			setup() {
+				const q = useQuery({ queryKey: ["k"], queryFn })
+				return () => h("p", q.status.value)
+			},
+		})
+		const html = await renderToString(createSSRApp(Comp).use(QueryPlugin, client))
+		expect(html).toContain("error")
+		expect(queryFn).toHaveBeenCalledTimes(1)
+	})
+
+	it("an explicit retry setting is respected", async () => {
+		const client = newClient()
+		const scheduler = client.scheduler as FakeScheduler
+		const queryFn = vi.fn(() => Promise.reject(new Error("down")))
+		vi.stubGlobal("window", undefined)
+		const Comp = defineComponent({
+			setup() {
+				const q = useQuery({ queryKey: ["k"], queryFn, retry: 1, retryDelay: 10 })
+				return () => h("p", q.status.value)
+			},
+		})
+		const rendering = renderToString(createSSRApp(Comp).use(QueryPlugin, client))
+		await new Promise((resolve) => setTimeout(resolve, 0))
+		scheduler.advance(10)
+		expect(await rendering).toContain("error")
+		expect(queryFn).toHaveBeenCalledTimes(2)
+	})
+})

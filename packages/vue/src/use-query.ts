@@ -42,7 +42,11 @@ export interface UseQueryReturn<TData> {
  *   const { data } = useQuery(() => ({ queryKey: ['user', id.value], queryFn: () => fetchUser(id.value) }))
  */
 export function useQuery<TData>(options: MaybeRefOrGetter<QueryObserverOptions<TData>>): UseQueryReturn<TData> {
-	const observer = new QueryObserver(useQueryClient(), toValue(options))
+	// On the server a failing request must not hold the render open through retries with backoff
+	// (~7 s by default): fail fast and let the browser retry. An explicit `retry` is respected.
+	const forServer = (o: QueryObserverOptions<TData>): QueryObserverOptions<TData> =>
+		typeof window === "undefined" ? { ...o, retry: o.retry ?? false } : o
+	const observer = new QueryObserver(useQueryClient(), forServer(toValue(options)))
 
 	// shallowRef: the snapshot is an immutable object we replace wholesale, so deep reactivity
 	// would only add cost. Each field below is a computed over it, so templates can destructure.
@@ -85,7 +89,7 @@ export function useQuery<TData>(options: MaybeRefOrGetter<QueryObserverOptions<T
 	watch(
 		() => toValue(options),
 		(next) => {
-			observer.setOptions(next)
+			observer.setOptions(forServer(next))
 			snapshot.value = read()
 		},
 	)

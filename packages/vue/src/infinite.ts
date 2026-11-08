@@ -42,7 +42,10 @@ export interface UseInfiniteQueryReturn<TPage, TPageParam = unknown> {
 export function useInfiniteQuery<TPage, TPageParam = unknown>(
 	options: MaybeRefOrGetter<InfiniteQueryObserverOptions<TPage, TPageParam>>,
 ): UseInfiniteQueryReturn<TPage, TPageParam> {
-	const observer = new InfiniteQueryObserver(useQueryClient(), toValue(options))
+	// On the server a failing request must not hold the render open through retries (see useQuery).
+	const forServer = (o: InfiniteQueryObserverOptions<TPage, TPageParam>): InfiniteQueryObserverOptions<TPage, TPageParam> =>
+		typeof window === "undefined" ? { ...o, retry: o.retry ?? false } : o
+	const observer = new InfiniteQueryObserver(useQueryClient(), forServer(toValue(options)))
 	// Same SSR approach as useQuery: server snapshot for the first render, live after mount.
 	let live = !getCurrentInstance()
 	const read = () => (live ? observer.getSnapshot() : observer.getServerSnapshot())
@@ -68,7 +71,7 @@ export function useInfiniteQuery<TPage, TPageParam = unknown>(
 	watch(
 		() => toValue(options),
 		(next) => {
-			observer.setOptions(next)
+			observer.setOptions(forServer(next))
 			snapshot.value = read()
 		},
 	)

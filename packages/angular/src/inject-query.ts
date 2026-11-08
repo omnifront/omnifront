@@ -25,7 +25,12 @@ export interface InjectQueryResult<TData> {
 export function injectQuery<TData>(
 	options: QueryObserverOptions<TData> | (() => QueryObserverOptions<TData>),
 ): InjectQueryResult<TData> {
-	const read = () => (typeof options === "function" ? options() : options)
+	// On the server a failing request must not hold the render open through retries with backoff
+	// (~7 s by default): fail fast and let the browser retry. An explicit `retry` is respected.
+	const read = () => {
+		const o = typeof options === "function" ? options() : options
+		return typeof window === "undefined" ? { ...o, retry: o.retry ?? false } : o
+	}
 	const observer = new QueryObserver(injectQueryClient(), untracked(read))
 
 	// A signal holding the immutable snapshot. Signals compare by reference, so it only notifies

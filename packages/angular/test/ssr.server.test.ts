@@ -58,3 +58,55 @@ describe("Angular server rendering", () => {
 		expect(second).not.toContain("server-a")
 	})
 })
+
+describe("Angular server rendering: failures and dependent queries", () => {
+	it("a failing request does not hold the render open through retries", async () => {
+		class Failing {
+			todos = injectQuery({ queryKey: ["failing"], queryFn: () => Promise.reject(new Error("down")) })
+		}
+		Component({ selector: "app-root", template: `<p>{{ todos.status() }}</p>` })(Failing)
+		const started = Date.now()
+		const html = await renderApplication(
+			(context: BootstrapContext) =>
+				bootstrapApplication(
+					Failing,
+					{ providers: [provideZonelessChangeDetection(), provideServerRendering(), provideUnicore(new QueryClient({ gcTime: Infinity })), provideUnicoreSsr()] },
+					context,
+				),
+			{ document: "<app-root></app-root>" },
+		)
+		expect(html).toContain("error")
+		expect(Date.now() - started).toBeLessThan(3000) // default retries would take about 7 seconds
+	})
+
+	it("also waits for a query that only starts after another one's data arrived (waterfall)", async () => {
+		class Detail {
+			detail = injectQuery({
+				queryKey: ["detail"],
+				queryFn: async () => {
+					await new Promise((resolve) => setTimeout(resolve, 10))
+					return "detail-data"
+				},
+			})
+		}
+		Component({ selector: "app-detail", template: `<p>{{ detail.data() }}</p>` })(Detail)
+		class Parent {
+			list = injectQuery({ queryKey: ["list"], queryFn: async () => ["x"] })
+		}
+		Component({
+			selector: "app-root",
+			imports: [Detail],
+			template: `@if (list.data()) { <app-detail /> }`,
+		})(Parent)
+		const html = await renderApplication(
+			(context: BootstrapContext) =>
+				bootstrapApplication(
+					Parent,
+					{ providers: [provideZonelessChangeDetection(), provideServerRendering(), provideUnicore(new QueryClient({ gcTime: Infinity })), provideUnicoreSsr()] },
+					context,
+				),
+			{ document: "<app-root></app-root>" },
+		)
+		expect(html).toContain("detail-data")
+	})
+})
