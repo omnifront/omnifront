@@ -123,5 +123,51 @@
 			"@unicore/core",
 			"@unicore/query"
 		]
+	},
+	{
+		"name": "@unicore/query-infinite",
+		"path": "packages/query-infinite/dist/index.js",
+		"limit": "1.5 KB",
+		"gzip": true,
+		"ignore": [
+			"@unicore/core",
+			"@unicore/query"
+		]
+	},
+	{
+		"name": "@unicore/react/infinite",
+		"path": "packages/react/dist/infinite.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"react",
+			"@unicore/query",
+			"@unicore/core",
+			"@unicore/query-infinite"
+		]
+	},
+	{
+		"name": "@unicore/vue/infinite",
+		"path": "packages/vue/dist/infinite.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"vue",
+			"@unicore/query",
+			"@unicore/core",
+			"@unicore/query-infinite"
+		]
+	},
+	{
+		"name": "@unicore/angular/infinite",
+		"path": "packages/angular/dist/infinite.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@angular/core",
+			"@unicore/query",
+			"@unicore/core",
+			"@unicore/query-infinite"
+		]
 	}
 ]

@@ -262,6 +262,9 @@ importers:
       '@unicore/query':
         specifier: workspace:*
         version: link:../query
+      '@unicore/query-infinite':
+        specifier: workspace:*
+        version: link:../query-infinite
     devDependencies:
       '@angular/common':
         specifier: ^22.2.5
@@ -296,6 +299,9 @@ importers:
       '@unicore/query':
         specifier: workspace:*
         version: link:../query
+      '@unicore/query-infinite':
+        specifier: workspace:*
+        version: link:../query-infinite
       '@unicore/store':
         specifier: workspace:*
         version: link:../store
@@ -371,6 +377,15 @@ importers:
         specifier: ^31.0.0
         version: 31.0.0
 
+  packages/query-infinite:
+    dependencies:
+      '@unicore/core':
+        specifier: workspace:*
+        version: link:../core
+      '@unicore/query':
+        specifier: workspace:*
+        version: link:../query
+
   packages/react:
     dependencies:
       '@unicore/core':
@@ -379,6 +394,9 @@ importers:
       '@unicore/query':
         specifier: workspace:*
         version: link:../query
+      '@unicore/query-infinite':
+        specifier: workspace:*
+        version: link:../query-infinite
     devDependencies:
       '@testing-library/dom':
         specifier: ^10.4.2
@@ -422,6 +440,9 @@ importers:
       '@unicore/query':
         specifier: workspace:*
         version: link:../query
+      '@unicore/query-infinite':
+        specifier: workspace:*
+        version: link:../query-infinite
     devDependencies:
       '@unicore/conformance':
         specifier: workspace:*

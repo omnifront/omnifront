@@ -8,6 +8,7 @@ import {
 	type QueryResult,
 } from "@unicore/query"
 import { focusManager, keepPreviousData, QueryObserver } from "@unicore/query"
+import type { InfiniteQueryObserverOptions, InfiniteQueryResult } from "@unicore/query-infinite"
 import { createStore } from "@unicore/store"
 import { describe, expect, it, vi } from "vitest"
 
@@ -27,6 +28,13 @@ export interface MutationHandle<TData, TVariables> {
 	unmount(): void
 }
 
+export interface InfiniteHandle<TPage, TPageParam> {
+	current(): InfiniteQueryResult<TPage, TPageParam>
+	fetchNextPage(): Promise<void>
+	update(options: InfiniteQueryObserverOptions<TPage, TPageParam>): void
+	unmount(): void
+}
+
 export interface StoreHandle<TSelected> {
 	current(): TSelected
 	unmount(): void
@@ -38,6 +46,10 @@ export interface Harness {
 	mountMutation<TData, TVariables, TContext = unknown>(
 		options: MutationOptions<TData, TVariables, TContext>,
 	): MutationHandle<TData, TVariables>
+	mountInfiniteQuery<TPage, TPageParam>(
+		client: QueryClient,
+		options: InfiniteQueryObserverOptions<TPage, TPageParam>,
+	): InfiniteHandle<TPage, TPageParam>
 	/** Bind a slice of any Subscribable (store, query observer, ...) to the framework's reactivity. */
 	mountStore<TState, TSelected>(
 		source: Subscribable<TState>,
@@ -238,6 +250,51 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 			await settle()
 			expect(q.current()).toMatchObject({ data: "page-2", isPlaceholderData: false })
 			q.unmount()
+		})
+	})
+
+	describe(`${adapterName}: infinite query conformance`, () => {
+		const pagesOf = (): InfiniteQueryObserverOptions<number[], number> => ({
+			queryKey: ["feed"],
+			queryFn: ({ pageParam }) => Promise.resolve([pageParam * 10, pageParam * 10 + 1]),
+			initialPageParam: 1,
+			getNextPageParam: (_last, pages) => (pages.length < 3 ? pages.length + 1 : undefined),
+			staleTime: Infinity,
+			retry: false,
+		})
+
+		it("loads the first page, then more with fetchNextPage, until there are no more", async () => {
+			const { client } = setup()
+			const feed = h.mountInfiniteQuery(client, pagesOf())
+			await settle()
+			expect(feed.current().data?.pages).toEqual([[10, 11]])
+			expect(feed.current().hasNextPage).toBe(true)
+			await feed.fetchNextPage()
+			await feed.fetchNextPage()
+			expect(feed.current().data?.pages).toEqual([[10, 11], [20, 21], [30, 31]])
+			expect(feed.current().hasNextPage).toBe(false)
+			feed.unmount()
+		})
+
+		it("shows isFetchingNextPage while a page loads", async () => {
+			const { client } = setup()
+			let release!: () => void
+			const gate = new Promise<void>((resolve) => (release = resolve))
+			const feed = h.mountInfiniteQuery(client, {
+				...pagesOf(),
+				queryFn: async ({ pageParam }) => {
+					if (pageParam === 2) await gate
+					return [pageParam]
+				},
+			})
+			await settle()
+			const loading = feed.fetchNextPage()
+			await h.act(() => {})
+			expect(feed.current()).toMatchObject({ isFetchingNextPage: true, isFetching: true })
+			release()
+			await loading
+			expect(feed.current()).toMatchObject({ isFetchingNextPage: false, isFetching: false })
+			feed.unmount()
 		})
 	})
 

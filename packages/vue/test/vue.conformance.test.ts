@@ -7,6 +7,7 @@ import {
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicore/query"
 import { nextTick, shallowRef } from "vue"
 import { useMutation, useQuery, useStore } from "../src"
+import { useInfiniteQuery } from "../src/infinite"
 import { mountComposable } from "./mount"
 
 const harness: Harness = {
@@ -35,6 +36,33 @@ const harness: Harness = {
 				current.value = next
 			},
 			refetch: () => r.refetch(),
+			unmount,
+		}
+	},
+
+	mountInfiniteQuery(client, options) {
+		const current = shallowRef(options)
+		const { result: r, unmount } = mountComposable(() => useInfiniteQuery(current), client)
+		return {
+			current: () => ({
+				status: r.status.value,
+				data: r.data.value,
+				error: r.error.value,
+				isFetching: r.isFetching.value,
+				isStale: r.isStale.value,
+				isInvalidated: false,
+				isPlaceholderData: false,
+				failureCount: 0,
+				dataUpdatedAt: undefined,
+				hasNextPage: r.hasNextPage.value,
+				hasPreviousPage: r.hasPreviousPage.value,
+				isFetchingNextPage: r.isFetchingNextPage.value,
+				isFetchingPreviousPage: r.isFetchingPreviousPage.value,
+			}),
+			fetchNextPage: () => r.fetchNextPage(),
+			update: (next) => {
+				current.value = next
+			},
 			unmount,
 		}
 	},

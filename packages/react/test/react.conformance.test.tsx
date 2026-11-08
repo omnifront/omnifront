@@ -8,6 +8,7 @@ import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicor
 import { act, renderHook } from "@testing-library/react"
 import { createElement, type ReactNode } from "react"
 import { QueryProvider, useMutation, useQuery, useStore } from "../src"
+import { useInfiniteQuery } from "../src/infinite"
 
 const harness: Harness = {
 	act: async (fn) => {
@@ -26,6 +27,21 @@ const harness: Harness = {
 			current: () => hook.result.current,
 			update: (next: QueryObserverOptions<TData>) => hook.rerender(next),
 			refetch: () => hook.result.current.refetch(),
+			unmount: () => hook.unmount(),
+		}
+	},
+
+	mountInfiniteQuery(client, options) {
+		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
+		const hook = renderHook((props: typeof options) => useInfiniteQuery(props), { wrapper, initialProps: options })
+		return {
+			current: () => hook.result.current,
+			fetchNextPage: async () => {
+				await act(async () => {
+					await hook.result.current.fetchNextPage()
+				})
+			},
+			update: (next) => hook.rerender(next),
 			unmount: () => hook.unmount(),
 		}
 	},

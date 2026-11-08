@@ -7,6 +7,7 @@ import {
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@unicore/query"
 import { signal } from "@angular/core"
 import { injectMutation, injectQuery, injectStore, provideUnicore } from "../src"
+import { injectInfiniteQuery } from "../src/infinite"
 import { flushEffects, mountInjectable } from "./mount"
 
 const harness: Harness = {
@@ -25,6 +26,20 @@ const harness: Harness = {
 				flushEffects() // the effect applies the new options
 			},
 			refetch: () => r.refetch(),
+			unmount,
+		}
+	},
+
+	mountInfiniteQuery(client, options) {
+		const current = signal(options)
+		const { result: r, unmount } = mountInjectable(() => injectInfiniteQuery(() => current()), [provideUnicore(client)])
+		return {
+			current: () => r.result(),
+			fetchNextPage: () => r.fetchNextPage(),
+			update: (next) => {
+				current.set(next)
+				flushEffects()
+			},
 			unmount,
 		}
 	},
