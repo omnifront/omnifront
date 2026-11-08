@@ -35,5 +35,16 @@
 			"@unicore/query",
 			"@unicore/core"
 		]
+	},
+	{
+		"name": "@unicore/angular",
+		"path": "packages/angular/dist/index.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@angular/core",
+			"@unicore/query",
+			"@unicore/core"
+		]
 	}
 ]

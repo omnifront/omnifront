@@ -5,3 +5,8 @@ packages:
   - "tooling/*"
 allowBuilds:
   esbuild: true
+  # Angular CLI's native helpers ship prebuilt binaries as optional dependencies;
+  # their install scripts are only a fallback, so we deny them (nothing extra runs on install).
+  "@parcel/watcher": false
+  lmdb: false
+  msgpackr-extract: false
