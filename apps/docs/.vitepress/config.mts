@@ -43,6 +43,7 @@ export default defineConfig({
 					text: "More",
 					items: [
 						{ text: "Migrating from TanStack Query", link: "/guide/migrating-from-tanstack" },
+						{ text: "Compatibility", link: "/guide/compatibility" },
 						{ text: "Writing an adapter", link: "/guide/writing-an-adapter" },
 					],
 				},
