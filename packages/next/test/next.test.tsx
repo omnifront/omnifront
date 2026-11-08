@@ -74,3 +74,15 @@ describe("client entry", () => {
 		expect(vi.getTimerCount()).toBe(0)
 	})
 })
+
+describe("without React.cache (React 18)", () => {
+	it("still loads, and getQueryClient falls back to a new client per call", async () => {
+		vi.resetModules()
+		vi.doMock("react", async (original) => ({ ...(await original<typeof import("react")>()), cache: undefined }))
+		const mod = await import("../src/index")
+		expect(mod.getQueryClient()).toBeInstanceOf(mod.QueryClient)
+		expect(mod.getQueryClient()).not.toBe(mod.getQueryClient())
+		vi.doUnmock("react")
+		vi.resetModules()
+	})
+})
