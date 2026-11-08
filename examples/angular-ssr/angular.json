@@ -1,0 +1,39 @@
+{
+	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+	"version": 1,
+	"cli": { "analytics": false },
+	"projects": {
+		"example-angular-ssr": {
+			"projectType": "application",
+			"root": "",
+			"sourceRoot": "src",
+			"architect": {
+				"build": {
+					"builder": "@angular/build:application",
+					"options": {
+						"browser": "src/main.ts",
+						"server": "src/main.server.ts",
+						"outputMode": "server",
+						"ssr": { "entry": "src/server.ts" },
+						"index": "src/index.html",
+						"tsConfig": "tsconfig.app.json",
+						"outputPath": "dist"
+					},
+					"configurations": {
+						"production": { "outputHashing": "all" },
+						"development": { "optimization": false, "sourceMap": true }
+					},
+					"defaultConfiguration": "production"
+				},
+				"serve": {
+					"builder": "@angular/build:dev-server",
+					"configurations": {
+						"production": { "buildTarget": "example-angular-ssr:build:production" },
+						"development": { "buildTarget": "example-angular-ssr:build:development" }
+					},
+					"defaultConfiguration": "development"
+				}
+			}
+		}
+	}
+}

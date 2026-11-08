@@ -62,7 +62,7 @@ Start with the Introduction, the guide for your framework, then Queries. The API
 
 ## What is not here yet
 
-`useIsFetching`, and a runnable Nuxt / `@angular/ssr` example (Vue and Angular SSR are tested with real server renderers, Vue also in a Vite SSR demo). See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
+`useIsFetching`, and server rendering for Vue and Angular is verified in real apps: Vite SSR, Nuxt 4 and `@angular/ssr`. See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
 
 ## Examples
 
@@ -73,6 +73,8 @@ Start with the Introduction, the guide for your framework, then Queries. The API
 | [`examples/angular`](examples/angular) | `pnpm --filter @unicore/example-angular dev` |
 | [`examples/next`](examples/next) | `pnpm --filter @unicore/example-next dev` (App Router and Pages Router) |
 | [`examples/vue-ssr`](examples/vue-ssr) | `pnpm --filter @unicore/example-vue-ssr dev` (Vite SSR server) |
+| [`examples/nuxt`](examples/nuxt) | `pnpm --filter @unicore/example-nuxt dev` (Nuxt 4) |
+| [`examples/angular-ssr`](examples/angular-ssr) | `pnpm --filter @unicore/example-angular-ssr build && pnpm --filter @unicore/example-angular-ssr start` (`@angular/ssr`) |
 
 ## Development
 

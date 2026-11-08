@@ -1,0 +1,19 @@
+{
+	"name": "@unicore/example-nuxt",
+	"version": "0.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "nuxt dev",
+		"build": "nuxt build",
+		"start": "node .output/server/index.mjs",
+		"typecheck": "nuxt prepare"
+	},
+	"dependencies": {
+		"@unicore/query": "workspace:*",
+		"@unicore/vue": "workspace:*",
+		"nuxt": "^4.6.4",
+		"vue": ">=3.3",
+		"vue-router": "^5.4.0"
+	}
+}

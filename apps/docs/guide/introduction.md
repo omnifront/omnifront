@@ -24,7 +24,7 @@ The hard rule: only the adapters may import `react`, `vue` or `@angular/*`. It i
 
 ## What it does not have (yet)
 
-`useIsFetching`, a `combine` option for `useQueries`, and Nuxt/Angular SSR verified in a real framework app (the building blocks are tested; see [SSR](/guide/ssr)). If you need these today, use TanStack Query; see [migrating](/guide/migrating-from-tanstack) for how the APIs line up.
+`useIsFetching`, a `combine` option for `useQueries`, and SSR examples beyond the ones in the repository (Vue SSR, Nuxt 4 and `@angular/ssr` are verified; see [SSR](/guide/ssr)). If you need these today, use TanStack Query; see [migrating](/guide/migrating-from-tanstack) for how the APIs line up.
 
 ## Next steps
 

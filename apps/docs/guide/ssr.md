@@ -73,7 +73,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 })
 ```
 
-This follows Nuxt's documented plugin and payload hooks and uses the same unicore code path as the Vite example, but it has not been run inside a Nuxt app in this repository.
+This exact plugin runs in `examples/nuxt` (Nuxt 4): the server renders the list into the HTML, the cache travels in the payload, and the browser hydrates without console warnings or an initial request. Use `$fetch` in the `queryFn`: on the server Nuxt calls the API handler directly, in the browser it does a normal request.
 
 ## Angular
 
@@ -86,7 +86,7 @@ providers: [provideUnicore(new QueryClient()), provideUnicoreSsr()]
 
 On the server, after the first render, it holds the application "unstable" until every query that started has finished, and then writes the cache into Angular's `TransferState`; the serialized state ends up in the page's `ng-state` script. In the browser it loads that state before any component asks for data. Queries that only start after other data arrives (a child component behind an `@if`) are followed too: after each round it gives change detection one turn to render what the new data revealed and looks again. As in Vue, a failing request does not retry with backoff on the server. `injectQuery` itself needs no change.
 
-Use a new `QueryClient` per request: `provideUnicore(new QueryClient())` inside the server `ApplicationConfig` that Angular builds per request, not a module-level singleton shared by all requests. The repository's tests render with Angular's real `renderApplication` (platform-server), including the second request not seeing the first one's data; they do not run a full `@angular/ssr` Express app.
+Use a new `QueryClient` per request: `provideUnicore(new QueryClient())` inside the server `ApplicationConfig` that Angular builds per request, not a module-level singleton shared by all requests. `examples/angular-ssr` is a complete `@angular/ssr` app (Express server, `RenderMode.Server`, client hydration): the HTML has the data, `ng-state` carries the cache, a second request does not see the first one's data, and the browser starts with no initial request. Two details from that app: build the config in a **function** called per request (`createAppConfig()`), because a module-level `provideUnicore(new QueryClient())` would be one client for all users; and Angular rejects unknown `Host` headers, so give `AngularNodeAppEngine` an `allowedHosts` list for your domains. The unit tests additionally render with `renderApplication` directly.
 
 ## React and Next.js
 

@@ -14,9 +14,11 @@ import { injectQueryClient } from "./provide"
 const STATE_KEY = makeStateKey<DehydratedState>("unicore:query-cache")
 
 // PendingTasks (Angular 19+; ExperimentalPendingTasks in 18) lets us hold the server render open.
-// A namespace import keeps older Angular versions loadable: the token is just missing there.
-const PendingTasks = (ng as unknown as Record<string, { new (): { add(): () => void } } | undefined>)["PendingTasks"] ??
-	(ng as unknown as Record<string, { new (): { add(): () => void } } | undefined>)["ExperimentalPendingTasks"]
+// Looked up by name at run time so bundlers do not warn that one of the two spellings does not exist
+// in the Angular version being built; on Angular 17 neither exists and we simply cannot wait.
+type PendingTasksClass = { new (): { add(): () => void } }
+const angular = ng as unknown as Record<string, PendingTasksClass | undefined>
+const PendingTasks = angular["PendingTasks"] ?? angular[["Experimental", "PendingTasks"].join("")]
 
 /**
  * Server-side rendering support. Add it next to `provideUnicore(client)`:
