@@ -6,7 +6,8 @@ export interface UseQueryResult<TData> extends QueryResult<TData> {
 	refetch: () => Promise<TData>
 }
 
-export function useQuery<TData>(options: QueryObserverOptions<TData>): UseQueryResult<TData> {
+/** The observer behind a hook and its current snapshot. Shared by useQuery and useSuspenseQuery. */
+export function useObservedQuery<TData>(options: QueryObserverOptions<TData>): [QueryObserver<TData>, QueryResult<TData>] {
 	const client = useQueryClient()
 	const hash = hashKey(options.queryKey)
 
@@ -31,7 +32,10 @@ export function useQuery<TData>(options: QueryObserverOptions<TData>): UseQueryR
 	// On the server and while hydrating React uses this one. It never looks at the clock, so the
 	// browser's first render produces the same markup the server did.
 	const getServerSnapshot = useCallback(() => observer.getServerSnapshot(), [observer])
-	const snapshot = useSyncExternalStore(observer.subscribe, getSnapshot, getServerSnapshot)
+	return [observer, useSyncExternalStore(observer.subscribe, getSnapshot, getServerSnapshot)]
+}
 
+export function useQuery<TData>(options: QueryObserverOptions<TData>): UseQueryResult<TData> {
+	const [observer, snapshot] = useObservedQuery(options)
 	return useMemo(() => ({ ...snapshot, refetch: () => observer.refetch() }), [snapshot, observer])
 }

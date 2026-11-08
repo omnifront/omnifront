@@ -181,5 +181,16 @@
 			"@unicore/query/hydration",
 			"@unicore/core"
 		]
+	},
+	{
+		"name": "@unicore/react/suspense",
+		"path": "packages/react/dist/suspense.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"react",
+			"@unicore/query",
+			"@unicore/core"
+		]
 	}
 ]
