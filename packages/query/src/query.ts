@@ -1,8 +1,8 @@
 import { BaseSubscribable, type Scheduler, type TimerHandle } from "@unicore/core"
 import { getRetryDelay, shouldRetry, type RetryOptions } from "./retry"
+import { noop } from "./resolve"
 
 export const DEFAULT_GC_TIME = 5 * 60 * 1000
-const noop = (): void => {}
 
 export type QueryStatus = "idle" | "loading" | "success" | "error"
 
@@ -37,6 +37,8 @@ export interface QueryInit {
 	gcTime?: number
 	/** Called when the entry has been unobserved for `gcTime`. */
 	onGc?: () => void
+	/** Reuse parts of the previous data in new data; see `replaceEqualDeep`. */
+	structuralSharing?: ((previous: unknown, next: unknown) => unknown) | undefined
 }
 
 /** One cache entry. Immutable snapshots; one in-flight request at a time. */
@@ -73,7 +75,7 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 	setData(data: TData, updatedAt: number = this.scheduler.now()): void {
 		this.update({
 			status: "success",
-			data,
+			data: this.share(data),
 			error: undefined,
 			isInvalidated: false,
 			dataUpdatedAt: updatedAt,
@@ -139,7 +141,7 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 				this.settle()
 				this.update({
 					status: "success",
-					data,
+					data: this.share(data),
 					error: undefined,
 					isFetching: false,
 					failureCount: 0,
@@ -181,6 +183,11 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 
 	protected override onUnsubscribe(): void {
 		this.scheduleGc()
+	}
+
+	private share(data: TData): TData {
+		const share = this.init.structuralSharing
+		return share ? (share(this.state.data, data) as TData) : data
 	}
 
 	private settle(): void {

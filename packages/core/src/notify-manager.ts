@@ -4,19 +4,28 @@ let depth = 0
 const queue = new Set<Listener>()
 
 function flush(): void {
-	const pending = [...queue]
-	queue.clear()
+	// Stay "inside a batch" while listeners run: listeners that notify further listeners (a derived
+	// store, a combined list) queue them instead of flushing mid-way, so each runs once per round.
+	depth++
 	let failed = false
 	let firstError: unknown
-	for (const listener of pending) {
-		try {
-			listener()
-		} catch (error) {
-			if (!failed) {
-				failed = true
-				firstError = error
+	try {
+		while (queue.size > 0) {
+			const pending = [...queue]
+			queue.clear()
+			for (const listener of pending) {
+				try {
+					listener()
+				} catch (error) {
+					if (!failed) {
+						failed = true
+						firstError = error
+					}
+				}
 			}
 		}
+	} finally {
+		depth--
 	}
 	// One broken listener must not stop the others; the first error is rethrown at the end.
 	if (failed) throw firstError

@@ -1,4 +1,5 @@
 import { BaseSubscribable } from "@unicore/core"
+import { noop } from "./resolve"
 
 export type MutationStatus = "idle" | "pending" | "success" | "error"
 
@@ -29,7 +30,6 @@ export interface MutationOptions<TData, TVariables = void, TContext = unknown> {
 		| undefined
 }
 
-const noop = (): void => {}
 
 /**
  * One mutation slot, reused across calls (what a UI hook holds on to).

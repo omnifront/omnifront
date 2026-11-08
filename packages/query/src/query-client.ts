@@ -2,12 +2,17 @@ import { defaultScheduler, notifyManager, type Scheduler } from "@unicore/core"
 import { hashKey, matchesKey, type QueryKey } from "./hash-key"
 import { DEFAULT_GC_TIME, Query, type QueryFn, type QueryState } from "./query"
 import type { RetryOptions } from "./retry"
-import { resolve } from "./resolve"
+import { noop, resolve } from "./resolve"
 
 export interface QueryClientOptions {
 	scheduler?: Scheduler
 	/** Default gcTime for new cache entries (ms). */
 	gcTime?: number
+	/**
+	 * Reuse unchanged parts of data across refetches (stable references). Pass `replaceEqualDeep` from
+	 * `@unicore/query/structural`. Off by default to keep the core small.
+	 */
+	structuralSharing?: ((previous: unknown, next: unknown) => unknown) | undefined
 }
 
 export interface InvalidateFilter {
@@ -22,16 +27,13 @@ interface Entry {
 	query: Query<unknown>
 }
 
-const noop = (): void => {}
 
 export class QueryClient {
 	readonly scheduler: Scheduler
-	private readonly defaultGcTime: number
 	private readonly entries = new Map<string, Entry>()
 
-	constructor(options: QueryClientOptions = {}) {
+	constructor(private readonly options: QueryClientOptions = {}) {
 		this.scheduler = options.scheduler ?? defaultScheduler
-		this.defaultGcTime = options.gcTime ?? DEFAULT_GC_TIME
 	}
 
 	/** Get the cache entry for `key`, creating it on first use. */
@@ -42,7 +44,8 @@ export class QueryClient {
 			const created: Entry = {
 				key,
 				query: new Query<unknown>(this.scheduler, {
-					gcTime: gcTime ?? this.defaultGcTime,
+					gcTime: gcTime ?? this.options.gcTime ?? DEFAULT_GC_TIME,
+					structuralSharing: this.options.structuralSharing,
 					onGc: () => {
 						if (this.entries.get(hash) === created) this.entries.delete(hash)
 					},
@@ -78,8 +81,8 @@ export class QueryClient {
 	}
 
 	/** Every cache entry with its key (used by dehydrate). */
-	getQueries(): Array<{ queryKey: QueryKey; query: Query<unknown> }> {
-		return [...this.entries.values()].map(({ key, query }) => ({ queryKey: key, query }))
+	getQueries(): Array<{ key: QueryKey; query: Query<unknown> }> {
+		return [...this.entries.values()]
 	}
 
 	getQueryState<TData>(key: QueryKey): QueryState<TData> | undefined {

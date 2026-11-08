@@ -59,4 +59,15 @@ describe("notifyManager", () => {
 		).toThrow("first")
 		expect(after).toHaveBeenCalledTimes(1)
 	})
+
+	it("a listener that notifies others during the flush does not make them run twice", () => {
+		const downstream = vi.fn()
+		const first = () => notifyManager.batch(() => notifyManager.schedule(downstream))
+		const second = () => notifyManager.batch(() => notifyManager.schedule(downstream))
+		notifyManager.batch(() => {
+			notifyManager.schedule(first)
+			notifyManager.schedule(second)
+		})
+		expect(downstream).toHaveBeenCalledTimes(1)
+	})
 })

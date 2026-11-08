@@ -38,6 +38,12 @@ export interface InfiniteQueryObserverOptions<TPage, TPageParam = unknown>
 		firstPageParam: TPageParam,
 		allPageParams: TPageParam[],
 	) => TPageParam | undefined | null
+	/**
+	 * Keep at most this many pages in the cache. Loading a page past the limit drops the page at the
+	 * opposite end (so a refetch stays cheap); with `getPreviousPageParam` the dropped pages can be
+	 * loaded again by going back.
+	 */
+	maxPages?: number | undefined
 }
 
 export interface InfiniteQueryResult<TPage, TPageParam = unknown> extends QueryResult<InfiniteData<TPage, TPageParam>> {
@@ -128,6 +134,7 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 		delete rest.initialPageParam
 		delete rest.getNextPageParam
 		delete rest.getPreviousPageParam
+		delete rest.maxPages
 		return { ...(rest as unknown as Omit<QueryObserverOptions<InfiniteData<TPage, TPageParam>>, "queryFn">), queryFn: this.loadAll }
 	}
 
@@ -163,6 +170,15 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 		return { pages, pageParams }
 	}
 
+	// Drop pages beyond maxPages from the end opposite to the direction we just grew in.
+	private trim(data: InfiniteData<TPage, TPageParam>, direction: "next" | "previous"): InfiniteData<TPage, TPageParam> {
+		const extra = data.pages.length - (this.options.maxPages ?? Infinity)
+		if (extra <= 0) return data
+		return direction === "next"
+			? { pages: data.pages.slice(extra), pageParams: data.pageParams.slice(extra) }
+			: { pages: data.pages.slice(0, -extra), pageParams: data.pageParams.slice(0, -extra) }
+	}
+
 	private async more(direction: "next" | "previous"): Promise<void> {
 		const data = this.data()
 		if (!data) return this.inner.refetch().then(noop, noop) // nothing loaded yet: load the first page
@@ -176,9 +192,11 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 				async ({ signal }) => {
 					const page = await this.options.queryFn({ signal, pageParam: param })
 					const current = query.getSnapshot().data ?? data // it may have changed while we waited
-					return direction === "next"
-						? { pages: [...current.pages, page], pageParams: [...current.pageParams, param] }
-						: { pages: [page, ...current.pages], pageParams: [param, ...current.pageParams] }
+					const grown =
+						direction === "next"
+							? { pages: [...current.pages, page], pageParams: [...current.pageParams, param] }
+							: { pages: [page, ...current.pages], pageParams: [param, ...current.pageParams] }
+					return this.trim(grown, direction)
 				},
 				{ retry: this.options.retry ?? 3, retryDelay: this.options.retryDelay },
 			)

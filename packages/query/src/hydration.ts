@@ -21,7 +21,7 @@ const hasData = ({ state }: { state: QueryState }): boolean => state.status === 
 export function dehydrate(client: QueryClient, options: DehydrateOptions = {}): DehydratedState {
 	const shouldDehydrate = options.shouldDehydrate ?? hasData
 	const queries: DehydratedState["queries"] = []
-	for (const { queryKey, query } of client.getQueries()) {
+	for (const { key: queryKey, query } of client.getQueries()) {
 		const state = query.getSnapshot()
 		if (shouldDehydrate({ queryKey, state })) {
 			queries.push({ queryKey, data: state.data, dataUpdatedAt: state.dataUpdatedAt ?? client.scheduler.now() })

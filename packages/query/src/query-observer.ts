@@ -2,9 +2,9 @@ import { BaseSubscribable, type TimerHandle } from "@unicore/core"
 import { focusManager, onlineManager } from "./environment"
 import { hashKey, type QueryKey } from "./hash-key"
 import type { Query, QueryFn, QueryState } from "./query"
-import { resolve } from "./resolve"
 import type { RetryOptions } from "./retry"
 import type { QueryClient } from "./query-client"
+import { noop, resolve } from "./resolve"
 
 export interface QueryObserverOptions<TData> extends RetryOptions {
 	queryKey: QueryKey
@@ -48,7 +48,6 @@ interface SnapshotSlot<TData> {
 
 // Longest delay setTimeout supports; longer waits are re-armed on expiry.
 const MAX_TIMEOUT = 2 ** 31 - 1
-const noop = (): void => {}
 
 /** What a UI subscribes to: one query's state plus freshness, with fetch-on-mount. */
 export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {

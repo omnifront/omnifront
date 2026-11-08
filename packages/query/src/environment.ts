@@ -1,8 +1,8 @@
 import { EnvironmentSignal } from "@unicore/core"
+import { noop } from "./resolve"
 
 export type { EnvironmentSignal }
 
-const noop = (): void => {}
 
 /** An EnvironmentSignal that follows `read()` whenever one of `events` fires on `target`. */
 const fromEvents = (
