@@ -69,13 +69,14 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 		return this.state
 	}
 
-	setData(data: TData): void {
+	/** `updatedAt` lets hydration keep the time the server fetched the data. */
+	setData(data: TData, updatedAt: number = this.scheduler.now()): void {
 		this.update({
 			status: "success",
 			data,
 			error: undefined,
 			isInvalidated: false,
-			dataUpdatedAt: this.scheduler.now(),
+			dataUpdatedAt: updatedAt,
 		})
 	}
 

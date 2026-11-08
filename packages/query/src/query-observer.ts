@@ -20,15 +20,20 @@ export interface QueryResult<TData> extends QueryState<TData> {
 }
 
 // Longest delay setTimeout supports; longer waits are re-armed on expiry.
+interface SnapshotSlot<TData> {
+	result?: QueryResult<TData>
+	source?: QueryState<TData>
+	optimistic?: boolean
+}
+
 const MAX_TIMEOUT = 2 ** 31 - 1
 const noop = (): void => {}
 
 /** What a UI subscribes to: one query's state plus freshness, with fetch-on-mount. */
 export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	private query: Query<TData>
-	private result: QueryResult<TData> | undefined
-	private source: QueryState<TData> | undefined
-	private wasOptimistic = false
+	private readonly live: SnapshotSlot<TData> = {}
+	private readonly server: SnapshotSlot<TData> = {}
 	private detachQuery: (() => void) | undefined
 	private staleTimer: TimerHandle | undefined
 
@@ -49,16 +54,39 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 		const state = this.query.getSnapshot()
 		const isStale = this.isStale(state)
 		const optimistic = isStale && !state.isFetching && !this.hasListeners && this.options.enabled !== false
-		const previous = this.result
-		if (previous && this.source === state && previous.isStale === isStale && this.wasOptimistic === optimistic) {
+		return this.view(this.live, state, isStale, optimistic)
+	}
+
+	/**
+	 * What to render on the server and during hydration. It must not depend on the clock: the
+	 * server and the browser disagree on "now", and a different `isStale` would be a hydration
+	 * mismatch. So staleness is judged as of the moment the data arrived: stale only if
+	 * `staleTime` is 0 (or the data is missing / invalidated). The live snapshot takes over
+	 * right after hydration.
+	 */
+	getServerSnapshot(): QueryResult<TData> {
+		const state = this.query.getSnapshot()
+		const isStale = state.isInvalidated || state.dataUpdatedAt === undefined || (this.options.staleTime ?? 0) <= 0
+		const optimistic = isStale && !state.isFetching && this.options.enabled !== false
+		return this.view(this.server, state, isStale, optimistic)
+	}
+
+	private view(
+		slot: SnapshotSlot<TData>,
+		state: QueryState<TData>,
+		isStale: boolean,
+		optimistic: boolean,
+	): QueryResult<TData> {
+		const previous = slot.result
+		if (previous && slot.source === state && previous.isStale === isStale && slot.optimistic === optimistic) {
 			return previous
 		}
-		this.source = state
-		this.wasOptimistic = optimistic
-		this.result = optimistic
+		slot.source = state
+		slot.optimistic = optimistic
+		slot.result = optimistic
 			? { ...state, status: state.status === "idle" ? "loading" : state.status, isFetching: true, isStale }
 			: { ...state, isStale }
-		return this.result
+		return slot.result
 	}
 
 	/** Observers retry failed fetches 3 times by default (unlike imperative fetchQuery). */

@@ -76,6 +76,11 @@ export class QueryClient {
 		return Promise.all(matched.map((query) => query.settled())).then(noop)
 	}
 
+	/** Every cache entry with its key (used by dehydrate). */
+	getQueries(): Array<{ queryKey: QueryKey; query: Query<unknown> }> {
+		return [...this.entries.values()].map(({ key, query }) => ({ queryKey: key, query }))
+	}
+
 	getQueryState<TData>(key: QueryKey): QueryState<TData> | undefined {
 		return (this.entries.get(hashKey(key))?.query as Query<TData> | undefined)?.getSnapshot()
 	}

@@ -31,7 +31,8 @@
 		"ignore": [
 			"react",
 			"@unicore/query",
-			"@unicore/core"
+			"@unicore/core",
+			"@unicore/query/hydration"
 		]
 	},
 	{
@@ -54,6 +55,37 @@
 			"@angular/core",
 			"@unicore/query",
 			"@unicore/core"
+		]
+	},
+	{
+		"name": "@unicore/query/hydration",
+		"path": "packages/query/dist/hydration.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@unicore/core"
+		]
+	},
+	{
+		"name": "@unicore/next",
+		"path": "packages/next/dist/index.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"react",
+			"@unicore/query",
+			"@unicore/query/hydration"
+		]
+	},
+	{
+		"name": "@unicore/next/client",
+		"path": "packages/next/dist/client.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"react",
+			"@unicore/query",
+			"@unicore/react"
 		]
 	}
 ]
