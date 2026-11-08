@@ -9,3 +9,5 @@ coverage
 graphify-out
 .claude/
 .angular/
+.next/
+next-env.d.ts
