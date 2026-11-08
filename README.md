@@ -3,6 +3,8 @@
 **One data layer for React, Next.js, Vue and Angular.** Queries (fetching, caching, deduplication, retries, invalidation), mutations and a tiny store, written once in a framework-free core with thin adapters on top.
 
 > **Status: pre-release.** Not on npm yet and the API can still change. Everything below is covered by tests and runs in the example apps.
+>
+> **Name:** `unicore` is a working name. The `@unicore` scope is already taken on npm, so the project will be renamed before its first publish; see [`docs/PUBLISHING.md`](docs/PUBLISHING.md).
 
 ## Why
 

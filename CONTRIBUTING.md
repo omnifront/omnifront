@@ -66,6 +66,10 @@ scripts/consumer-next.sh 14.2.35 18.3.1   # packed packages installed into a fre
 
 Look for the `good first issue` label. Documentation fixes, extra conformance cases and examples for other frameworks are always welcome.
 
+## Naming and publishing
+
+The working name `unicore` is not available on npm (the `@unicore` scope is owned by someone else). See [`docs/PUBLISHING.md`](docs/PUBLISHING.md) before proposing anything that depends on package names.
+
 ## Security
 
 Please do not open a public issue for a vulnerability. Use GitHub's "Report a vulnerability" (private security advisory) on the repository's Security tab.
