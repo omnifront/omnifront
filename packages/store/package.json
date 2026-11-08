@@ -1,6 +1,21 @@
 {
 	"name": "@unicore/store",
 	"version": "0.0.0",
+	"description": "A tiny framework-agnostic store with selectors, for use with unicore adapters.",
+	"keywords": [
+		"unicore",
+		"store",
+		"state"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"directory": "packages/store"
+	},
+	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/store#readme",
+	"bugs": {
+		"url": "https://github.com/AMHB-DEV/unicore/issues"
+	},
 	"type": "module",
 	"sideEffects": false,
 	"exports": {

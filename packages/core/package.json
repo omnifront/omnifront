@@ -1,6 +1,21 @@
 {
 	"name": "@unicore/core",
 	"version": "0.0.0",
+	"description": "Framework-free primitives for unicore: the Subscribable contract, notification batching, an injectable scheduler and selectors.",
+	"keywords": [
+		"unicore",
+		"subscribable",
+		"scheduler"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"directory": "packages/core"
+	},
+	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/core#readme",
+	"bugs": {
+		"url": "https://github.com/AMHB-DEV/unicore/issues"
+	},
 	"type": "module",
 	"sideEffects": false,
 	"exports": {

@@ -1,6 +1,21 @@
 {
 	"name": "@unicore/vue",
 	"version": "0.0.0",
+	"description": "Vue 3 adapter for unicore: a plugin plus useQuery, useMutation and useStore composables.",
+	"keywords": [
+		"unicore",
+		"vue",
+		"composables"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"directory": "packages/vue"
+	},
+	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/vue#readme",
+	"bugs": {
+		"url": "https://github.com/AMHB-DEV/unicore/issues"
+	},
 	"type": "module",
 	"sideEffects": false,
 	"exports": {

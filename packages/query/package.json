@@ -1,6 +1,23 @@
 {
 	"name": "@unicore/query",
 	"version": "0.0.0",
+	"description": "Framework-agnostic query cache: fetching, deduplication, retries, invalidation, mutations and SSR hydration.",
+	"keywords": [
+		"unicore",
+		"query",
+		"cache",
+		"fetch",
+		"ssr"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"directory": "packages/query"
+	},
+	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/query#readme",
+	"bugs": {
+		"url": "https://github.com/AMHB-DEV/unicore/issues"
+	},
 	"type": "module",
 	"sideEffects": false,
 	"exports": {

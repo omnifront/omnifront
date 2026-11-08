@@ -1,6 +1,21 @@
 {
 	"name": "@unicore/react",
 	"version": "0.0.0",
+	"description": "React adapter for unicore: QueryProvider, useQuery, useMutation, useStore and HydrationBoundary.",
+	"keywords": [
+		"unicore",
+		"react",
+		"hooks"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"directory": "packages/react"
+	},
+	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/react#readme",
+	"bugs": {
+		"url": "https://github.com/AMHB-DEV/unicore/issues"
+	},
 	"type": "module",
 	"sideEffects": false,
 	"exports": {

@@ -1,6 +1,21 @@
 {
 	"name": "@unicore/next",
 	"version": "0.0.0",
+	"description": "Next.js helpers for unicore: per-request query clients, dehydrate/hydrate and a client entry for the App Router and Pages Router.",
+	"keywords": [
+		"unicore",
+		"nextjs",
+		"ssr"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/AMHB-DEV/unicore.git",
+		"directory": "packages/next"
+	},
+	"homepage": "https://github.com/AMHB-DEV/unicore/tree/main/packages/next#readme",
+	"bugs": {
+		"url": "https://github.com/AMHB-DEV/unicore/issues"
+	},
 	"type": "module",
 	"sideEffects": false,
 	"exports": {
