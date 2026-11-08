@@ -24,5 +24,16 @@
 			"@unicore/query",
 			"@unicore/core"
 		]
+	},
+	{
+		"name": "@unicore/vue",
+		"path": "packages/vue/dist/index.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"vue",
+			"@unicore/query",
+			"@unicore/core"
+		]
 	}
 ]

@@ -35,7 +35,9 @@ Listener بدون آرگومانه. اطلاعات رو از getSnapshot() می�
 
 ```ts
 // react
-useSyncExternalStore(o.subscribe, o.getSnapshot, o.getServerSnapshot ?? o.getSnapshot)
+// getSnapshot متد کلاس است و React آن را جدا صدا می‌زند، پس باید bind شود
+const getSnapshot = () => o.getSnapshot()
+useSyncExternalStore(o.subscribe, getSnapshot, getSnapshot)
 
 // vue
 const state = shallowRef(o.getSnapshot())
@@ -62,3 +64,11 @@ EventEmitter با payload: snapshot رو از دست می‌دیم و SSR/hydrat
 ### معیار بازبینی
 
 اگه موقع نوشتن آداپتر Vue یا Angular مجبور شدیم این قرارداد رو عوض کنیم، این ADR رو دوباره باز می‌کنیم.
+
+### گزارش بازبینی
+
+آداپتر Vue (۲۰۲۶-۱۱-۰۸): قرارداد بدون هیچ تغییری در core یا query کافی بود و همان ۱۳ تست conformance که برای React نوشته شده بود، بدون تغییر روی Vue هم پاس شد. یافته‌ها:
+- `getSnapshot` باید در آداپتر bind شود (نمونه‌ی React بالا اصلاح شد). `subscribe` در `BaseSubscribable` از قبل تابع bind‌شده است.
+- Vue روی سرور هرگز unsubscribe نمی‌کند، پس آداپتر Vue روی سرور اصلاً subscribe نمی‌کند و فقط snapshot می‌خواند. این در فاز SSR دوباره بررسی می‌شود.
+- `getServerSnapshot` را فعلاً هیچ آداپتری استفاده نمی‌کند؛ تصمیم درباره‌اش به فاز SSR موکول شد.
+- هنوز Angular مانده، پس وضعیت همچنان Proposed است.

@@ -1,0 +1,33 @@
+{
+	"name": "@unicore/vue",
+	"version": "0.0.0",
+	"type": "module",
+	"sideEffects": false,
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts --clean",
+		"test": "vitest run --coverage",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@unicore/query": "workspace:*"
+	},
+	"peerDependencies": {
+		"vue": ">=3.3"
+	},
+	"devDependencies": {
+		"@unicore/conformance": "workspace:*",
+		"@unicore/core": "workspace:*",
+		"jsdom": "^31.0.0",
+		"vue": ">=3.3"
+	}
+}
