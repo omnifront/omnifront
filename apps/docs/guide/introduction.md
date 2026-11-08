@@ -7,7 +7,7 @@ unicore is a small data layer for front-end apps: **queries** (fetching, caching
 The aim is not to out-feature TanStack Query. It is a different trade:
 
 - **Shared logic across frameworks.** If your organisation has React and Angular apps, or you are moving from one to the other, the same query definitions and store code work in both. The [example apps](https://github.com/AMHB-DEV/unicore/tree/main/examples) share one `examples/shared` package between the React, Vue and Angular demos; only the rendering code differs.
-- **Small.** About 2.5 KB for the query core and about 0.7 KB per adapter (gzipped). See [benchmarks](/benchmarks).
+- **Small.** About 3 KB for the query core (including `@unicore/core`) and about 0.8 KB per adapter (gzipped). See [benchmarks](/benchmarks).
 - **One model for queries and state.** `useStore(store, selector)` and `useStore(queryObserver, selector)` are the same function.
 
 ## How it is layered
@@ -24,7 +24,7 @@ The hard rule: only the adapters may import `react`, `vue` or `@angular/*`. It i
 
 ## What it does not have (yet)
 
-Refetch on window focus or reconnect, infinite and paginated query helpers, optimistic-update helpers (`onMutate`), `placeholderData`/`initialData`, persistence, devtools, Suspense integration and streaming SSR. If you need these today, use TanStack Query; see [migrating](/guide/migrating-from-tanstack) for how the APIs line up.
+Infinite and paginated query helpers, persistence, devtools, `useQueries`/dependent-query helpers, structural sharing of results, Suspense integration and streaming SSR. If you need these today, use TanStack Query; see [migrating](/guide/migrating-from-tanstack) for how the APIs line up.
 
 ## Next steps
 

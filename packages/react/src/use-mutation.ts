@@ -9,8 +9,8 @@ export interface UseMutationResult<TData, TVariables> extends MutationState<TDat
 	reset: () => void
 }
 
-export function useMutation<TData, TVariables = void>(
-	options: MutationOptions<TData, TVariables>,
+export function useMutation<TData, TVariables = void, TContext = unknown>(
+	options: MutationOptions<TData, TVariables, TContext>,
 ): UseMutationResult<TData, TVariables> {
 	const [mutation] = useState(() => new Mutation(options))
 

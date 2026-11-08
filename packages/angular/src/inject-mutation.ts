@@ -14,8 +14,8 @@ export interface InjectMutationResult<TData, TVariables> {
 }
 
 /** Must run in an injection context. Options may be a function reading signals. */
-export function injectMutation<TData, TVariables = void>(
-	options: MutationOptions<TData, TVariables> | (() => MutationOptions<TData, TVariables>),
+export function injectMutation<TData, TVariables = void, TContext = unknown>(
+	options: MutationOptions<TData, TVariables, TContext> | (() => MutationOptions<TData, TVariables, TContext>),
 ): InjectMutationResult<TData, TVariables> {
 	const read = () => (typeof options === "function" ? options() : options)
 	const mutation = new Mutation(untracked(read))

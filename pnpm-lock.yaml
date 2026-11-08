@@ -332,6 +332,10 @@ importers:
       '@unicore/core':
         specifier: workspace:*
         version: link:../core
+    devDependencies:
+      jsdom:
+        specifier: ^31.0.0
+        version: 31.0.0
 
   packages/react:
     dependencies:

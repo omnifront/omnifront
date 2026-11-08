@@ -7,7 +7,7 @@
 ## Why
 
 - **Share logic across frameworks.** Teams running React *and* Angular, or migrating from one to the other, keep one set of query and store definitions. The three demos in [`examples/`](examples) share a single `examples/shared` package; only the rendering code differs.
-- **Small on purpose.** The query core is about 2.5 KB gzipped and each adapter about 0.7 KB (TanStack Query's core is about 9 KB; see [benchmarks](apps/benchmarks/README.md) for exactly what that trade gives up).
+- **Small on purpose.** The query core is about 3 KB gzipped and each adapter under 1 KB (TanStack Query's core is about 9 KB; see [benchmarks](apps/benchmarks/README.md) for exactly what that trade gives up).
 - **One mental model.** A query observer, a store and a derived slice all implement the same `Subscribable` contract ([ADR-0001](docs/adr/0001-subscribable-contract.md)), so `useStore(source, selector)` works on any of them.
 - **SSR that does not mismatch.** `dehydrate`/`hydrate`, a clock-independent server snapshot, and a Next.js package for the App Router and Pages Router.
 
@@ -36,12 +36,12 @@ Mutations (`useMutation` / `injectMutation`), stores (`createStore`, `useStore` 
 
 | Package | What | Size (min+gzip) |
 |---|---|---:|
-| [`@unicore/core`](packages/core) | `Subscribable` contract, `notifyManager`, injectable `Scheduler`, `derive` | ~0.7 KB |
-| [`@unicore/query`](packages/query) | `QueryClient`, `QueryObserver`, `Mutation`, hydration | ~2.4 KB |
+| [`@unicore/core`](packages/core) | `Subscribable` contract, `notifyManager`, injectable `Scheduler`, `derive` | ~0.8 KB |
+| [`@unicore/query`](packages/query) | `QueryClient`, `QueryObserver`, `Mutation`, hydration | ~3.0 KB |
 | [`@unicore/store`](packages/store) | `createStore` | ~0.4 KB |
-| [`@unicore/react`](packages/react) | `QueryProvider`, `useQuery`, `useMutation`, `useStore`, `HydrationBoundary` | ~0.7 KB |
+| [`@unicore/react`](packages/react) | `QueryProvider`, `useQuery`, `useMutation`, `useStore`, `HydrationBoundary` | ~0.8 KB |
 | [`@unicore/vue`](packages/vue) | `QueryPlugin`, `useQuery`, `useMutation`, `useStore` | ~0.8 KB |
-| [`@unicore/angular`](packages/angular) | `provideUnicore`, `injectQuery`, `injectMutation`, `injectStore` | ~0.7 KB |
+| [`@unicore/angular`](packages/angular) | `provideUnicore`, `injectQuery`, `injectMutation`, `injectStore` | ~0.8 KB |
 | [`@unicore/next`](packages/next) | server helpers and a `"use client"` entry for Next.js 14+ | ~0.3 KB each |
 
 Only the adapters may import `react`, `vue` or `@angular/*`; CI enforces it.
@@ -59,7 +59,7 @@ Start with the Introduction, the guide for your framework, then Queries. The API
 
 ## What is not here yet
 
-Refetch on focus/reconnect, infinite and paginated queries, optimistic-update helpers, persistence, devtools, Suspense integration, streaming SSR, and SSR helpers for Vue (Nuxt) and Angular. See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
+Infinite and paginated queries, persistence, devtools, structural sharing, Suspense integration, streaming SSR, and SSR helpers for Vue (Nuxt) and Angular. See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
 
 ## Examples
 

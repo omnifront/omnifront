@@ -26,6 +26,7 @@ Invalidation and cancellation match **by prefix**: `["todos"]` also matches `["t
 | `isInvalidated` | Marked outdated by `invalidateQueries`; cleared when the next fetch starts |
 | `failureCount` | Failures so far in the current fetch (for "retrying…" UI) |
 | `dataUpdatedAt` | Scheduler time of the last success |
+| `isPlaceholderData` | `data` is the `placeholderData`, not real data |
 
 `status` and `isFetching` are independent: a background refetch of existing data is `status: "success"` with `isFetching: true`.
 
@@ -53,6 +54,52 @@ useQuery({
 
 `queryFn` receives `{ signal }`, an `AbortSignal`. Pass it to `fetch` so a cancelled request really stops. `client.cancelQuery(key)` aborts the in-flight request and any pending retry, restores the previous state (data stays, or the entry returns to `"idle"`) and rejects the promise with `CancelledError`.
 
+## Refetching automatically
+
+Besides mounting and invalidation, stale queries refetch when the world changes:
+
+- **Window focus**: when the page becomes visible again (`refetchOnWindowFocus`, default `true`).
+- **Reconnect**: when the browser goes back online (`refetchOnReconnect`, default `true`).
+- **Polling**: `refetchInterval: 5000` refetches every 5 seconds while observed, even if the data is fresh, and skips ticks while the page is hidden.
+
+Focus and reconnect only refetch **stale** data, so a `staleTime` shields a query from them. Both signals are plain objects you can drive yourself, which is how you support React Native or tests:
+
+```ts
+import { focusManager, onlineManager } from "@unicore/query"
+focusManager.set(AppState.currentState === "active")   // React Native
+onlineManager.set(false)
+```
+
+They only attach browser listeners while some query is observed, so they cost nothing in Node or on the server.
+
+## Starting data: `initialData` and `placeholderData`
+
+```ts
+// Real data you already have (from a list, from localStorage). Cached like fetched data,
+// ages like fetched data, and is refetched on mount if it is stale.
+useQuery({ queryKey: ["todo", id], queryFn: loadTodo, initialData: () => findInList(id), staleTime: 30_000 })
+
+// A stand-in shown while loading. Never cached; `isPlaceholderData` tells you it is not real.
+useQuery({ queryKey: ["todo", id], queryFn: loadTodo, placeholderData: { title: "Loading…" } })
+```
+
+`initialData` is ignored when the cache already has data for the key. While a placeholder is shown, `status` is `"success"`, `data` is the placeholder, `isPlaceholderData` is `true` and `isFetching` is `true`.
+
+### Pagination without flicker
+
+`placeholderData` can be a function of the data this component showed before. `keepPreviousData` is exactly that:
+
+```ts
+import { keepPreviousData } from "@unicore/query"
+
+const page = ref(1)
+const { data, isPlaceholderData } = useQuery(() => ({
+	queryKey: ["items", page.value],
+	queryFn: () => loadItems(page.value),
+	placeholderData: keepPreviousData, // keep page 1 on screen until page 2 arrives
+}))
+```
+
 ## Turning a query off
 
 `enabled: false` means no automatic fetch; the entry stays `"idle"`. Flipping it to `true` fetches.
@@ -69,6 +116,7 @@ await todos.refetch()                        // run the queryFn again (joins an 
 
 client.invalidateQueries({ queryKey: ["todos"] })   // mark outdated; active observers refetch now
 client.setQueryData(["todos"], newList)             // write the cache directly
+client.setQueryData<string[]>(["todos"], (old) => [...(old ?? []), "new"]) // or from the old value
 client.getQueryData<string[]>(["todos"])            // read it
 client.fetchQuery(["todos"], loadTodos)             // imperative fetch (also for prefetching)
 ```
@@ -90,3 +138,8 @@ While a request for a key is in flight, every other fetch of that key (another c
 | `enabled` | `true` | `false` disables automatic fetching |
 | `retry` | `3` for observers, `0` for `fetchQuery` | number, boolean or `(failureCount, error) => boolean` |
 | `retryDelay` | exponential, max 30 s | number or `(failureCount, error) => number` |
+| `refetchOnWindowFocus` | `true` | refetch stale data when the page is shown again |
+| `refetchOnReconnect` | `true` | refetch stale data when the network is back |
+| `refetchInterval` | off | ms between polls |
+| `initialData` | none | data (or a function returning it) to seed an empty cache entry |
+| `placeholderData` | none | data, or `(previousData) => data`, shown while there is none |

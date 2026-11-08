@@ -16,7 +16,7 @@ Options type: `QueryClientOptions`. `gcTime` is the default for new entries (5 m
 |---|---|
 | `fetchQuery(key, fn, retryOptions?)` | Fetch or join the in-flight request. Resolves with the data. No retries unless `retryOptions` is given. |
 | `getQueryData(key)` / `getQueryState(key)` | Read the cache (`undefined` if no entry). |
-| `setQueryData(key, data)` | Write the cache; the entry becomes `success`. |
+| `setQueryData(key, data or updater)` | Write the cache (new data, or a function from the old data); the entry becomes `success`. |
 | `invalidateQueries({ queryKey?, exact? })` | Mark entries outdated; active observers refetch. Resolves when those refetches finish. Filter type: `InvalidateFilter`. |
 | `cancelQuery(key)` | Abort the in-flight fetch and retry; rejects it with `CancelledError`. |
 | `getQuery(key, gcTime?)` | The cache entry (a `Query`), created if missing. |
@@ -42,14 +42,15 @@ What the adapters use. It is a `Subscribable<QueryResult>`: the first subscripti
 | `getServerSnapshot()` | Clock-independent result for SSR and hydration. |
 | `refetch()` | Run the query function again (joins an in-flight request). Rejects on failure. |
 | `setOptions(options)` | Switch key / update options. Safe to call on every render. |
+| `inherit(observer)` | Adopt another observer's "previous data", for adapters that create a new observer per key (so `keepPreviousData` survives key changes). |
 
 ### `QueryObserverOptions`
 
-`queryKey`, `queryFn`, `staleTime`, `gcTime`, `enabled`, `retry`, `retryDelay`. See the [options table](/guide/queries#options-reference).
+`queryKey`, `queryFn`, `staleTime`, `gcTime`, `enabled`, `retry`, `retryDelay`, `refetchOnWindowFocus`, `refetchOnReconnect`, `refetchInterval`, `initialData`, `placeholderData`. See the [options table](/guide/queries#options-reference).
 
 ### `QueryResult`
 
-A `QueryState` plus `isStale`.
+A `QueryState` plus `isStale` and `isPlaceholderData`.
 
 ### `QueryState`
 
@@ -71,6 +72,20 @@ Thrown (rejects the promise) when a fetch is cancelled.
 
 `{ retry?, retryDelay? }`. `RetryValue` is `boolean | number | ((failureCount, error) => boolean)` (a number means that many retries); `RetryDelayValue` is `number | ((failureCount, error) => number)`. `failureCount` is 1 on the first failure.
 
+## Staying up to date
+
+### `focusManager`
+
+An [`EnvironmentSignal`](/api/core#environmentsignal): whether the page is visible. Observers refetch stale data when it turns `true`. Follows `visibilitychange` while observed; call `focusManager.set(bool)` to drive it yourself (React Native, tests).
+
+### `onlineManager`
+
+An `EnvironmentSignal`: whether the network is up (`online`/`offline` events). Observers refetch stale data when it turns `true`.
+
+### `keepPreviousData`
+
+`placeholderData: keepPreviousData` keeps the data this observer showed for the previous key until the new key has data.
+
 ## Keys
 
 ### `hashKey`
@@ -89,11 +104,11 @@ Thrown (rejects the promise) when a fetch is cancelled.
 new Mutation({ mutationFn, onSuccess?, onError?, onSettled? })   // MutationOptions
 ```
 
-A `Subscribable<MutationState>`. Members: `mutate(variables)` (fire and forget), `mutateAsync(variables)`, `reset()`, `setOptions(options)`. Details in [Mutations](/guide/mutations).
+A `Subscribable<MutationState>` (type parameters: data, variables, context). Members: `mutate(variables)` (fire and forget), `mutateAsync(variables)`, `reset()`, `setOptions(options)`. Details in [Mutations](/guide/mutations).
 
 ### `MutationOptions`
 
-`mutationFn(variables) => Promise<TData>` and the optional `onSuccess(data, variables)`, `onError(error, variables)`, `onSettled(data, error, variables)` callbacks (may return promises, which are awaited).
+`mutationFn(variables) => Promise<TData>` and the optional `onMutate(variables)` (returns the context), `onSuccess(data, variables, context)`, `onError(error, variables, context)`, `onSettled(data, error, variables, context)` callbacks (may return promises, which are awaited).
 
 ### `MutationState`
 

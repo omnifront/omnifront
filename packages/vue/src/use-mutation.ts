@@ -13,8 +13,8 @@ export interface UseMutationReturn<TData, TVariables> {
 	reset: () => void
 }
 
-export function useMutation<TData, TVariables = void>(
-	options: MaybeRefOrGetter<MutationOptions<TData, TVariables>>,
+export function useMutation<TData, TVariables = void, TContext = unknown>(
+	options: MaybeRefOrGetter<MutationOptions<TData, TVariables, TContext>>,
 ): UseMutationReturn<TData, TVariables> {
 	const mutation = new Mutation(toValue(options))
 	const state = shallowRef<MutationState<TData, TVariables>>(mutation.getSnapshot())

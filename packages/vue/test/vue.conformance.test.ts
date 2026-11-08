@@ -27,6 +27,7 @@ const harness: Harness = {
 				isFetching: r.isFetching.value,
 				isStale: r.isStale.value,
 				isInvalidated: r.isInvalidated.value,
+				isPlaceholderData: r.isPlaceholderData.value,
 				failureCount: r.failureCount.value,
 				dataUpdatedAt: r.dataUpdatedAt.value,
 			}),
@@ -43,7 +44,9 @@ const harness: Harness = {
 		return { current: () => result.value, unmount }
 	},
 
-	mountMutation<TData, TVariables>(options: MutationOptions<TData, TVariables>): MutationHandle<TData, TVariables> {
+	mountMutation<TData, TVariables, TContext = unknown>(
+		options: MutationOptions<TData, TVariables, TContext>,
+	): MutationHandle<TData, TVariables> {
 		const { result: r, unmount } = mountComposable(() => useMutation(options))
 		return {
 			current: () => ({

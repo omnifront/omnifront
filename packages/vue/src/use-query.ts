@@ -14,6 +14,7 @@ export interface UseQueryReturn<TData> {
 	isFetching: ComputedRef<boolean>
 	isStale: ComputedRef<boolean>
 	isInvalidated: ComputedRef<boolean>
+	isPlaceholderData: ComputedRef<boolean>
 	failureCount: ComputedRef<number>
 	dataUpdatedAt: ComputedRef<number | undefined>
 	refetch: () => Promise<TData>
@@ -64,6 +65,7 @@ export function useQuery<TData>(options: MaybeRefOrGetter<QueryObserverOptions<T
 		isFetching: pick("isFetching"),
 		isStale: pick("isStale"),
 		isInvalidated: pick("isInvalidated"),
+		isPlaceholderData: pick("isPlaceholderData"),
 		failureCount: pick("failureCount"),
 		dataUpdatedAt: pick("dataUpdatedAt"),
 		refetch: () => observer.refetch(),

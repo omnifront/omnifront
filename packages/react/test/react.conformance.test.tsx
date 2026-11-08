@@ -35,7 +35,9 @@ const harness: Harness = {
 		return { current: () => hook.result.current, unmount: () => hook.unmount() }
 	},
 
-	mountMutation<TData, TVariables>(options: MutationOptions<TData, TVariables>): MutationHandle<TData, TVariables> {
+	mountMutation<TData, TVariables, TContext = unknown>(
+		options: MutationOptions<TData, TVariables, TContext>,
+	): MutationHandle<TData, TVariables> {
 		const hook = renderHook(() => useMutation(options))
 		return {
 			current: () => hook.result.current,

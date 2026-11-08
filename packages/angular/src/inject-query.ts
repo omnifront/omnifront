@@ -11,6 +11,7 @@ export interface InjectQueryResult<TData> {
 	isFetching: Signal<boolean>
 	isStale: Signal<boolean>
 	isInvalidated: Signal<boolean>
+	isPlaceholderData: Signal<boolean>
 	failureCount: Signal<number>
 	dataUpdatedAt: Signal<number | undefined>
 	refetch: () => Promise<TData>
@@ -55,6 +56,7 @@ export function injectQuery<TData>(
 		isFetching: computed(() => result().isFetching),
 		isStale: computed(() => result().isStale),
 		isInvalidated: computed(() => result().isInvalidated),
+		isPlaceholderData: computed(() => result().isPlaceholderData),
 		failureCount: computed(() => result().failureCount),
 		dataUpdatedAt: computed(() => result().dataUpdatedAt),
 		refetch: () => observer.refetch(),

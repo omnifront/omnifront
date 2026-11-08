@@ -1,5 +1,5 @@
 import { hashKey, QueryObserver, type QueryObserverOptions, type QueryResult } from "@unicore/query"
-import { useCallback, useEffect, useMemo, useSyncExternalStore } from "react"
+import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react"
 import { useQueryClient } from "./provider"
 
 export interface UseQueryResult<TData> extends QueryResult<TData> {
@@ -13,7 +13,15 @@ export function useQuery<TData>(options: QueryObserverOptions<TData>): UseQueryR
 	// One observer per (client, key). A new key means a new observer, so rendering never
 	// touches an observer that is already subscribed; React just re-subscribes to the new one.
 	// `options` is intentionally not a dependency: other option changes are synced in the effect below.
-	const observer = useMemo(() => new QueryObserver(client, options), [client, hash])
+	const committed = useRef<QueryObserver<TData> | undefined>(undefined)
+	const observer = useMemo(() => {
+		const next = new QueryObserver(client, options)
+		if (committed.current) next.inherit(committed.current) // keepPreviousData across keys
+		return next
+	}, [client, hash])
+	useEffect(() => {
+		committed.current = observer
+	}, [observer])
 
 	// Same key, other options (queryFn, staleTime, enabled, ...): apply after commit.
 	useEffect(() => observer.setOptions(options))

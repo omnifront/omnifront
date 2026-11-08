@@ -9,6 +9,8 @@ The shapes are deliberately close, so most code ports by renaming imports. This 
 | `useQuery({ queryKey, queryFn, staleTime, gcTime, enabled, retry, retryDelay })` | the same option names and meaning |
 | `useMutation({ mutationFn, onSuccess, onError, onSettled })` | the same, plus `mutate`, `mutateAsync`, `reset` |
 | `queryClient.invalidateQueries({ queryKey, exact })` | the same (no `predicate`, `type` or `refetchType`) |
+| `setQueryData(key, valueOrUpdater)` | the same |
+| `refetchOnWindowFocus`, `refetchOnReconnect`, `refetchInterval`, `initialData` | the same names and meaning |
 | `queryClient.fetchQuery`, `getQueryData`, `setQueryData`, `cancelQueries` | `fetchQuery(key, fn)`, `getQueryData`, `setQueryData`, `cancelQuery(key)` |
 | `dehydrate` / `hydrate` / `HydrationBoundary` | the same names |
 | key hashing (object key order ignored, prefix matching) | the same |
@@ -22,11 +24,13 @@ The shapes are deliberately close, so most code ports by renaming imports. This 
 | Mutation `status: "pending"` | same, `"pending"` |
 | `fetchQuery({ queryKey, queryFn })` (one object) | `fetchQuery(queryKey, queryFn, retryOptions?)` |
 | `queryFn` context `{ queryKey, signal, meta }` | `{ signal }` only; close over the key |
-| `setQueryData(key, updaterOrValue)` | value only, no updater function: `setQueryData(key, fn(getQueryData(key)))` |
 | `prefetchQuery` (swallows errors) | `fetchQuery` (rejects on error); catch it |
 | `cancelQueries(filters)` | `cancelQuery(key)` for one key |
-| `select` option | derive a slice with `useStore(observer, selector)` / `derive` |
+| `select` option | derive a slice with `useStore(observer, selector)` / `derive` (not an option) |
 | `retry` default 3 for every query | 3 for observers (the hooks), 0 for `fetchQuery` |
+| `onMutate` + `context` | the same: the `onMutate` result is the last argument of the other callbacks |
+| `placeholderData: keepPreviousData` | the same import name, from `@unicore/query` |
+| `focusManager.setFocused` / `onlineManager.setOnline` | `focusManager.set(bool)` / `onlineManager.set(bool)` |
 | `QueryClient` constructor `defaultOptions` | `new QueryClient({ gcTime, scheduler })` only; set `staleTime` etc. per query (share option objects, see below) |
 | Notifications scheduled with `setTimeout` | listeners run synchronously, batched through `notifyManager` |
 
@@ -43,4 +47,4 @@ export const todosQuery = {
 
 ## Not in unicore yet
 
-Refetch on window focus / reconnect, `refetchInterval`, `initialData`, `placeholderData`, `keepPreviousData`, infinite and paginated queries, `onMutate` and optimistic helpers, `useQueries`, `useIsFetching`, persistence, Suspense hooks, devtools, streaming SSR. See the [benchmarks](/benchmarks) for what the smaller feature set buys in bytes.
+Infinite query helpers (`useInfiniteQuery`; plain pagination works with `placeholderData: keepPreviousData`), `useQueries`, `useIsFetching`, structural sharing of results, persistence, Suspense hooks, devtools, streaming SSR. See the [benchmarks](/benchmarks) for what the smaller feature set buys in bytes.

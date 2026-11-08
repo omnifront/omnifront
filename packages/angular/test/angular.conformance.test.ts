@@ -34,7 +34,9 @@ const harness: Harness = {
 		return { current: () => result(), unmount }
 	},
 
-	mountMutation<TData, TVariables>(options: MutationOptions<TData, TVariables>): MutationHandle<TData, TVariables> {
+	mountMutation<TData, TVariables, TContext = unknown>(
+		options: MutationOptions<TData, TVariables, TContext>,
+	): MutationHandle<TData, TVariables> {
 		const { result: r, unmount } = mountInjectable(() => injectMutation(options))
 		return {
 			current: () => ({ status: r.status(), data: r.data(), error: r.error(), variables: r.variables() }),

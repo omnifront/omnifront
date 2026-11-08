@@ -12,7 +12,7 @@ Returns the provided client; throws a helpful error without a provider.
 
 ### `useQuery`
 
-`useQuery(options: QueryObserverOptions)` returns a `UseQueryResult`: the full [`QueryResult`](/api/query#queryresult) plus `refetch()`. A new key creates a new observer, so render never touches a subscribed one; other option changes are applied after commit. Uses the observer's `getServerSnapshot` on the server and while hydrating.
+`useQuery(options: QueryObserverOptions)` returns a `UseQueryResult`: the full [`QueryResult`](/api/query#queryresult) plus `refetch()`. A new key creates a new observer (which inherits the previous one's data for `keepPreviousData`), so render never touches a subscribed one; other option changes are applied after commit. Uses the observer's `getServerSnapshot` on the server and while hydrating.
 
 ### `UseQueryResult`
 

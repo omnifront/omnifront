@@ -16,7 +16,7 @@ Returns the provided client; throws a helpful error if `provideUnicore` is missi
 
 ### `InjectQueryResult`
 
-`result` (the whole `QueryResult` as one signal), one signal per field (`status`, `data`, `error`, `isFetching`, `isStale`, `isInvalidated`, `failureCount`, `dataUpdatedAt`) and `refetch()`.
+`result` (the whole `QueryResult` as one signal), one signal per field (`status`, `data`, `error`, `isFetching`, `isStale`, `isInvalidated`, `isPlaceholderData`, `failureCount`, `dataUpdatedAt`) and `refetch()`.
 
 ### `injectMutation`
 

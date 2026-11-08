@@ -20,7 +20,7 @@ Returns the injected client; throws a helpful error if none is installed.
 
 ### `UseQueryReturn`
 
-One `ComputedRef` per field (`status`, `data`, `error`, `isFetching`, `isStale`, `isInvalidated`, `failureCount`, `dataUpdatedAt`) and `refetch()`.
+One `ComputedRef` per field (`status`, `data`, `error`, `isFetching`, `isStale`, `isInvalidated`, `isPlaceholderData`, `failureCount`, `dataUpdatedAt`) and `refetch()`.
 
 ### `useMutation`
 

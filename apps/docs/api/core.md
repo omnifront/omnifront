@@ -29,6 +29,10 @@ Abstract class that implements `subscribe` for you. Extend it, implement `getSna
 
 ## Time
 
+### `EnvironmentSignal`
+
+A `Subscribable<boolean>` for something the outside world controls (page visible? network up?). `new EnvironmentSignal((set) => { ...attach...; return cleanup })`: the attach function runs only while someone is subscribed. `set(value)` overrides the value from anywhere and notifies only on change. `@unicore/query` builds `focusManager` and `onlineManager` from it.
+
 ### `defaultScheduler`
 
 The real `setTimeout` / `clearTimeout` / `Date.now`. `Scheduler` is the interface (`setTimeout(fn, ms)`, `clearTimeout(handle)`, `now()`) and `TimerHandle` its opaque handle type.

@@ -141,7 +141,7 @@ describe("useMutation in a component", () => {
 		await result.mutateAsync(4)
 		expect(result.data.value).toBe(8)
 		expect(a).not.toHaveBeenCalled()
-		expect(b).toHaveBeenCalledWith(8, 4)
+		expect(b).toHaveBeenCalledWith(8, 4, undefined)
 		unmount()
 	})
 })
