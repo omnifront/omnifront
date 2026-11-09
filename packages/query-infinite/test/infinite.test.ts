@@ -14,9 +14,9 @@ interface Page {
 	prev: number | null
 }
 const pageOf = (n: number): Page => ({ items: [n * 10, n * 10 + 1], next: n < 3 ? n + 1 : null, prev: n > 1 ? n - 1 : null })
-const makeOptions = (overrides: Partial<InfiniteQueryObserverOptions<Page, number>> = {}) => {
+const makeOptions = (overrides: Partial<InfiniteQueryObserverOptions<Page, Error, number>> = {}) => {
 	const queryFn = vi.fn(({ pageParam }: { pageParam: number }) => Promise.resolve(pageOf(pageParam)))
-	const options: InfiniteQueryObserverOptions<Page, number> = {
+	const options: InfiniteQueryObserverOptions<Page, Error, number> = {
 		queryKey: ["items"],
 		queryFn,
 		initialPageParam: 1,
@@ -182,7 +182,7 @@ describe("InfiniteQueryObserver", () => {
 			a: { rows: ["1"], cursor: "b" },
 			b: { rows: ["2"], cursor: null },
 		}
-		const o = new InfiniteQueryObserver<{ rows: string[]; cursor: string | null }, string>(client, {
+		const o = new InfiniteQueryObserver<{ rows: string[]; cursor: string | null }, Error, string>(client, {
 			queryKey: ["cursors"],
 			queryFn: ({ pageParam }) => Promise.resolve(pages[pageParam] as { rows: string[]; cursor: string | null }),
 			initialPageParam: "a",
@@ -194,7 +194,7 @@ describe("InfiniteQueryObserver", () => {
 		await o.fetchNextPage()
 		expect(o.getSnapshot().data?.pages.flatMap((p) => p.rows)).toEqual(["1", "2"])
 
-		const zero = new InfiniteQueryObserver<number, number>(client, {
+		const zero = new InfiniteQueryObserver<number, Error, number>(client, {
 			queryKey: ["zero"],
 			queryFn: ({ pageParam }) => Promise.resolve(pageParam),
 			initialPageParam: 0,

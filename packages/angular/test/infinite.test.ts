@@ -10,7 +10,7 @@ describe("injectInfiniteQuery", () => {
 		const client = new QueryClient({ scheduler: new FakeScheduler(), gcTime: Infinity })
 		const { result: r, unmount } = mountInjectable(
 			() =>
-				injectInfiniteQuery<number, number>({
+				injectInfiniteQuery<number, Error, number>({
 					queryKey: ["n"],
 					queryFn: ({ pageParam }) => Promise.resolve(pageParam),
 					initialPageParam: 2,

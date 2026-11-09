@@ -1,11 +1,11 @@
-import type { QueryObserverOptions } from "@omnifront/query"
+import type { DefaultError, QueryObserverOptions } from "@omnifront/query"
 import { useMemo } from "react"
 import type { UseInfiniteQueryResult } from "./infinite"
 import { useObservedInfinite } from "./observed-infinite"
 import type { InfiniteData, InfiniteQueryObserverOptions } from "@omnifront/query-infinite"
 import { useObservedQuery, type UseQueryResult } from "./use-query"
 
-export interface UseSuspenseQueryResult<TData> extends Omit<UseQueryResult<TData>, "data" | "status"> {
+export interface UseSuspenseQueryResult<TData, TError = DefaultError> extends Omit<UseQueryResult<TData, TError>, "data" | "status"> {
 	/** Always there: the component does not render until it is. */
 	data: TData
 	/** `"success"`, or `"error"` when a background refetch failed and the old data is kept. */
@@ -25,8 +25,10 @@ const noop = (): void => {}
  * - To retry after an error, call `client.invalidateQueries({ queryKey })` from the error
  *   boundary's reset, then re-render: an invalidated failed query loads again instead of throwing.
  */
-export function useSuspenseQuery<TData>(options: QueryObserverOptions<TData>): UseSuspenseQueryResult<TData> {
-	const [observer, snapshot] = useObservedQuery<TData>({
+export function useSuspenseQuery<TData, TError = DefaultError>(
+	options: QueryObserverOptions<TData, TError>,
+): UseSuspenseQueryResult<TData, TError> {
+	const [observer, snapshot] = useObservedQuery<TData, TError>({
 		...options,
 		enabled: true,
 		staleTime: options.staleTime ?? 1000,
@@ -39,7 +41,7 @@ export function useSuspenseQuery<TData>(options: QueryObserverOptions<TData>): U
 		() => (hasData ? { ...snapshot, data: snapshot.data as TData, refetch: () => observer.refetch() } : undefined),
 		[hasData, snapshot, observer],
 	)
-	if (result) return result as UseSuspenseQueryResult<TData>
+	if (result) return result as UseSuspenseQueryResult<TData, TError>
 
 	// A failed load (not invalidated since) goes to the error boundary.
 	if (snapshot.status === "error" && !snapshot.isInvalidated) throw snapshot.error
@@ -48,17 +50,17 @@ export function useSuspenseQuery<TData>(options: QueryObserverOptions<TData>): U
 	throw observer.refetch().then(noop, noop)
 }
 
-export interface UseSuspenseInfiniteQueryResult<TPage, TPageParam = unknown>
-	extends Omit<UseInfiniteQueryResult<TPage, TPageParam>, "data" | "status"> {
+export interface UseSuspenseInfiniteQueryResult<TPage, TError = DefaultError, TPageParam = unknown>
+	extends Omit<UseInfiniteQueryResult<TPage, TError, TPageParam>, "data" | "status"> {
 	data: InfiniteData<TPage, TPageParam>
 	status: "success" | "error"
 }
 
 /** `useInfiniteQuery` for `<Suspense>` and error boundaries; same rules as {@link useSuspenseQuery}. */
-export function useSuspenseInfiniteQuery<TPage, TPageParam = unknown>(
-	options: InfiniteQueryObserverOptions<TPage, TPageParam>,
-): UseSuspenseInfiniteQueryResult<TPage, TPageParam> {
-	const [observer, snapshot] = useObservedInfinite<TPage, TPageParam>({
+export function useSuspenseInfiniteQuery<TPage, TError = DefaultError, TPageParam = unknown>(
+	options: InfiniteQueryObserverOptions<TPage, TError, TPageParam>,
+): UseSuspenseInfiniteQueryResult<TPage, TError, TPageParam> {
+	const [observer, snapshot] = useObservedInfinite<TPage, TError, TPageParam>({
 		...options,
 		enabled: true,
 		staleTime: options.staleTime ?? 1000,
@@ -77,7 +79,7 @@ export function useSuspenseInfiniteQuery<TPage, TPageParam = unknown>(
 				: undefined,
 		[hasData, snapshot, observer],
 	)
-	if (result) return result as unknown as UseSuspenseInfiniteQueryResult<TPage, TPageParam>
+	if (result) return result as unknown as UseSuspenseInfiniteQueryResult<TPage, TError, TPageParam>
 	if (snapshot.status === "error" && !snapshot.isInvalidated) throw snapshot.error
 	throw observer.refetch().then(noop, noop)
 }

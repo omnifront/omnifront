@@ -87,7 +87,7 @@ const harness: Harness = {
 	},
 
 	mountMutation<TData, TVariables, TContext = unknown>(
-		options: MutationOptions<TData, TVariables, TContext>,
+		options: MutationOptions<TData, Error, TVariables, TContext>,
 		client?: QueryClient,
 	): MutationHandle<TData, TVariables> {
 		const wrapper = client

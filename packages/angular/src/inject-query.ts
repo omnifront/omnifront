@@ -1,13 +1,13 @@
 import { DestroyRef, computed, effect, inject, signal, untracked, type Signal } from "@angular/core"
-import { QueryObserver, type QueryObserverOptions, type QueryResult, type QueryStatus } from "@omnifront/query"
+import { QueryObserver, type DefaultError, type QueryObserverOptions, type QueryResult, type QueryStatus } from "@omnifront/query"
 import { injectQueryClient } from "./provide"
 
-export interface InjectQueryResult<TData> {
+export interface InjectQueryResult<TData, TError = DefaultError> {
 	/** The whole result; the signals below are slices of it. */
-	result: Signal<QueryResult<TData>>
+	result: Signal<QueryResult<TData, TError>>
 	status: Signal<QueryStatus>
 	data: Signal<TData | undefined>
-	error: Signal<unknown>
+	error: Signal<TError | undefined>
 	isFetching: Signal<boolean>
 	isStale: Signal<boolean>
 	isInvalidated: Signal<boolean>
@@ -22,9 +22,9 @@ export interface InjectQueryResult<TData> {
  * Pass a function that reads signals to make options reactive: when a signal it reads changes, the
  * query switches, just like a changing key in React or Vue.
  */
-export function injectQuery<TData>(
-	options: QueryObserverOptions<TData> | (() => QueryObserverOptions<TData>),
-): InjectQueryResult<TData> {
+export function injectQuery<TData, TError = DefaultError>(
+	options: QueryObserverOptions<TData, TError> | (() => QueryObserverOptions<TData, TError>),
+): InjectQueryResult<TData, TError> {
 	// On the server a failing request must not hold the render open through retries with backoff
 	// (~7 s by default): fail fast and let the browser retry. An explicit `retry` is respected.
 	const read = () => {

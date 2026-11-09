@@ -11,10 +11,24 @@ function hooks() {
 	expectTypeOf(q.refetch).returns.resolves.toEqualTypeOf<{ id: number }>()
 
 	const m = useMutation({ mutationFn: (title: string) => Promise.resolve(title.length) })
-	expectTypeOf(m).toEqualTypeOf<UseMutationResult<number, string>>()
+	expectTypeOf(m).toEqualTypeOf<UseMutationResult<number, Error, string>>()
 	m.mutate("x")
 	// @ts-expect-error variables must be a string
 	m.mutate(1)
+
+	// Errors are `Error` unless named: second type argument, as in TanStack Query.
+	expectTypeOf(q.error).toEqualTypeOf<Error | undefined>()
+	expectTypeOf(m.error).toEqualTypeOf<Error | undefined>()
+	class HttpError extends Error {
+		status = 500
+	}
+	const typedQuery = useQuery<number, HttpError>({ queryKey: ["e"], queryFn: async () => 1, retry: (_n, e) => e.status >= 500 })
+	expectTypeOf(typedQuery.error).toEqualTypeOf<HttpError | undefined>()
+	const typedMutation = useMutation<number, HttpError, string>({
+		mutationFn: (title) => Promise.resolve(title.length),
+		onError: (error) => expectTypeOf(error).toEqualTypeOf<HttpError>(),
+	})
+	expectTypeOf(typedMutation.error).toEqualTypeOf<HttpError | undefined>()
 
 	const store = createStore({ count: 0, name: "a" })
 	expectTypeOf(useStore(store)).toEqualTypeOf<{ count: number; name: string }>()

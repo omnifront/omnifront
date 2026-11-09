@@ -1,15 +1,20 @@
 import { BaseSubscribable, type Scheduler, type TimerHandle } from "@omnifront/core"
 import { getRetryDelay, shouldRetry, type RetryOptions } from "./retry"
 import { noop } from "./resolve"
+import { CancelledError } from "./cancelled-error"
+import type { DefaultError } from "./register"
+
+export { CancelledError }
 
 export const DEFAULT_GC_TIME = 5 * 60 * 1000
 
 export type QueryStatus = "idle" | "loading" | "success" | "error"
 
-export interface QueryState<TData = unknown> {
+export interface QueryState<TData = unknown, TError = DefaultError> {
 	status: QueryStatus
 	data: TData | undefined
-	error: unknown
+	/** `undefined` when there is none. */
+	error: TError | undefined
 	isFetching: boolean
 	/** Marked outdated by invalidation; cleared when the next fetch starts. */
 	isInvalidated: boolean
@@ -25,12 +30,6 @@ export interface QueryFnContext {
 }
 export type QueryFn<TData> = (context: QueryFnContext) => Promise<TData>
 
-export class CancelledError extends Error {
-	constructor() {
-		super("Query was cancelled")
-		this.name = "CancelledError"
-	}
-}
 
 export interface QueryInit {
 	/** Ms to keep an unobserved entry before removal. Default 5 minutes. */
@@ -44,8 +43,8 @@ export interface QueryInit {
 }
 
 /** One cache entry. Immutable snapshots; one in-flight request at a time. */
-export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> {
-	private state: QueryState<TData> = {
+export class Query<TData = unknown, TError = DefaultError> extends BaseSubscribable<QueryState<TData, TError>> {
+	private state: QueryState<TData, TError> = {
 		status: "idle",
 		data: undefined,
 		error: undefined,
@@ -69,7 +68,7 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 		this.scheduleGc() // entries nobody observes are collected too
 	}
 
-	getSnapshot(): QueryState<TData> {
+	getSnapshot(): QueryState<TData, TError> {
 		return this.state
 	}
 
@@ -98,7 +97,7 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 	 * Run `fn`, or join the request already in flight (deduplication).
 	 * Failed attempts are retried per `retry` (default none) with backoff.
 	 */
-	fetch(fn: QueryFn<TData>, retry: RetryOptions = {}): Promise<TData> {
+	fetch(fn: QueryFn<TData>, retry: RetryOptions<TError> = {}): Promise<TData> {
 		if (this.inflight) return this.inflight
 		const controller = new AbortController()
 		const before = this.state
@@ -114,12 +113,12 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 				new Promise<TData>((r) => r(fn({ signal: controller.signal }))).then(resolve, (error: unknown) => {
 					if (controller.signal.aborted) return // cancelled meanwhile; already settled
 					const failures = this.state.failureCount + 1
-					if (!shouldRetry(retry.retry, failures, error)) return reject(error)
+					if (!shouldRetry(retry.retry, failures, error as TError)) return reject(error)
 					this.update({ failureCount: failures })
 					this.retryTimer = this.scheduler.setTimeout(() => {
 						this.retryTimer = undefined
 						attempt()
-					}, getRetryDelay(retry.retryDelay, failures, error))
+					}, getRetryDelay(retry.retryDelay, failures, error as TError))
 				})
 			}
 			// Cancelling settles the request and puts the state back as it was before.
@@ -154,7 +153,7 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 			(error: unknown) => {
 				if (error instanceof CancelledError) throw error // state already restored by cancel()
 				this.settle()
-				this.update({ status: "error", error, isFetching: false })
+				this.update({ status: "error", error: error as TError, isFetching: false })
 				throw error
 			},
 		)
@@ -217,7 +216,7 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 		this.gcTimer = undefined
 	}
 
-	private update(patch: Partial<QueryState<TData>>): void {
+	private update(patch: Partial<QueryState<TData, TError>>): void {
 		this.state = { ...this.state, ...patch }
 		this.notify()
 		this.init.onChange?.()

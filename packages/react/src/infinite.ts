@@ -1,3 +1,4 @@
+import type { DefaultError } from "@omnifront/query"
 import {
 	type InfiniteData,
 	type InfiniteQueryObserverOptions,
@@ -8,7 +9,7 @@ import { useObservedInfinite } from "./observed-infinite"
 
 export type { InfiniteData, InfiniteQueryObserverOptions, InfiniteQueryResult }
 
-export interface UseInfiniteQueryResult<TPage, TPageParam = unknown> extends InfiniteQueryResult<TPage, TPageParam> {
+export interface UseInfiniteQueryResult<TPage, TError = DefaultError, TPageParam = unknown> extends InfiniteQueryResult<TPage, TError, TPageParam> {
 	/** Load the next page. Never rejects; a failure shows up in `error`. */
 	fetchNextPage: () => Promise<void>
 	fetchPreviousPage: () => Promise<void>
@@ -17,9 +18,9 @@ export interface UseInfiniteQueryResult<TPage, TPageParam = unknown> extends Inf
 }
 
 /** Same shape as `useQuery`, but the data is `{ pages, pageParams }` and you can load more. */
-export function useInfiniteQuery<TPage, TPageParam = unknown>(
-	options: InfiniteQueryObserverOptions<TPage, TPageParam>,
-): UseInfiniteQueryResult<TPage, TPageParam> {
+export function useInfiniteQuery<TPage, TError = DefaultError, TPageParam = unknown>(
+	options: InfiniteQueryObserverOptions<TPage, TError, TPageParam>,
+): UseInfiniteQueryResult<TPage, TError, TPageParam> {
 	const [observer, snapshot] = useObservedInfinite(options)
 	return useMemo(
 		() => ({

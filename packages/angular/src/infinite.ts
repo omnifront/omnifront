@@ -1,5 +1,5 @@
 import { DestroyRef, computed, effect, inject, signal, untracked, type Signal } from "@angular/core"
-import type { QueryStatus } from "@omnifront/query"
+import type { DefaultError, QueryStatus } from "@omnifront/query"
 import {
 	InfiniteQueryObserver,
 	type InfiniteData,
@@ -10,11 +10,11 @@ import { injectQueryClient } from "./provide"
 
 export type { InfiniteData, InfiniteQueryObserverOptions, InfiniteQueryResult }
 
-export interface InjectInfiniteQueryResult<TPage, TPageParam = unknown> {
-	result: Signal<InfiniteQueryResult<TPage, TPageParam>>
+export interface InjectInfiniteQueryResult<TPage, TError = DefaultError, TPageParam = unknown> {
+	result: Signal<InfiniteQueryResult<TPage, TError, TPageParam>>
 	status: Signal<QueryStatus>
 	data: Signal<InfiniteData<TPage, TPageParam> | undefined>
-	error: Signal<unknown>
+	error: Signal<TError | undefined>
 	isFetching: Signal<boolean>
 	isStale: Signal<boolean>
 	hasNextPage: Signal<boolean>
@@ -28,9 +28,9 @@ export interface InjectInfiniteQueryResult<TPage, TPageParam = unknown> {
 }
 
 /** Like `injectQuery`, but the data is `{ pages, pageParams }` and you can load more. Must run in an injection context. */
-export function injectInfiniteQuery<TPage, TPageParam = unknown>(
-	options: InfiniteQueryObserverOptions<TPage, TPageParam> | (() => InfiniteQueryObserverOptions<TPage, TPageParam>),
-): InjectInfiniteQueryResult<TPage, TPageParam> {
+export function injectInfiniteQuery<TPage, TError = DefaultError, TPageParam = unknown>(
+	options: InfiniteQueryObserverOptions<TPage, TError, TPageParam> | (() => InfiniteQueryObserverOptions<TPage, TError, TPageParam>),
+): InjectInfiniteQueryResult<TPage, TError, TPageParam> {
 	// Fail fast on the server instead of retrying with backoff (see injectQuery).
 	const read = () => {
 		const o = typeof options === "function" ? options() : options

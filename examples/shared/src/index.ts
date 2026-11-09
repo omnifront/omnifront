@@ -16,7 +16,7 @@ export const todosQuery: QueryObserverOptions<string[]> = {
 }
 
 /** Adding a todo. It stays "pending" until the list has been refetched. */
-export const addTodoMutation = (client: QueryClient): MutationOptions<unknown, string> => ({
+export const addTodoMutation = (client: QueryClient): MutationOptions<unknown, Error, string> => ({
 	...api.mutationOptions<unknown, string>("POST", "/todos"),
 	onSuccess: () => client.invalidateQueries({ queryKey: api.queryKey("/todos") }),
 })

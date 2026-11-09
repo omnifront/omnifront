@@ -2,11 +2,12 @@ import { BaseSubscribable, type TimerHandle } from "@omnifront/core"
 import { focusManager, onlineManager } from "./environment"
 import { hashKey, type QueryKey } from "./hash-key"
 import type { Query, QueryFn, QueryState } from "./query"
+import type { DefaultError } from "./register"
 import type { RetryOptions } from "./retry"
 import type { QueryClient } from "./query-client"
 import { noop, resolve } from "./resolve"
 
-export interface QueryObserverOptions<TData> extends RetryOptions {
+export interface QueryObserverOptions<TData, TError = DefaultError> extends RetryOptions<TError> {
 	queryKey: QueryKey
 	queryFn: QueryFn<TData>
 	/** Ms data counts as fresh. Default 0 (stale immediately). Infinity = never stale. */
@@ -33,15 +34,15 @@ export interface QueryObserverOptions<TData> extends RetryOptions {
 /** `placeholderData: keepPreviousData` keeps showing the previous key's data while the next loads. */
 export const keepPreviousData = <TData>(previousData: TData | undefined): TData | undefined => previousData
 
-export interface QueryResult<TData> extends QueryState<TData> {
+export interface QueryResult<TData, TError = DefaultError> extends QueryState<TData, TError> {
 	isStale: boolean
 	/** `data` is the `placeholderData`, not real data. */
 	isPlaceholderData: boolean
 }
 
-interface SnapshotSlot<TData> {
-	result?: QueryResult<TData>
-	source?: QueryState<TData>
+interface SnapshotSlot<TData, TError> {
+	result?: QueryResult<TData, TError>
+	source?: QueryState<TData, TError>
 	optimistic?: boolean
 	previous?: TData | undefined
 }
@@ -50,10 +51,10 @@ interface SnapshotSlot<TData> {
 const MAX_TIMEOUT = 2 ** 31 - 1
 
 /** What a UI subscribes to: one query's state plus freshness, with fetch-on-mount. */
-export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
-	private query: Query<TData>
-	private readonly live: SnapshotSlot<TData> = {}
-	private readonly server: SnapshotSlot<TData> = {}
+export class QueryObserver<TData, TError = DefaultError> extends BaseSubscribable<QueryResult<TData, TError>> {
+	private query: Query<TData, TError>
+	private readonly live: SnapshotSlot<TData, TError> = {}
+	private readonly server: SnapshotSlot<TData, TError> = {}
 	private detachQuery: (() => void) | undefined
 	private detachEnvironment: Array<() => void> = []
 	private staleTimer: TimerHandle | undefined
@@ -62,10 +63,10 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 
 	constructor(
 		private readonly client: QueryClient,
-		private options: QueryObserverOptions<TData>,
+		private options: QueryObserverOptions<TData, TError>,
 	) {
 		super()
-		this.query = client.getQuery<TData>(options.queryKey, options.gcTime)
+		this.query = client.getQuery<TData, TError>(options.queryKey, options.gcTime)
 		this.seed()
 	}
 
@@ -82,7 +83,7 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	 * Before anyone subscribes, an entry that will be fetched on mount already reports
 	 * `isFetching` (and `loading` if empty), so a first render doesn't flash an idle state.
 	 */
-	getSnapshot(): QueryResult<TData> {
+	getSnapshot(): QueryResult<TData, TError> {
 		const state = this.query.getSnapshot()
 		const isStale = this.isStale(state)
 		const optimistic = isStale && !state.isFetching && !this.hasListeners && this.options.enabled !== false
@@ -96,7 +97,7 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	 * `staleTime` is 0 (or the data is missing / invalidated). The live snapshot takes over
 	 * right after hydration.
 	 */
-	getServerSnapshot(): QueryResult<TData> {
+	getServerSnapshot(): QueryResult<TData, TError> {
 		const state = this.query.getSnapshot()
 		const isStale = state.isInvalidated || state.dataUpdatedAt === undefined || (this.options.staleTime ?? 0) <= 0
 		const optimistic = isStale && !state.isFetching && this.options.enabled !== false
@@ -104,11 +105,11 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	}
 
 	private view(
-		slot: SnapshotSlot<TData>,
-		state: QueryState<TData>,
+		slot: SnapshotSlot<TData, TError>,
+		state: QueryState<TData, TError>,
 		isStale: boolean,
 		optimistic: boolean,
-	): QueryResult<TData> {
+	): QueryResult<TData, TError> {
 		if (state.data !== undefined) this.lastData = state.data
 		const previous = slot.result
 		if (
@@ -139,7 +140,7 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	}
 
 	/** For adapters that make a new observer per key: carry over what `placeholderData` calls "previous". */
-	inherit(from: QueryObserver<TData>): void {
+	inherit(from: QueryObserver<TData, TError>): void {
 		this.lastData = from.lastData
 	}
 
@@ -155,14 +156,14 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 	}
 
 	/** Update options (e.g. a reactive key changed). Switches queries when the key differs. */
-	setOptions(options: QueryObserverOptions<TData>): void {
+	setOptions(options: QueryObserverOptions<TData, TError>): void {
 		const previous = this.options
 		const keyChanged = hashKey(options.queryKey) !== hashKey(previous.queryKey)
 		this.options = options
 		const active = this.hasListeners
 		if (keyChanged) {
 			if (active) this.detach()
-			this.query = this.client.getQuery<TData>(options.queryKey, options.gcTime)
+			this.query = this.client.getQuery<TData, TError>(options.queryKey, options.gcTime)
 			this.seed()
 			if (active) {
 				this.attach()
@@ -242,7 +243,7 @@ export class QueryObserver<TData> extends BaseSubscribable<QueryResult<TData>> {
 		if (handle !== undefined) this.client.scheduler.clearTimeout(handle)
 	}
 
-	private isStale(state: QueryState<TData>): boolean {
+	private isStale(state: QueryState<TData, TError>): boolean {
 		if (state.isInvalidated || state.dataUpdatedAt === undefined) return true
 		return this.client.scheduler.now() - state.dataUpdatedAt >= (this.options.staleTime ?? 0)
 	}

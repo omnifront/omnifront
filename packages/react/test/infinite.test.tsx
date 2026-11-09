@@ -14,7 +14,7 @@ describe("useInfiniteQuery", () => {
 		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client: c }, children)
 		const { result } = renderHook(
 			() =>
-				useInfiniteQuery<number, number>({
+				useInfiniteQuery<number, Error, number>({
 					queryKey: ["n"],
 					queryFn: ({ pageParam }) => Promise.resolve(pageParam),
 					initialPageParam: 2,

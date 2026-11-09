@@ -24,7 +24,7 @@ export interface QueryHandle<TData> {
 }
 
 export interface MutationHandle<TData, TVariables> {
-	current(): MutationState<TData, TVariables>
+	current(): MutationState<TData, Error, TVariables>
 	mutate(variables: TVariables): void
 	mutateAsync(variables: TVariables): Promise<TData>
 	reset(): void
@@ -32,9 +32,9 @@ export interface MutationHandle<TData, TVariables> {
 }
 
 export interface InfiniteHandle<TPage, TPageParam> {
-	current(): InfiniteQueryResult<TPage, TPageParam>
+	current(): InfiniteQueryResult<TPage, Error, TPageParam>
 	fetchNextPage(): Promise<void>
-	update(options: InfiniteQueryObserverOptions<TPage, TPageParam>): void
+	update(options: InfiniteQueryObserverOptions<TPage, Error, TPageParam>): void
 	unmount(): void
 }
 
@@ -69,7 +69,7 @@ export interface Harness {
 	mountQuery<TData>(client: QueryClient, options: QueryObserverOptions<TData>): QueryHandle<TData>
 	/** With a `client` the mutation sits under that client's provider, so it counts towards useIsMutating. */
 	mountMutation<TData, TVariables, TContext = unknown>(
-		options: MutationOptions<TData, TVariables, TContext>,
+		options: MutationOptions<TData, Error, TVariables, TContext>,
 		client?: QueryClient,
 	): MutationHandle<TData, TVariables>
 	/** Mount useIsFetching(filter) and useIsMutating() together under `client`. */
@@ -83,7 +83,7 @@ export interface Harness {
 	): CombinedQueriesHandle<T>
 	mountInfiniteQuery<TPage, TPageParam>(
 		client: QueryClient,
-		options: InfiniteQueryObserverOptions<TPage, TPageParam>,
+		options: InfiniteQueryObserverOptions<TPage, Error, TPageParam>,
 	): InfiniteHandle<TPage, TPageParam>
 	/** Bind a slice of any Subscribable (store, query observer, ...) to the framework's reactivity. */
 	mountStore<TState, TSelected>(
@@ -368,7 +368,7 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 	})
 
 	describe(`${adapterName}: infinite query conformance`, () => {
-		const pagesOf = (): InfiniteQueryObserverOptions<number[], number> => ({
+		const pagesOf = (): InfiniteQueryObserverOptions<number[], Error, number> => ({
 			queryKey: ["feed"],
 			queryFn: ({ pageParam }) => Promise.resolve([pageParam * 10, pageParam * 10 + 1]),
 			initialPageParam: 1,

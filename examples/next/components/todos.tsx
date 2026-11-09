@@ -8,7 +8,7 @@ export function Todos({ where }: { where: string }) {
 	const client = useQueryClient()
 	const [title, setTitle] = useState("")
 	const todos = useQuery(todosQuery)
-	const add = useMutation<void, string>({
+	const add = useMutation<void, Error, string>({
 		mutationFn: async (title) => {
 			await api.post("/api/todos", { title })
 		},

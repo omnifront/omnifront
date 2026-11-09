@@ -3,7 +3,7 @@
 A mutation is a write: it runs when you call it, is not cached or shared, and does not retry.
 
 ```tsx
-const add = useMutation<Todo, string>({
+const add = useMutation<Todo, Error, string>({
 	mutationFn: (title) => api.addTodo(title),
 	onSuccess: (todo, title) => client.invalidateQueries({ queryKey: ["todos"] }),
 	onError: (error, title) => toast.error(String(error)),

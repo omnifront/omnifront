@@ -1,6 +1,6 @@
 import { BaseSubscribable, type Subscribable } from "@omnifront/core"
 import { hashKey, matchesKey } from "./hash-key"
-import type { MutationStatus } from "./mutation"
+import { registryOf, type Tracked } from "./mutation-registry"
 import type { InvalidateFilter, QueryClient } from "./query-client"
 
 /** A number that only notifies when it changes, and only follows its source while somebody listens (ADR-0001). */
@@ -71,22 +71,6 @@ class FetchingCount extends Count {
  */
 export function createFetchingCount(client: QueryClient, filter: InvalidateFilter = {}): Subscribable<number> {
 	return new FetchingCount(client, filter)
-}
-
-/** What tracking needs from a `Mutation`; any of them fits whatever its data and variables types are. */
-type Tracked = Subscribable<{ status: MutationStatus }>
-
-interface Registry {
-	mutations: Set<Tracked>
-	listeners: Set<() => void>
-}
-
-const registries = new WeakMap<QueryClient, Registry>()
-
-function registryOf(client: QueryClient): Registry {
-	let registry = registries.get(client)
-	if (!registry) registries.set(client, (registry = { mutations: new Set(), listeners: new Set() }))
-	return registry
 }
 
 /**

@@ -65,6 +65,36 @@
 				"default": "./dist/prefetch.cjs"
 			}
 		},
+		"./filters": {
+			"import": {
+				"types": "./dist/filters.d.ts",
+				"default": "./dist/filters.js"
+			},
+			"require": {
+				"types": "./dist/filters.d.cts",
+				"default": "./dist/filters.cjs"
+			}
+		},
+		"./events": {
+			"import": {
+				"types": "./dist/events.d.ts",
+				"default": "./dist/events.js"
+			},
+			"require": {
+				"types": "./dist/events.d.cts",
+				"default": "./dist/events.cjs"
+			}
+		},
+		"./options": {
+			"import": {
+				"types": "./dist/options.d.ts",
+				"default": "./dist/options.js"
+			},
+			"require": {
+				"types": "./dist/options.d.cts",
+				"default": "./dist/options.cjs"
+			}
+		},
 		"./activity": {
 			"import": {
 				"types": "./dist/activity.d.ts",
@@ -80,7 +110,7 @@
 		"dist"
 	],
 	"scripts": {
-		"build": "tsup src/index.ts src/hydration.ts src/structural.ts src/prefetch.ts src/activity.ts --format esm,cjs --dts --clean",
+		"build": "tsup src/index.ts src/hydration.ts src/structural.ts src/prefetch.ts src/activity.ts src/filters.ts src/events.ts src/options.ts --format esm,cjs --dts --clean",
 		"test": "vitest run --coverage",
 		"typecheck": "tsc --noEmit"
 	},

@@ -143,7 +143,7 @@ describe("Mutation + invalidation", () => {
 		})
 		o.subscribe(() => {})
 		await flush()
-		const add = new Mutation<void, string>({
+		const add = new Mutation<void, Error, string>({
 			mutationFn: (item) => {
 				server = [...server, item]
 				return Promise.resolve()

@@ -226,7 +226,7 @@ describe("useSuspenseInfiniteQuery", () => {
 		let more: (() => Promise<void>) | undefined
 		let rest: { previous: () => Promise<void>; reload: () => Promise<unknown> } | undefined
 		function Feed() {
-			const feed = useSuspenseInfiniteQuery<number, number>({
+			const feed = useSuspenseInfiniteQuery<number, Error, number>({
 				queryKey: ["feed"],
 				queryFn: ({ pageParam }) => Promise.resolve(pageParam),
 				initialPageParam: 1,
@@ -251,7 +251,7 @@ describe("useSuspenseInfiniteQuery", () => {
 	it("throws a failure to the error boundary", async () => {
 		const spy = vi.spyOn(console, "error").mockImplementation(() => {})
 		function Feed() {
-			useSuspenseInfiniteQuery<number, number>({
+			useSuspenseInfiniteQuery<number, Error, number>({
 				queryKey: ["bad-feed"],
 				queryFn: () => Promise.reject(new Error("nope")),
 				initialPageParam: 1,

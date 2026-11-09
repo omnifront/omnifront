@@ -1,6 +1,7 @@
 import { defaultScheduler, notifyManager, type Scheduler } from "@omnifront/core"
-import { hashKey, matchesKey, type QueryKey } from "./hash-key"
+import { hashKey, matchesKey, type DataTag, type QueryKey, type UntaggedKey } from "./hash-key"
 import { DEFAULT_GC_TIME, Query, type QueryFn, type QueryState } from "./query"
+import type { DefaultError } from "./register"
 import type { RetryOptions } from "./retry"
 import { noop, resolve } from "./resolve"
 
@@ -38,7 +39,7 @@ export class QueryClient {
 	}
 
 	/** Get the cache entry for `key`, creating it on first use. */
-	getQuery<TData>(key: QueryKey, gcTime?: number): Query<TData> {
+	getQuery<TData, TError = DefaultError>(key: QueryKey, gcTime?: number): Query<TData, TError> {
 		const hash = hashKey(key)
 		let entry = this.entries.get(hash)
 		if (!entry) {
@@ -58,11 +59,11 @@ export class QueryClient {
 		} else if (gcTime !== undefined) {
 			entry.query.updateGcTime(gcTime)
 		}
-		return entry.query as Query<TData>
+		return entry.query as unknown as Query<TData, TError>
 	}
 
-	fetchQuery<TData>(key: QueryKey, fn: QueryFn<TData>, retry?: RetryOptions): Promise<TData> {
-		return this.getQuery<TData>(key).fetch(fn, retry)
+	fetchQuery<TData, TError = DefaultError>(key: QueryKey, fn: QueryFn<TData>, retry?: RetryOptions<TError>): Promise<TData> {
+		return this.getQuery<TData, TError>(key).fetch(fn, retry)
 	}
 
 	/** Abort the in-flight fetch for `key`, if any. */
@@ -87,15 +88,25 @@ export class QueryClient {
 		return [...this.entries.values()]
 	}
 
-	getQueryState<TData>(key: QueryKey): QueryState<TData> | undefined {
-		return (this.entries.get(hashKey(key))?.query as Query<TData> | undefined)?.getSnapshot()
+	// The first overload of each reads the data type off a key made by `queryOptions` (types only).
+	getQueryState<TData>(key: DataTag<QueryKey, TData>): QueryState<TData> | undefined
+	getQueryState<TData = unknown, TError = DefaultError>(key: QueryKey): QueryState<TData, TError> | undefined
+	getQueryState(key: QueryKey): QueryState | undefined {
+		return this.entries.get(hashKey(key))?.query.getSnapshot()
 	}
 
-	getQueryData<TData>(key: QueryKey): TData | undefined {
-		return this.getQueryState<TData>(key)?.data
+	getQueryData<TData>(key: DataTag<QueryKey, TData>): TData | undefined
+	getQueryData<TData = unknown>(key: QueryKey): TData | undefined
+	getQueryData(key: QueryKey): unknown {
+		return this.getQueryState(key)?.data
 	}
 
 	/** Pass the new data, or a function from the old data (`undefined` if none) to the new. */
+	setQueryData<TData>(key: DataTag<QueryKey, TData>, data: TData | ((old: TData | undefined) => TData)): void
+	setQueryData<TData, TKey extends QueryKey = QueryKey>(
+		key: UntaggedKey<TKey>,
+		data: TData | ((old: TData | undefined) => TData),
+	): void
 	setQueryData<TData>(key: QueryKey, data: TData | ((old: TData | undefined) => TData)): void {
 		const query = this.getQuery<TData>(key)
 		query.setData(resolve(data, query.getSnapshot().data))

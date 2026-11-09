@@ -1,12 +1,12 @@
 import { DestroyRef, computed, effect, inject, signal, untracked, type Signal } from "@angular/core"
-import { Mutation, type MutationOptions, type MutationStatus } from "@omnifront/query"
+import { Mutation, type DefaultError, type MutationOptions, type MutationStatus } from "@omnifront/query"
 import { trackMutation } from "@omnifront/query/activity"
 import { injectOptionalQueryClient } from "./provide"
 
-export interface InjectMutationResult<TData, TVariables> {
+export interface InjectMutationResult<TData, TError = DefaultError, TVariables = void> {
 	status: Signal<MutationStatus>
 	data: Signal<TData | undefined>
-	error: Signal<unknown>
+	error: Signal<TError | undefined>
 	variables: Signal<TVariables | undefined>
 	/** Fire and forget; failures show up in `status` / `error`. */
 	mutate: (variables: TVariables) => void
@@ -16,9 +16,9 @@ export interface InjectMutationResult<TData, TVariables> {
 }
 
 /** Must run in an injection context. Options may be a function reading signals. */
-export function injectMutation<TData, TVariables = void, TContext = unknown>(
-	options: MutationOptions<TData, TVariables, TContext> | (() => MutationOptions<TData, TVariables, TContext>),
-): InjectMutationResult<TData, TVariables> {
+export function injectMutation<TData, TError = DefaultError, TVariables = void, TContext = unknown>(
+	options: MutationOptions<TData, TError, TVariables, TContext> | (() => MutationOptions<TData, TError, TVariables, TContext>),
+): InjectMutationResult<TData, TError, TVariables> {
 	const read = () => (typeof options === "function" ? options() : options)
 	const mutation = new Mutation(untracked(read))
 

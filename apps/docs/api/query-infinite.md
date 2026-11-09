@@ -1,6 +1,6 @@
 # @omnifront/query-infinite
 
-Infinite and paginated queries. About 1 KB gzipped (excluding core and query). See the [infinite queries guide](/guide/infinite-queries).
+Infinite and paginated queries. About 1.3 KB gzipped (excluding core and query). See the [infinite queries guide](/guide/infinite-queries).
 
 ### `InfiniteQueryObserver`
 
@@ -34,3 +34,33 @@ Every [query option](/guide/queries#options-reference) except `queryFn`, plus `q
 ### `InfiniteQueryResult`
 
 A [`QueryResult`](/api/query#queryresult) of `InfiniteData`, plus `hasNextPage`, `hasPreviousPage`, `isFetchingNextPage`, `isFetchingPreviousPage`.
+
+## Outside components
+
+### `fetchInfiniteQuery`
+
+```ts
+fetchInfiniteQuery(client, { queryKey, queryFn, initialPageParam, getNextPageParam, pages?, staleTime?, retry?, retryDelay? }): Promise<InfiniteData>
+```
+
+Load the first page (or the first `pages` pages) into the cache from a route loader or the server. Returns cached pages younger than `staleTime` without fetching; joins a request in flight. Rejects on failure.
+
+### `prefetchInfiniteQuery`
+
+The same, but never rejects: a failure stays in the cache and the component retries when it mounts.
+
+### `ensureInfiniteQueryData`
+
+The cached pages when there are some (however old), otherwise `fetchInfiniteQuery`.
+
+### `FetchInfiniteQueryOptions`
+
+The options object of the three functions above.
+
+### `infiniteQueryOptions`
+
+```ts
+const feed = infiniteQueryOptions({ queryKey: ["feed"], queryFn, initialPageParam: 0, getNextPageParam })
+```
+
+Define an infinite query once and pass it to `useInfiniteQuery`, `injectInfiniteQuery` or `fetchInfiniteQuery`. Returns the same object; `feed.queryKey` carries the data type for `client.getQueryData`.

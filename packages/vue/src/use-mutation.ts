@@ -1,12 +1,12 @@
-import { Mutation, type MutationOptions, type MutationState, type MutationStatus } from "@omnifront/query"
+import { Mutation, type DefaultError, type MutationOptions, type MutationState, type MutationStatus } from "@omnifront/query"
 import { trackMutation } from "@omnifront/query/activity"
 import { computed, getCurrentScope, onScopeDispose, shallowRef, toValue, watch, type ComputedRef, type MaybeRefOrGetter } from "vue"
 import { useOptionalQueryClient } from "./plugin"
 
-export interface UseMutationReturn<TData, TVariables> {
+export interface UseMutationReturn<TData, TError = DefaultError, TVariables = void> {
 	status: ComputedRef<MutationStatus>
 	data: ComputedRef<TData | undefined>
-	error: ComputedRef<unknown>
+	error: ComputedRef<TError | undefined>
 	variables: ComputedRef<TVariables | undefined>
 	/** Fire and forget; failures show up in `status` / `error`. */
 	mutate: (variables: TVariables) => void
@@ -15,11 +15,11 @@ export interface UseMutationReturn<TData, TVariables> {
 	reset: () => void
 }
 
-export function useMutation<TData, TVariables = void, TContext = unknown>(
-	options: MaybeRefOrGetter<MutationOptions<TData, TVariables, TContext>>,
-): UseMutationReturn<TData, TVariables> {
+export function useMutation<TData, TError = DefaultError, TVariables = void, TContext = unknown>(
+	options: MaybeRefOrGetter<MutationOptions<TData, TError, TVariables, TContext>>,
+): UseMutationReturn<TData, TError, TVariables> {
 	const mutation = new Mutation(toValue(options))
-	const state = shallowRef<MutationState<TData, TVariables>>(mutation.getSnapshot())
+	const state = shallowRef<MutationState<TData, TError, TVariables>>(mutation.getSnapshot())
 
 	const unsubscribe = mutation.subscribe(() => {
 		state.value = mutation.getSnapshot()
@@ -36,7 +36,7 @@ export function useMutation<TData, TVariables = void, TContext = unknown>(
 		(next) => mutation.setOptions(next),
 	)
 
-	const pick = <K extends keyof MutationState<TData, TVariables>>(key: K) => computed(() => state.value[key])
+	const pick = <K extends keyof MutationState<TData, TError, TVariables>>(key: K) => computed(() => state.value[key])
 	return {
 		status: pick("status"),
 		data: pick("data"),

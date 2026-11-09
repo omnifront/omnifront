@@ -1,19 +1,21 @@
 import { BaseSubscribable } from "@omnifront/core"
+import type { DefaultError } from "./register"
 import { noop } from "./resolve"
 
 export type MutationStatus = "idle" | "pending" | "success" | "error"
 
-export interface MutationState<TData = unknown, TVariables = void> {
+export interface MutationState<TData = unknown, TError = DefaultError, TVariables = void> {
 	status: MutationStatus
 	data: TData | undefined
-	error: unknown
+	/** `undefined` when there is none. */
+	error: TError | undefined
 	/** Variables of the latest mutate call. */
 	variables: TVariables | undefined
 }
 
 type MaybePromise<T> = T | Promise<T>
 
-export interface MutationOptions<TData, TVariables = void, TContext = unknown> {
+export interface MutationOptions<TData, TError = DefaultError, TVariables = void, TContext = unknown> {
 	mutationFn: (variables: TVariables) => Promise<TData>
 	/**
 	 * Runs (and is awaited) before `mutationFn`. Return whatever you need later, typically a snapshot
@@ -23,10 +25,10 @@ export interface MutationOptions<TData, TVariables = void, TContext = unknown> {
 	/** Awaited before the mutation counts as successful: return e.g. `client.invalidateQueries(...)`. */
 	onSuccess?: ((data: TData, variables: TVariables, context: TContext) => MaybePromise<unknown>) | undefined
 	/** Awaited before the mutation counts as failed. Also runs if `onMutate` or `onSuccess` throws. */
-	onError?: ((error: unknown, variables: TVariables, context: TContext | undefined) => MaybePromise<unknown>) | undefined
+	onError?: ((error: TError, variables: TVariables, context: TContext | undefined) => MaybePromise<unknown>) | undefined
 	/** After either outcome. */
 	onSettled?:
-		| ((data: TData | undefined, error: unknown, variables: TVariables, context: TContext | undefined) => MaybePromise<unknown>)
+		| ((data: TData | undefined, error: TError | undefined, variables: TVariables, context: TContext | undefined) => MaybePromise<unknown>)
 		| undefined
 }
 
@@ -35,20 +37,22 @@ export interface MutationOptions<TData, TVariables = void, TContext = unknown> {
  * One mutation slot, reused across calls (what a UI hook holds on to).
  * If `mutate` is called again before the previous run finishes, only the latest run drives `state`.
  */
-export class Mutation<TData, TVariables = void, TContext = unknown> extends BaseSubscribable<MutationState<TData, TVariables>> {
-	private state: MutationState<TData, TVariables> = idle()
+export class Mutation<TData, TError = DefaultError, TVariables = void, TContext = unknown> extends BaseSubscribable<
+	MutationState<TData, TError, TVariables>
+> {
+	private state: MutationState<TData, TError, TVariables> = idle()
 	private runs = 0
 
-	constructor(private options: MutationOptions<TData, TVariables, TContext>) {
+	constructor(private options: MutationOptions<TData, TError, TVariables, TContext>) {
 		super()
 	}
 
-	getSnapshot(): MutationState<TData, TVariables> {
+	getSnapshot(): MutationState<TData, TError, TVariables> {
 		return this.state
 	}
 
 	/** Callbacks may change between renders; the next run uses the latest. */
-	setOptions(options: MutationOptions<TData, TVariables, TContext>): void {
+	setOptions(options: MutationOptions<TData, TError, TVariables, TContext>): void {
 		this.options = options
 	}
 
@@ -70,11 +74,11 @@ export class Mutation<TData, TVariables = void, TContext = unknown> extends Base
 			await onSuccess?.(data, variables, context as TContext)
 		} catch (error) {
 			try {
-				await onError?.(error, variables, context)
+				await onError?.(error as TError, variables, context)
 			} finally {
-				this.update(run, { status: "error", error })
+				this.update(run, { status: "error", error: error as TError })
 			}
-			await onSettled?.(undefined, error, variables, context)
+			await onSettled?.(undefined, error as TError, variables, context)
 			throw error
 		}
 		this.update(run, { status: "success", data })
@@ -89,13 +93,13 @@ export class Mutation<TData, TVariables = void, TContext = unknown> extends Base
 		this.notify()
 	}
 
-	private update(run: number, patch: Partial<MutationState<TData, TVariables>>): void {
+	private update(run: number, patch: Partial<MutationState<TData, TError, TVariables>>): void {
 		if (run !== this.runs) return // superseded by a newer run or reset()
 		this.state = { ...this.state, ...patch }
 		this.notify()
 	}
 }
 
-function idle<TData, TVariables>(): MutationState<TData, TVariables> {
+function idle<TData, TError, TVariables>(): MutationState<TData, TError, TVariables> {
 	return { status: "idle", data: undefined, error: undefined, variables: undefined }
 }

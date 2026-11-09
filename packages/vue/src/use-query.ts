@@ -1,5 +1,6 @@
 import {
 	QueryObserver,
+	type DefaultError,
 	type QueryObserverOptions,
 	type QueryResult,
 	type QueryStatus,
@@ -21,10 +22,10 @@ import { useQueryClient } from "./plugin"
 
 const noop = (): void => {}
 
-export interface UseQueryReturn<TData> {
+export interface UseQueryReturn<TData, TError = DefaultError> {
 	status: ComputedRef<QueryStatus>
 	data: ComputedRef<TData | undefined>
-	error: ComputedRef<unknown>
+	error: ComputedRef<TError | undefined>
 	isFetching: ComputedRef<boolean>
 	isStale: ComputedRef<boolean>
 	isInvalidated: ComputedRef<boolean>
@@ -41,10 +42,12 @@ export interface UseQueryReturn<TData> {
  *   const id = ref(1)
  *   const { data } = useQuery(() => ({ queryKey: ['user', id.value], queryFn: () => fetchUser(id.value) }))
  */
-export function useQuery<TData>(options: MaybeRefOrGetter<QueryObserverOptions<TData>>): UseQueryReturn<TData> {
+export function useQuery<TData, TError = DefaultError>(
+	options: MaybeRefOrGetter<QueryObserverOptions<TData, TError>>,
+): UseQueryReturn<TData, TError> {
 	// On the server a failing request must not hold the render open through retries with backoff
 	// (~7 s by default): fail fast and let the browser retry. An explicit `retry` is respected.
-	const forServer = (o: QueryObserverOptions<TData>): QueryObserverOptions<TData> =>
+	const forServer = (o: QueryObserverOptions<TData, TError>): QueryObserverOptions<TData, TError> =>
 		typeof window === "undefined" ? { ...o, retry: o.retry ?? false } : o
 	const observer = new QueryObserver(useQueryClient(), forServer(toValue(options)))
 
@@ -57,7 +60,7 @@ export function useQuery<TData>(options: MaybeRefOrGetter<QueryObserverOptions<T
 	// hydration, so it is live from the start.
 	let live = !getCurrentInstance()
 	const read = () => (live ? observer.getSnapshot() : observer.getServerSnapshot())
-	const snapshot = shallowRef<QueryResult<TData>>(read())
+	const snapshot = shallowRef<QueryResult<TData, TError>>(read())
 
 	if (typeof window === "undefined") {
 		// Server: no subscription (nothing would ever unsubscribe it). Vue waits for onServerPrefetch
@@ -94,7 +97,7 @@ export function useQuery<TData>(options: MaybeRefOrGetter<QueryObserverOptions<T
 		},
 	)
 
-	const pick = <K extends keyof QueryResult<TData>>(key: K) => computed(() => snapshot.value[key])
+	const pick = <K extends keyof QueryResult<TData, TError>>(key: K) => computed(() => snapshot.value[key])
 	return {
 		status: pick("status"),
 		data: pick("data"),

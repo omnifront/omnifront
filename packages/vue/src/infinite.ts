@@ -1,4 +1,4 @@
-import type { QueryStatus } from "@omnifront/query"
+import type { DefaultError, QueryStatus } from "@omnifront/query"
 import {
 	InfiniteQueryObserver,
 	type InfiniteData,
@@ -22,10 +22,10 @@ import { useQueryClient } from "./plugin"
 
 export type { InfiniteData, InfiniteQueryObserverOptions, InfiniteQueryResult }
 
-export interface UseInfiniteQueryReturn<TPage, TPageParam = unknown> {
+export interface UseInfiniteQueryReturn<TPage, TError = DefaultError, TPageParam = unknown> {
 	status: ComputedRef<QueryStatus>
 	data: ComputedRef<InfiniteData<TPage, TPageParam> | undefined>
-	error: ComputedRef<unknown>
+	error: ComputedRef<TError | undefined>
 	isFetching: ComputedRef<boolean>
 	isStale: ComputedRef<boolean>
 	hasNextPage: ComputedRef<boolean>
@@ -39,17 +39,17 @@ export interface UseInfiniteQueryReturn<TPage, TPageParam = unknown> {
 }
 
 /** Same as `useQuery`, but the data is `{ pages, pageParams }` and you can load more. Options may be reactive. */
-export function useInfiniteQuery<TPage, TPageParam = unknown>(
-	options: MaybeRefOrGetter<InfiniteQueryObserverOptions<TPage, TPageParam>>,
-): UseInfiniteQueryReturn<TPage, TPageParam> {
+export function useInfiniteQuery<TPage, TError = DefaultError, TPageParam = unknown>(
+	options: MaybeRefOrGetter<InfiniteQueryObserverOptions<TPage, TError, TPageParam>>,
+): UseInfiniteQueryReturn<TPage, TError, TPageParam> {
 	// On the server a failing request must not hold the render open through retries (see useQuery).
-	const forServer = (o: InfiniteQueryObserverOptions<TPage, TPageParam>): InfiniteQueryObserverOptions<TPage, TPageParam> =>
+	const forServer = (o: InfiniteQueryObserverOptions<TPage, TError, TPageParam>): InfiniteQueryObserverOptions<TPage, TError, TPageParam> =>
 		typeof window === "undefined" ? { ...o, retry: o.retry ?? false } : o
 	const observer = new InfiniteQueryObserver(useQueryClient(), forServer(toValue(options)))
 	// Same SSR approach as useQuery: server snapshot for the first render, live after mount.
 	let live = !getCurrentInstance()
 	const read = () => (live ? observer.getSnapshot() : observer.getServerSnapshot())
-	const snapshot = shallowRef<InfiniteQueryResult<TPage, TPageParam>>(read())
+	const snapshot = shallowRef<InfiniteQueryResult<TPage, TError, TPageParam>>(read())
 	if (typeof window === "undefined") {
 		onServerPrefetch(async () => {
 			if (observer.getServerSnapshot().isFetching) await observer.refetch().catch(() => {})
@@ -75,7 +75,7 @@ export function useInfiniteQuery<TPage, TPageParam = unknown>(
 			snapshot.value = read()
 		},
 	)
-	const pick = <K extends keyof InfiniteQueryResult<TPage, TPageParam>>(key: K) => computed(() => snapshot.value[key])
+	const pick = <K extends keyof InfiniteQueryResult<TPage, TError, TPageParam>>(key: K) => computed(() => snapshot.value[key])
 	return {
 		status: pick("status"),
 		data: pick("data"),

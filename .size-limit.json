@@ -319,5 +319,32 @@
 			"@omnifront/query/activity",
 			"@omnifront/core"
 		]
+	},
+	{
+		"name": "@omnifront/query/filters",
+		"path": "packages/query/dist/filters.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/query/events",
+		"path": "packages/query/dist/events.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/query/options",
+		"path": "packages/query/dist/options.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
 	}
 ]

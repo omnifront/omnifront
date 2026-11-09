@@ -65,9 +65,29 @@ A `QueryState` plus `isStale` and `isPlaceholderData`.
 
 `readonly unknown[]`.
 
+### `DataTag`
+
+`DataTag<TKey, TData>`: a query key that also carries the type of the data stored under it (a type only; the value is the plain key). `queryOptions` returns one, and `getQueryData`, `setQueryData` and `getQueryState` read the data type from it.
+
 ### `CancelledError`
 
 Thrown (rejects the promise) when a fetch is cancelled.
+
+### `DefaultError`
+
+The error type of queries and mutations that do not name their own: `Error`, unless `Register` says otherwise. Every type that carries an error takes it as its **second** type argument, as in TanStack Query: `QueryObserver<TData, TError>`, `QueryResult<TData, TError>`, `Mutation<TData, TError, TVariables, TContext>`. It is a type only; nothing checks what a query function really throws.
+
+### `Register`
+
+```ts
+declare module "@omnifront/query" {
+	interface Register {
+		defaultError: ApiError
+	}
+}
+```
+
+Augment it to change `DefaultError` for the whole app.
 
 ### `RetryOptions`
 
@@ -176,3 +196,146 @@ trackMutation(client, mutation): () => void
 ```
 
 Make a `Mutation` count towards `createMutatingCount(client)`. The adapters' `useMutation` / `injectMutation` call it for you when a client is provided; call it yourself if you create `Mutation`s by hand. The returned function stops tracking, but a mutation that is still pending keeps counting until it settles.
+
+## Filters (`@omnifront/query/filters`)
+
+The `QueryClient` methods that work on many queries at once, as functions that take the client first. They are built on `client.getQueries()`, so they cost nothing unless imported.
+
+### `QueryFilters`
+
+| Field | |
+|---|---|
+| `queryKey` | Prefix match (objects as subsets). Omit for every query. |
+| `exact` | Match `queryKey` exactly. |
+| `type` | `"active"` (observed), `"inactive"` (unobserved) or `"all"` (default). |
+| `stale` | `true`: invalidated or without data. `false`: the rest. `staleTime` is per observer, so the cache cannot tell that data merely got old. |
+| `fetchStatus` | `"fetching"` or `"idle"`. |
+| `predicate` | `(query: QueryInfo) => boolean`, run last. |
+
+### `QueryInfo`
+
+`{ queryKey, state, observed }`: what a `predicate` sees of a cache entry.
+
+### `findQueries`
+
+```ts
+findQueries(client, filters?): Array<{ key: QueryKey; query: Query }>
+```
+
+Every cache entry that passes the filters.
+
+### `matchQuery`
+
+```ts
+matchQuery(entry, filters): boolean
+```
+
+Test one entry of `client.getQueries()`.
+
+### `invalidateQueries`
+
+```ts
+invalidateQueries(client, filters?): Promise<void>
+```
+
+`client.invalidateQueries` with the full filters.
+
+### `refetchQueries`
+
+```ts
+refetchQueries(client, filters?): Promise<void>
+```
+
+Refetch the matching queries that are on screen (observed and enabled), fresh or not. Unobserved entries are left alone, because the cache keeps no query function for them. Never rejects.
+
+### `cancelQueries`
+
+```ts
+cancelQueries(client, filters?): void
+```
+
+Abort the in-flight fetch of every match.
+
+### `getQueriesData`
+
+```ts
+getQueriesData<TData>(client, filters?): Array<[QueryKey, TData | undefined]>
+```
+
+### `setQueriesData`
+
+```ts
+setQueriesData<TData>(client, filters, dataOrUpdater): Array<[QueryKey, TData | undefined]>
+```
+
+Update every match. An updater that returns `undefined` leaves that entry untouched.
+
+### `ensureQueryData`
+
+```ts
+ensureQueryData(client, { queryKey, queryFn, revalidateIfStale?, staleTime?, retry?, retryDelay? }): Promise<TData>
+```
+
+The cached data when there is some (however old), otherwise fetch it. Made for route loaders. With `revalidateIfStale`, stale data is also refetched in the background.
+
+### `EnsureQueryDataOptions`
+
+The options object of `ensureQueryData`.
+
+### `isCancelledError`
+
+```ts
+isCancelledError(error): error is CancelledError
+```
+
+## Events (`@omnifront/query/events`)
+
+Cache-wide callbacks, for one error toast or logger instead of an `onError` in every component (TanStack's `QueryCache` / `MutationCache` callbacks).
+
+### `onQueryEvents`
+
+```ts
+onQueryEvents(client, { onSuccess?, onError?, onSettled? }): () => void
+```
+
+Handlers run once per fetch, however many components show the query: `onSuccess(data, query)`, `onError(error, query)` after the retries, `onSettled(data, error, query)`. `query` is `{ queryKey, state }`. Cancelled fetches, `setQueryData` and hydration report nothing. Returns the function that stops listening.
+
+### `QueryEventHandlers`
+
+The handlers object of `onQueryEvents`.
+
+### `QueryEventInfo`
+
+`{ queryKey, state }`.
+
+### `onMutationEvents`
+
+```ts
+onMutationEvents(client, { onMutate?, onSuccess?, onError?, onSettled? }): () => void
+```
+
+The same for the mutations **tracked** for the client (see `trackMutation`; the adapters' mutation hooks track themselves): `onMutate(variables)`, `onSuccess(data, variables)`, `onError(error, variables)`, `onSettled(data, error, variables)`.
+
+### `MutationEventHandlers`
+
+The handlers object of `onMutationEvents`.
+
+## Options helpers (`@omnifront/query/options`)
+
+### `queryOptions`
+
+```ts
+const todos = queryOptions({ queryKey: ["todos"], queryFn: fetchTodos, staleTime: 5_000 })
+useQuery(todos)                          // or injectQuery(todos), prefetchQuery(client, todos)
+client.getQueryData(todos.queryKey)      // typed as Todo[] | undefined
+```
+
+Returns the same object. The key becomes a `DataTag`, so the cache methods know the data type without a generic.
+
+### `mutationOptions`
+
+```ts
+mutationOptions({ mutationFn, onSuccess?, ... })
+```
+
+Returns the same object; it exists for type inference when a mutation is defined outside a component.
