@@ -76,8 +76,5 @@
 	},
 	"dependencies": {
 		"@omnifront/core": "workspace:*"
-	},
-	"devDependencies": {
-		"jsdom": "^31.0.0"
 	}
 }

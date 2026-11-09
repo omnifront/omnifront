@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import { FakeScheduler } from "@omnifront/core/testing"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { focusManager, keepPreviousData, onlineManager, QueryClient, QueryObserver } from "../src"
@@ -89,33 +88,39 @@ describe("refetch on focus and reconnect", () => {
 })
 
 describe("environment signals", () => {
+	// Plain EventTarget fakes instead of jsdom: the query package stays framework- and DOM-free,
+	// and its tests run on the oldest supported Node (18), where jsdom 31 cannot load.
+	afterEach(() => vi.unstubAllGlobals())
+
 	it("follow document visibility and the network events only while subscribed", () => {
-		const hidden = vi.spyOn(document, "visibilityState", "get")
-		hidden.mockReturnValue("hidden")
+		const doc = Object.assign(new EventTarget(), { visibilityState: "hidden" })
+		const win = new EventTarget()
+		const nav = { onLine: false }
+		vi.stubGlobal("document", doc)
+		vi.stubGlobal("window", win)
+		vi.stubGlobal("navigator", nav)
+
 		const l = vi.fn()
 		const off = focusManager.subscribe(l)
 		expect(focusManager.getSnapshot()).toBe(false) // read on attach
-		hidden.mockReturnValue("visible")
-		document.dispatchEvent(new Event("visibilitychange"))
+		doc.visibilityState = "visible"
+		doc.dispatchEvent(new Event("visibilitychange"))
 		expect(focusManager.getSnapshot()).toBe(true)
 		expect(l).toHaveBeenCalledTimes(2)
 		off()
-		hidden.mockReturnValue("hidden")
-		document.dispatchEvent(new Event("visibilitychange"))
+		doc.visibilityState = "hidden"
+		doc.dispatchEvent(new Event("visibilitychange"))
 		expect(focusManager.getSnapshot()).toBe(true) // detached: no longer following
-		hidden.mockRestore()
 
-		const online = vi.spyOn(navigator, "onLine", "get").mockReturnValue(false)
 		const offNet = onlineManager.subscribe(() => {})
 		expect(onlineManager.getSnapshot()).toBe(false)
-		online.mockReturnValue(true)
-		window.dispatchEvent(new Event("online"))
+		nav.onLine = true
+		win.dispatchEvent(new Event("online"))
 		expect(onlineManager.getSnapshot()).toBe(true)
-		online.mockReturnValue(false)
-		window.dispatchEvent(new Event("offline"))
+		nav.onLine = false
+		win.dispatchEvent(new Event("offline"))
 		expect(onlineManager.getSnapshot()).toBe(false)
 		offNet()
-		online.mockRestore()
 	})
 
 	it("do nothing without a DOM", () => {
