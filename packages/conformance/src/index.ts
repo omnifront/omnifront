@@ -1,3 +1,5 @@
+import { createApi } from "@omnifront/api"
+import { createMockAdapter } from "@omnifront/api/testing"
 import { notifyManager, shallowEqual, type Subscribable } from "@omnifront/core"
 import { FakeScheduler } from "@omnifront/core/testing"
 import {
@@ -414,6 +416,56 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 			expect(q.current().data).toEqual(["a", "b"])
 			q.unmount()
 			m.unmount()
+		})
+	})
+
+	describe(`${adapterName}: api conformance`, () => {
+		const todos = [{ id: 1 }]
+
+		it("a query built with api.queryOptions loads, and a changed params key fetches again", async () => {
+			const { client } = setup()
+			const adapter = createMockAdapter((req) => ({ data: { url: req.url, todos } }))
+			const api = createApi({ adapter })
+			const make = (page: number) => api.queryOptions<{ url: string }>("/todos", { params: { page } })
+			const q = h.mountQuery(client, make(1))
+			await settle()
+			expect(q.current()).toMatchObject({ status: "success", data: { url: "/todos?page=1" } })
+			q.update(make(2))
+			await settle()
+			expect(q.current().data).toMatchObject({ url: "/todos?page=2" })
+			expect(adapter.calls).toHaveLength(2)
+			q.unmount()
+		})
+
+		it("shares one HTTP request between components using the same path and params", async () => {
+			const { client } = setup()
+			const adapter = createMockAdapter({ "GET /todos": { data: todos } })
+			const options = createApi({ adapter }).queryOptions("/todos")
+			const a = h.mountQuery(client, options)
+			const b = h.mountQuery(client, options)
+			await settle()
+			expect(adapter.calls).toHaveLength(1)
+			expect(b.current().data).toEqual(todos)
+			a.unmount()
+			b.unmount()
+		})
+
+		it("api.mutationOptions posts the variables, and an HTTP error reaches the mutation state", async () => {
+			const adapter = createMockAdapter({
+				"POST /todos": (req) => ({ status: 201, data: JSON.parse(String(req.body)) }),
+				"POST /broken": { status: 500, data: { message: "no" } },
+			})
+			const api = createApi({ adapter })
+			const ok = h.mountMutation(api.mutationOptions<{ title: string }, { title: string }>("POST", "/todos"))
+			await ok.mutateAsync({ title: "x" })
+			await settle()
+			expect(ok.current()).toMatchObject({ status: "success", data: { title: "x" } })
+			ok.unmount()
+			const bad = h.mountMutation(api.mutationOptions("POST", "/broken"))
+			await bad.mutateAsync(undefined as never).catch(() => {})
+			await settle()
+			expect(bad.current()).toMatchObject({ status: "error", error: { code: "HTTP", status: 500 } })
+			bad.unmount()
 		})
 	})
 

@@ -14,6 +14,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@omnifront/api": "workspace:*",
 		"@omnifront/query": "workspace:*",
 		"@omnifront/store": "workspace:*"
 	}

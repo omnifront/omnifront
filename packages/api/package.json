@@ -1,0 +1,84 @@
+{
+	"name": "@omnifront/api",
+	"version": "0.0.0",
+	"description": "A tiny fetch-based HTTP client with interceptors, typed errors and first-class query/store integration.",
+	"license": "MIT",
+	"keywords": [
+		"omnifront",
+		"http",
+		"fetch",
+		"axios",
+		"api"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
+		"directory": "packages/api"
+	},
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/api#readme",
+	"bugs": {
+		"url": "https://github.com/omnifront/omnifront/issues"
+	},
+	"type": "module",
+	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
+	"exports": {
+		".": {
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
+		},
+		"./xhr": {
+			"import": {
+				"types": "./dist/xhr.d.ts",
+				"default": "./dist/xhr.js"
+			},
+			"require": {
+				"types": "./dist/xhr.d.cts",
+				"default": "./dist/xhr.cjs"
+			}
+		},
+		"./auth": {
+			"import": {
+				"types": "./dist/auth.d.ts",
+				"default": "./dist/auth.js"
+			},
+			"require": {
+				"types": "./dist/auth.d.cts",
+				"default": "./dist/auth.cjs"
+			}
+		},
+		"./testing": {
+			"import": {
+				"types": "./dist/testing.d.ts",
+				"default": "./dist/testing.js"
+			},
+			"require": {
+				"types": "./dist/testing.d.cts",
+				"default": "./dist/testing.cjs"
+			}
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "tsup src/index.ts src/xhr.ts src/auth.ts src/testing.ts --format esm,cjs --dts --clean",
+		"test": "vitest run --coverage",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@omnifront/core": "workspace:*"
+	},
+	"devDependencies": {
+		"@omnifront/query": "workspace:*",
+		"@omnifront/store": "workspace:*"
+	}
+}

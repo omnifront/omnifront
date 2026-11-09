@@ -10,6 +10,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@omnifront/api": "workspace:*",
 		"@omnifront/core": "workspace:*",
 		"@omnifront/query": "workspace:*",
 		"@omnifront/store": "workspace:*",

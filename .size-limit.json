@@ -232,5 +232,35 @@
 		"path": "packages/query/dist/structural.js",
 		"limit": "1 KB",
 		"gzip": true
+	},
+	{
+		"name": "@omnifront/api",
+		"path": "packages/api/dist/index.js",
+		"limit": "3 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/api/xhr",
+		"path": "packages/api/dist/xhr.js",
+		"limit": "1 KB",
+		"gzip": true
+	},
+	{
+		"name": "@omnifront/api/auth",
+		"path": "packages/api/dist/auth.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/api/testing",
+		"path": "packages/api/dist/testing.js",
+		"limit": "1 KB",
+		"gzip": true
 	}
 ]

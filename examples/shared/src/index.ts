@@ -4,22 +4,21 @@
  */
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifront/query"
 import { createStore } from "@omnifront/store"
-import { addTodo, listTodos } from "./api"
+import { api } from "./api"
 
 export { server } from "./api"
 
 /** The list query: the same definition in every framework. */
 export const todosQuery: QueryObserverOptions<string[]> = {
-	queryKey: ["todos"],
-	queryFn: ({ signal }) => listTodos(signal),
+	...api.queryOptions<string[]>("/todos"),
 	staleTime: 5_000,
 	retryDelay: 800,
 }
 
 /** Adding a todo. It stays "pending" until the list has been refetched. */
-export const addTodoMutation = (client: QueryClient): MutationOptions<void, string> => ({
-	mutationFn: addTodo,
-	onSuccess: () => client.invalidateQueries({ queryKey: todosQuery.queryKey }),
+export const addTodoMutation = (client: QueryClient): MutationOptions<unknown, string> => ({
+	...api.mutationOptions<unknown, string>("POST", "/todos"),
+	onSuccess: () => client.invalidateQueries({ queryKey: api.queryKey("/todos") }),
 })
 
 /** UI state shared by every component (and, here, every framework's component) that reads it. */

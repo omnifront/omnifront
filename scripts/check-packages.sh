@@ -7,7 +7,7 @@ packs="$(mktemp -d)"; trap 'rm -rf "$packs"' EXIT
 cd "$root"
 pnpm build >/dev/null
 status=0
-for pkg in core query query-infinite store react vue angular next persist devtools; do
+for pkg in core query query-infinite store api react vue angular next persist devtools; do
   pnpm --filter "@omnifront/$pkg" pack --pack-destination "$packs" >/dev/null
   tgz="$packs/omnifront-$pkg-0.0.0.tgz"
   echo "== @omnifront/$pkg"
