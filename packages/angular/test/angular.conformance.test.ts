@@ -7,6 +7,7 @@ import {
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifront/query"
 import { signal } from "@angular/core"
 import { injectMutation, injectQuery, injectStore, provideOmnifront } from "../src"
+import { injectIsFetching, injectIsMutating } from "../src/activity"
 import { injectInfiniteQuery } from "../src/infinite"
 import { injectQueries } from "../src/queries"
 import { flushEffects, mountInjectable } from "./mount"
@@ -63,10 +64,19 @@ const harness: Harness = {
 		return { current: () => result(), unmount }
 	},
 
+	mountActivity(client, filter) {
+		const { result: r, unmount } = mountInjectable(
+			() => ({ fetching: injectIsFetching(filter ? () => filter : undefined), mutating: injectIsMutating() }),
+			[provideOmnifront(client)],
+		)
+		return { fetching: () => r.fetching(), mutating: () => r.mutating(), unmount }
+	},
+
 	mountMutation<TData, TVariables, TContext = unknown>(
 		options: MutationOptions<TData, TVariables, TContext>,
+		client?: QueryClient,
 	): MutationHandle<TData, TVariables> {
-		const { result: r, unmount } = mountInjectable(() => injectMutation(options))
+		const { result: r, unmount } = mountInjectable(() => injectMutation(options), client ? [provideOmnifront(client)] : [])
 		return {
 			current: () => ({ status: r.status(), data: r.data(), error: r.error(), variables: r.variables() }),
 			mutate: (variables: TVariables) => r.mutate(variables),

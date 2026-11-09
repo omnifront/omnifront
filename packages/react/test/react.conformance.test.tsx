@@ -8,6 +8,7 @@ import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifr
 import { act, renderHook } from "@testing-library/react"
 import { createElement, type ReactNode } from "react"
 import { QueryProvider, useMutation, useQuery, useStore } from "../src"
+import { useIsFetching, useIsMutating } from "../src/activity"
 import { useInfiniteQuery } from "../src/infinite"
 import { useQueries } from "../src/queries"
 
@@ -66,10 +67,24 @@ const harness: Harness = {
 		return { current: () => hook.result.current, unmount: () => hook.unmount() }
 	},
 
+	mountActivity(client, filter) {
+		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
+		const hook = renderHook(() => ({ fetching: useIsFetching(filter), mutating: useIsMutating() }), { wrapper })
+		return {
+			fetching: () => hook.result.current.fetching,
+			mutating: () => hook.result.current.mutating,
+			unmount: () => hook.unmount(),
+		}
+	},
+
 	mountMutation<TData, TVariables, TContext = unknown>(
 		options: MutationOptions<TData, TVariables, TContext>,
+		client?: QueryClient,
 	): MutationHandle<TData, TVariables> {
-		const hook = renderHook(() => useMutation(options))
+		const wrapper = client
+			? ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
+			: undefined
+		const hook = renderHook(() => useMutation(options), wrapper ? { wrapper } : {})
 		return {
 			current: () => hook.result.current,
 			mutate: (variables: TVariables) => void act(() => hook.result.current.mutate(variables)),

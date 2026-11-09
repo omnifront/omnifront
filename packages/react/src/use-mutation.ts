@@ -1,5 +1,7 @@
 import { Mutation, type MutationOptions, type MutationState } from "@omnifront/query"
+import { trackMutation } from "@omnifront/query/activity"
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react"
+import { useOptionalQueryClient } from "./provider"
 
 export interface UseMutationResult<TData, TVariables> extends MutationState<TData, TVariables> {
 	/** Fire and forget; failures show up in `status` / `error`. */
@@ -13,6 +15,10 @@ export function useMutation<TData, TVariables = void, TContext = unknown>(
 	options: MutationOptions<TData, TVariables, TContext>,
 ): UseMutationResult<TData, TVariables> {
 	const [mutation] = useState(() => new Mutation(options))
+
+	// Count towards useIsMutating when a provider exists; without one the hook works as before.
+	const client = useOptionalQueryClient()
+	useEffect(() => (client ? trackMutation(client, mutation) : undefined), [client, mutation])
 
 	// Latest callbacks for the next mutate call.
 	useEffect(() => mutation.setOptions(options))

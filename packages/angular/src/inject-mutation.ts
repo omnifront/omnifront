@@ -1,5 +1,7 @@
 import { DestroyRef, computed, effect, inject, signal, untracked, type Signal } from "@angular/core"
 import { Mutation, type MutationOptions, type MutationStatus } from "@omnifront/query"
+import { trackMutation } from "@omnifront/query/activity"
+import { injectOptionalQueryClient } from "./provide"
 
 export interface InjectMutationResult<TData, TVariables> {
 	status: Signal<MutationStatus>
@@ -21,7 +23,12 @@ export function injectMutation<TData, TVariables = void, TContext = unknown>(
 	const mutation = new Mutation(untracked(read))
 
 	const state = signal(mutation.getSnapshot())
-	inject(DestroyRef).onDestroy(mutation.subscribe(() => state.set(mutation.getSnapshot())))
+	const destroyRef = inject(DestroyRef)
+	destroyRef.onDestroy(mutation.subscribe(() => state.set(mutation.getSnapshot())))
+
+	// Count towards injectIsMutating when a client is provided; without one it works as before.
+	const client = injectOptionalQueryClient()
+	if (client) destroyRef.onDestroy(trackMutation(client, mutation))
 
 	// Keep the latest callbacks if the options read signals.
 	effect(() => {

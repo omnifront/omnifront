@@ -13,9 +13,14 @@ export function provideOmnifront(client: QueryClient): EnvironmentProviders {
 	return makeEnvironmentProviders([{ provide: QUERY_CLIENT, useValue: client }])
 }
 
+/** Like `injectQueryClient`, but `null` instead of throwing (hooks that work without a provider). */
+export function injectOptionalQueryClient(): QueryClient | null {
+	return inject(QUERY_CLIENT, { optional: true })
+}
+
 /** Like Angular's `inject()`: call it in a constructor, field initializer or other injection context. */
 export function injectQueryClient(): QueryClient {
-	return inject(QUERY_CLIENT, { optional: true }) ?? fail()
+	return injectOptionalQueryClient() ?? fail()
 }
 
 function fail(): never {

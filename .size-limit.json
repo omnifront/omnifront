@@ -32,18 +32,20 @@
 			"react",
 			"@omnifront/query",
 			"@omnifront/core",
-			"@omnifront/query/hydration"
+			"@omnifront/query/hydration",
+			"@omnifront/query/activity"
 		]
 	},
 	{
 		"name": "@omnifront/vue",
 		"path": "packages/vue/dist/index.js",
-		"limit": "1 KB",
+		"limit": "1.1 KB",
 		"gzip": true,
 		"ignore": [
 			"vue",
 			"@omnifront/query",
-			"@omnifront/core"
+			"@omnifront/core",
+			"@omnifront/query/activity"
 		]
 	},
 	{
@@ -54,7 +56,8 @@
 		"ignore": [
 			"@angular/core",
 			"@omnifront/query",
-			"@omnifront/core"
+			"@omnifront/core",
+			"@omnifront/query/activity"
 		]
 	},
 	{
@@ -278,6 +281,42 @@
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/react/activity",
+		"path": "packages/react/dist/activity.js",
+		"limit": "0.6 KB",
+		"gzip": true,
+		"ignore": [
+			"react",
+			"@omnifront/query",
+			"@omnifront/query/activity",
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/vue/activity",
+		"path": "packages/vue/dist/activity.js",
+		"limit": "0.6 KB",
+		"gzip": true,
+		"ignore": [
+			"vue",
+			"@omnifront/query",
+			"@omnifront/query/activity",
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/angular/activity",
+		"path": "packages/angular/dist/activity.js",
+		"limit": "0.6 KB",
+		"gzip": true,
+		"ignore": [
+			"@angular/core",
+			"@omnifront/query",
+			"@omnifront/query/activity",
 			"@omnifront/core"
 		]
 	}

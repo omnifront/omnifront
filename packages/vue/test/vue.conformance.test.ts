@@ -7,6 +7,7 @@ import {
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifront/query"
 import { nextTick, shallowRef } from "vue"
 import { useMutation, useQuery, useStore } from "../src"
+import { useIsFetching, useIsMutating } from "../src/activity"
 import { useInfiniteQuery } from "../src/infinite"
 import { useQueries } from "../src/queries"
 import { mountComposable } from "./mount"
@@ -85,10 +86,16 @@ const harness: Harness = {
 		return { current: () => result.value, unmount }
 	},
 
+	mountActivity(client, filter) {
+		const { result: r, unmount } = mountComposable(() => ({ fetching: useIsFetching(filter), mutating: useIsMutating() }), client)
+		return { fetching: () => r.fetching.value, mutating: () => r.mutating.value, unmount }
+	},
+
 	mountMutation<TData, TVariables, TContext = unknown>(
 		options: MutationOptions<TData, TVariables, TContext>,
+		client?: QueryClient,
 	): MutationHandle<TData, TVariables> {
-		const { result: r, unmount } = mountComposable(() => useMutation(options))
+		const { result: r, unmount } = mountComposable(() => useMutation(options), client)
 		return {
 			current: () => ({
 				status: r.status.value,

@@ -21,6 +21,7 @@
 3. هر دو شمارنده طبق ADR-0001 تنبل‌اند: اولین subscribe وصل می‌شود، آخرین unsubscribe جدا می‌شود؛ فقط وقتی عدد عوض شود notify می‌کنند و `getSnapshot` وقتی مشترکی نیست تازه محاسبه می‌کند.
 4. آداپترها هوک را در ورودی جدا `/activity` می‌دهند (مثل `/queries` و `/infinite`) تا بودجه‌ی ورودی اصلی‌شان نشکند: React `useIsFetching` و `useIsMutating` (عدد)؛ Vue همان نام‌ها (`ComputedRef<number>`)؛ Angular `injectIsFetching` و `injectIsMutating` (`Signal<number>`). `useMutation` / `injectMutation` در هر آداپتر mutation را با یک جست‌وجوی **اختیاری** client ثبت می‌کنند، پس بدون provider همچنان کار می‌کنند.
 5. در SSR شمارنده‌ی سرور صفر است (`getServerSnapshot`).
+6. بودجه‌های آداپتر: ورودی `/activity` هر آداپتر ۰.۶KB؛ و چون ثبت mutation به `useMutation` اضافه شد، بودجه‌ی ورودی اصلی **Vue از ۱KB به ۱.۱KB** می‌رود (اندازه‌ی واقعی ۱۰۱۴ بایت). React و Angular در بودجه‌ی قبلی ماندند.
 
 ## گزینه‌های ردشده
 
@@ -37,4 +38,4 @@
 
 ## معیار بازبینی
 
-اگر `mutationKey` و فیلتر لازم شد، یا اگر devtools بخواهد به‌جای polling از `onChange` استفاده کند، ADR بازبینی شود. اگر بودجه‌ی Vue (۱KB) با ثبت mutation شکست، همین ADR با بودجه‌ی تازه به‌روز می‌شود.
+اگر `mutationKey` و فیلتر لازم شد، یا اگر devtools بخواهد به‌جای polling از `onChange` استفاده کند، ADR بازبینی شود. اگر ثبت mutation بیش از این رشد کرد، یا بودجه‌ی Vue دوباره شکست، همین ADR به‌روز می‌شود.

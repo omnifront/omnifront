@@ -62,13 +62,23 @@
 				"types": "./dist/queries.d.cts",
 				"default": "./dist/queries.cjs"
 			}
+		},
+		"./activity": {
+			"import": {
+				"types": "./dist/activity.d.ts",
+				"default": "./dist/activity.js"
+			},
+			"require": {
+				"types": "./dist/activity.d.cts",
+				"default": "./dist/activity.cjs"
+			}
 		}
 	},
 	"files": [
 		"dist"
 	],
 	"scripts": {
-		"build": "tsup src/index.ts src/infinite.ts src/queries.ts src/suspense.ts --format esm,cjs --dts --clean",
+		"build": "tsup src/index.ts src/infinite.ts src/queries.ts src/activity.ts src/suspense.ts --format esm,cjs --dts --clean",
 		"test": "vitest run --coverage",
 		"typecheck": "tsc --noEmit"
 	},

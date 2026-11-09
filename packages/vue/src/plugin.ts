@@ -1,5 +1,5 @@
 import type { QueryClient } from "@omnifront/query"
-import { inject, provide, type InjectionKey, type Plugin } from "vue"
+import { hasInjectionContext, inject, provide, type InjectionKey, type Plugin } from "vue"
 
 const QueryClientKey: InjectionKey<QueryClient> = Symbol("omnifront:query-client")
 
@@ -16,6 +16,11 @@ export const QueryPlugin: Plugin<[QueryClient]> = {
 /** Scoped install: call in a component's setup() to give its subtree a different client. */
 export function provideQueryClient(client: QueryClient): void {
 	provide(QueryClientKey, client)
+}
+
+/** Like `useQueryClient`, but `undefined` instead of throwing, also outside setup (hooks that work without a plugin). */
+export function useOptionalQueryClient(): QueryClient | undefined {
+	return hasInjectionContext() ? inject(QueryClientKey, undefined) : undefined
 }
 
 export function useQueryClient(): QueryClient {

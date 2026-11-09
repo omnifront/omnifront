@@ -4,6 +4,7 @@ import { notifyManager, shallowEqual, type Subscribable } from "@omnifront/core"
 import { FakeScheduler } from "@omnifront/core/testing"
 import {
 	QueryClient,
+	type InvalidateFilter,
 	type MutationOptions,
 	type MutationState,
 	type QueryObserverOptions,
@@ -43,6 +44,14 @@ export interface QueriesHandle {
 	unmount(): void
 }
 
+export interface ActivityHandle {
+	/** What the framework's useIsFetching shows. */
+	fetching(): number
+	/** What the framework's useIsMutating shows. */
+	mutating(): number
+	unmount(): void
+}
+
 export interface StoreHandle<TSelected> {
 	current(): TSelected
 	unmount(): void
@@ -51,9 +60,13 @@ export interface StoreHandle<TSelected> {
 /** What an adapter package must provide so the shared behaviour tests can drive it. */
 export interface Harness {
 	mountQuery<TData>(client: QueryClient, options: QueryObserverOptions<TData>): QueryHandle<TData>
+	/** With a `client` the mutation sits under that client's provider, so it counts towards useIsMutating. */
 	mountMutation<TData, TVariables, TContext = unknown>(
 		options: MutationOptions<TData, TVariables, TContext>,
+		client?: QueryClient,
 	): MutationHandle<TData, TVariables>
+	/** Mount useIsFetching(filter) and useIsMutating() together under `client`. */
+	mountActivity(client: QueryClient, filter?: InvalidateFilter): ActivityHandle
 	mountQueries(client: QueryClient, options: ReadonlyArray<QueryObserverOptions<unknown>>): QueriesHandle
 	mountInfiniteQuery<TPage, TPageParam>(
 		client: QueryClient,
@@ -466,6 +479,77 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 			await settle()
 			expect(bad.current()).toMatchObject({ status: "error", error: { code: "HTTP", status: 500 } })
 			bad.unmount()
+		})
+	})
+
+	describe(`${adapterName}: activity conformance`, () => {
+		const deferred = <T>() => {
+			let resolve!: (value: T) => void
+			const promise = new Promise<T>((res) => (resolve = res))
+			return { promise, resolve }
+		}
+
+		it("counts fetching queries, all or filtered, and follows them settling", async () => {
+			const { client } = setup()
+			const all = h.mountActivity(client)
+			const todos = h.mountActivity(client, { queryKey: ["todos"] })
+			expect([all.fetching(), todos.fetching()]).toEqual([0, 0])
+
+			const a = deferred<string>()
+			const b = deferred<string>()
+			let pa!: Promise<string>
+			await h.act(() => {
+				pa = client.fetchQuery(["todos", 1], () => a.promise)
+				void client.fetchQuery(["users"], () => b.promise)
+			})
+			expect([all.fetching(), todos.fetching()]).toEqual([2, 1])
+
+			await h.act(async () => {
+				a.resolve("x")
+				await pa
+			})
+			expect([all.fetching(), todos.fetching()]).toEqual([1, 0])
+			all.unmount()
+			todos.unmount()
+		})
+
+		it("counts a mutation while it is pending, and keeps counting it after its component unmounts", async () => {
+			const { client } = setup()
+			const activity = h.mountActivity(client)
+			const d = deferred<string>()
+			const m = h.mountMutation<string, void>({ mutationFn: () => d.promise }, client)
+			expect(activity.mutating()).toBe(0)
+
+			await h.act(() => m.mutate())
+			expect(activity.mutating()).toBe(1)
+			await h.act(() => m.unmount()) // the request is still running
+			expect(activity.mutating()).toBe(1)
+			await h.act(async () => {
+				d.resolve("done")
+				await Promise.resolve()
+			})
+			await settle()
+			expect(activity.mutating()).toBe(0)
+			activity.unmount()
+		})
+
+		it("stops listening to the client on unmount", async () => {
+			const { client } = setup()
+			let active = 0
+			const original = client.onChange.bind(client)
+			vi.spyOn(client, "onChange").mockImplementation((listener) => {
+				active++
+				const off = original(listener)
+				return () => {
+					active--
+					off()
+				}
+			})
+			const activity = h.mountActivity(client)
+			await settle()
+			expect(active).toBe(1)
+			activity.unmount()
+			expect(active).toBe(0)
 		})
 	})
 

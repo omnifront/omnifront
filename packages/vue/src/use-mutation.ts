@@ -1,5 +1,7 @@
 import { Mutation, type MutationOptions, type MutationState, type MutationStatus } from "@omnifront/query"
+import { trackMutation } from "@omnifront/query/activity"
 import { computed, getCurrentScope, onScopeDispose, shallowRef, toValue, watch, type ComputedRef, type MaybeRefOrGetter } from "vue"
+import { useOptionalQueryClient } from "./plugin"
 
 export interface UseMutationReturn<TData, TVariables> {
 	status: ComputedRef<MutationStatus>
@@ -23,6 +25,10 @@ export function useMutation<TData, TVariables = void, TContext = unknown>(
 		state.value = mutation.getSnapshot()
 	})
 	if (getCurrentScope()) onScopeDispose(unsubscribe)
+
+	// Count towards useIsMutating when the plugin is installed; without it the composable works as before.
+	const client = useOptionalQueryClient()
+	if (client && getCurrentScope()) onScopeDispose(trackMutation(client, mutation))
 
 	// Keep the latest callbacks if the options are reactive.
 	watch(
