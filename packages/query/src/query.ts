@@ -37,6 +37,8 @@ export interface QueryInit {
 	gcTime?: number
 	/** Called when the entry has been unobserved for `gcTime`. */
 	onGc?: () => void
+	/** Called after every state change (the client uses it to tell cache-wide listeners, ADR-0011). */
+	onChange?: () => void
 	/** Reuse parts of the previous data in new data; see `replaceEqualDeep`. */
 	structuralSharing?: ((previous: unknown, next: unknown) => unknown) | undefined
 }
@@ -218,5 +220,6 @@ export class Query<TData = unknown> extends BaseSubscribable<QueryState<TData>> 
 	private update(patch: Partial<QueryState<TData>>): void {
 		this.state = { ...this.state, ...patch }
 		this.notify()
+		this.init.onChange?.()
 	}
 }

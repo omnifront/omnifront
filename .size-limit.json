@@ -8,7 +8,7 @@
 	{
 		"name": "@omnifront/query",
 		"path": "packages/query/dist/index.js",
-		"limit": "3 KB",
+		"limit": "3.1 KB",
 		"gzip": true,
 		"ignore": [
 			"@omnifront/core"
@@ -266,6 +266,15 @@
 	{
 		"name": "@omnifront/query/prefetch",
 		"path": "packages/query/dist/prefetch.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/query/activity",
+		"path": "packages/query/dist/activity.js",
 		"limit": "1 KB",
 		"gzip": true,
 		"ignore": [

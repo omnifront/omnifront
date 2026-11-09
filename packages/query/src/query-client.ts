@@ -31,6 +31,7 @@ interface Entry {
 export class QueryClient {
 	readonly scheduler: Scheduler
 	private readonly entries = new Map<string, Entry>()
+	private readonly changeListeners = new Set<() => void>()
 
 	constructor(private readonly options: QueryClientOptions = {}) {
 		this.scheduler = options.scheduler ?? defaultScheduler
@@ -46,6 +47,7 @@ export class QueryClient {
 				query: new Query<unknown>(this.scheduler, {
 					gcTime: gcTime ?? this.options.gcTime ?? DEFAULT_GC_TIME,
 					structuralSharing: this.options.structuralSharing,
+					onChange: () => this.emit(),
 					onGc: () => {
 						if (this.entries.get(hash) === created) this.entries.delete(hash)
 					},
@@ -99,9 +101,23 @@ export class QueryClient {
 		query.setData(resolve(data, query.getSnapshot().data))
 	}
 
+	/**
+	 * Run `listener` after any cache entry changes, and once when the cache is cleared. Subscribing to
+	 * the client (not to each query) keeps unobserved entries collectable. Used by `@omnifront/query/activity`.
+	 */
+	onChange(listener: () => void): () => void {
+		this.changeListeners.add(listener)
+		return () => void this.changeListeners.delete(listener)
+	}
+
 	clear(): void {
 		for (const { query } of this.entries.values()) query.destroy()
 		this.entries.clear()
+		this.emit()
+	}
+
+	private emit(): void {
+		for (const listener of this.changeListeners) listener()
 	}
 
 	private match({ queryKey, exact }: InvalidateFilter): Query<unknown>[] {
