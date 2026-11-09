@@ -26,7 +26,7 @@ The shapes are deliberately close, so most code ports by renaming imports. This 
 | Mutation `status: "pending"` | same, `"pending"` |
 | `fetchQuery({ queryKey, queryFn })` (one object) | `fetchQuery(queryKey, queryFn, retryOptions?)` |
 | `queryFn` context `{ queryKey, signal, meta }` | `{ signal }` only; close over the key |
-| `prefetchQuery` (swallows errors) | `fetchQuery` (rejects on error); catch it |
+| `prefetchQuery({ queryKey, queryFn, staleTime })` (swallows errors) | `prefetchQuery(client, { queryKey, queryFn, staleTime })` from `@omnifront/query/prefetch` (same behaviour: skips fresh data, never rejects); `fetchQuery` rejects on error |
 | `cancelQueries(filters)` | `cancelQuery(key)` for one key |
 | `select` option | derive a slice with `useStore(observer, selector)` / `derive` (not an option) |
 | `retry` default 3 for every query | 3 for observers (the hooks), 0 for `fetchQuery` |

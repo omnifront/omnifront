@@ -133,3 +133,17 @@ A `Subscribable<MutationState>` (type parameters: data, variables, context). Mem
 ### `replaceEqualDeep`
 
 `replaceEqualDeep(previous, next)` returns `next`, but with every part that is deeply equal to the same part of `previous` replaced by the previous reference (the whole thing if nothing changed). Plain objects and arrays only; everything else is compared by reference. Enable it with `new QueryClient({ structuralSharing: replaceEqualDeep })`; see [Queries](/guide/queries#stable-references-structural-sharing).
+
+## Prefetching (`@omnifront/query/prefetch`)
+
+### `prefetchQuery`
+
+```ts
+prefetchQuery(client, { queryKey, queryFn, staleTime?, retry?, retryDelay? }): Promise<void>
+```
+
+Fetch unless the cache holds fresh data (younger than `staleTime`, not invalidated). Joins a request in flight. Never rejects. See [Queries](/guide/queries#prefetching).
+
+### `PrefetchOptions`
+
+The options object of `prefetchQuery`: `queryKey`, `queryFn`, `staleTime` and the retry options.

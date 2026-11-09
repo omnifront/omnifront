@@ -128,6 +128,18 @@ const client = new QueryClient({ structuralSharing: replaceEqualDeep })
 
 A refetch returning the same list with one item changed keeps the identity of every other item (and of the list, if nothing changed). It works on plain objects and arrays (JSON-like data) and costs a deep comparison per fetch, so it is off by default. It also applies to `setQueryData`.
 
+## Prefetching
+
+Warm the cache before a component needs the data, for example when the user hovers a link:
+
+```ts
+import { prefetchQuery } from "@omnifront/query/prefetch"
+
+prefetchQuery(client, { queryKey: ["user", id], queryFn: () => loadUser(id), staleTime: 30_000 })
+```
+
+It skips the fetch when the cached data is younger than `staleTime` (default 0: always fetch, unless a request is already running, which it joins). It **never rejects**; a failure stays in the cache and the component that mounts later retries by itself. Use `client.fetchQuery` when you need the error, for example to prefetch on the server and fail the request. It is a separate entry so apps that do not prefetch do not pay for it ([ADR-0010](https://github.com/omnifront/omnifront/blob/main/docs/adr/0010-prefetch.md)).
+
 ## Turning a query off
 
 `enabled: false` means no automatic fetch; the entry stays `"idle"`. Flipping it to `true` fetches.

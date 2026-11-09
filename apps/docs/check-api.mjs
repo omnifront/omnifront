@@ -12,7 +12,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
 // page -> [package, [d.ts entry files relative to packages/<package>/dist]]
 const pages = {
 	core: ["core", ["index.d.ts", "testing.d.ts"]],
-	query: ["query", ["index.d.ts", "hydration.d.ts", "structural.d.ts"]],
+	query: ["query", ["index.d.ts", "hydration.d.ts", "structural.d.ts", "prefetch.d.ts"]],
 	"query-infinite": ["query-infinite", ["index.d.ts"]],
 	store: ["store", ["index.d.ts"]],
 	api: ["api", ["index.d.ts", "xhr.d.ts", "auth.d.ts", "testing.d.ts"]],
