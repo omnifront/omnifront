@@ -9,7 +9,7 @@ packs="$(mktemp -d)"; app="$(mktemp -d)/consumer-next"
 mkdir -p "$app"
 trap 'kill "${server_pid:-0}" 2>/dev/null || true; [ -n "${KEEP:-}" ] || rm -rf "$packs" "$(dirname "$app")"' EXIT
 
-for pkg in core query query-infinite store react next; do
+for pkg in core query query-infinite store api react next; do
   pnpm --dir "$root" --filter "@omnifront/$pkg" pack --pack-destination "$packs" >/dev/null
 done
 cp -R "$root/examples/next/app" "$root/examples/next/pages" "$root/examples/next/components" "$root/examples/next/lib" \
@@ -23,7 +23,7 @@ tgz = {p.split('omnifront-')[1].rsplit('-0.0.0.tgz', 1)[0]: p for p in glob.glob
 pkg = {
   "name": "consumer-next", "version": "0.0.0", "private": True,
   "scripts": {"build": "next build", "start": "next start -p 3201"},
-  "dependencies": {"next": nxt, "react": react, "react-dom": react, **{f"@omnifront/{k}": f"file:{v}" for k, v in tgz.items() if k in ("next",)}},
+  "dependencies": {"next": nxt, "react": react, "react-dom": react, **{f"@omnifront/{k}": f"file:{v}" for k, v in tgz.items() if k in ("next", "api")}},
   "devDependencies": {"typescript": "~5.9.3", "@types/node": "^22", "@types/react": "^19" if not react.startswith("18") else "^18", "@types/react-dom": "^19" if not react.startswith("18") else "^18"},
 }
 json.dump(pkg, open('package.json', 'w'), indent=2)
