@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256" role="img" aria-labelledby="t">
+  <title id="t">omnifront</title>
+  <defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#1E1B4B"/><stop offset="1" stop-color="#0B1020"/></linearGradient></defs>
+  <rect width="256" height="256" rx="58" fill="url(#bg)"/>
+  <g transform="translate(128 128) scale(.86) translate(-128 -128)">
+  <g fill="none" stroke-width="22" stroke-linecap="round">
+    <path d="M58.14 110.58A72 72 0 0 1 110.58 58.14" stroke="#7C3AED"/>
+    <path d="M145.42 58.14A72 72 0 0 1 197.86 110.58" stroke="#3B82F6"/>
+    <path d="M197.86 145.42A72 72 0 0 1 145.42 197.86" stroke="#06B6D4"/>
+    <path d="M110.58 197.86A72 72 0 0 1 58.14 145.42" stroke="#10B981"/>
+  </g>
+  <path d="M112 102L143 128L112 154" fill="none" stroke="#F8FAFC" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

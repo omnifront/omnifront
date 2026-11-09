@@ -6,6 +6,7 @@ export default defineConfig({
 	description: "One data layer (queries and state) for React, Next.js, Vue and Angular.",
 	base: process.env.DOCS_BASE ?? "/",
 	cleanUrls: true,
+	head: [["link", { rel: "icon", type: "image/svg+xml", href: `${process.env.DOCS_BASE ?? "/"}favicon.svg` }]],
 	themeConfig: {
 		nav: [
 			{ text: "Guide", link: "/guide/introduction" },

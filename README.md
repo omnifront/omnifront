@@ -1,4 +1,9 @@
-# omnifront
+<h1 align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/brand/omnifront-logo-dark.svg">
+    <img src="docs/brand/omnifront-logo.svg" alt="omnifront" height="72">
+  </picture>
+</h1>
 
 **One data layer for React, Next.js, Vue and Angular.** Queries (fetching, caching, deduplication, retries, invalidation), mutations and a tiny store, written once in a framework-free core with thin adapters on top.
 
