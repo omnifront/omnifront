@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 350" width="880" height="350" role="img" aria-labelledby="t d">
+<title id="t">One core, four frameworks</title>
+<desc id="d">A query update leaves the omnifront core and reaches the React, Next.js, Vue and Angular adapters at the same time.</desc>
+<style>
+	text { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+	.mono { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+	.src { animation: src 6s infinite; }
+	.flash { opacity: 0; animation: flash 6s infinite; }
+	.v2 { animation: v2 6s infinite; }
+	.v3 { opacity: 0; animation: v3 6s infinite; }
+	@keyframes src { 0%, 14% { stroke: #334155; } 3%, 9% { stroke: #7C3AED; } }
+	@keyframes flash { 0%, 44% { opacity: 0; } 47% { opacity: 1; } 62%, 100% { opacity: 0; } }
+	@keyframes v2 { 0%, 45% { opacity: 1; } 47%, 93% { opacity: 0; } 96%, 100% { opacity: 1; } }
+	@keyframes v3 { 0%, 45% { opacity: 0; } 47%, 93% { opacity: 1; } 96%, 100% { opacity: 0; } }
+	@media (prefers-reduced-motion: reduce) {
+		.pulse { display: none; }
+		.src, .flash { animation: none; }
+		.v2 { animation: none; opacity: 0; }
+		.v3 { animation: none; opacity: 1; }
+	}
+</style>
+<g fill="none" stroke="#64748B" stroke-width="2" stroke-linecap="round" opacity=".55">
+<path id="p0" d="M220 165 L317 165"/>
+<path id="p1" d="M473 165 C555 165 540 42.0 620 42.0"/>
+<path id="p2" d="M473 165 C555 165 540 122.0 620 122.0"/>
+<path id="p3" d="M473 165 C555 165 540 202.0 620 202.0"/>
+<path id="p4" d="M473 165 C555 165 540 282.0 620 282.0"/>
+</g>
+<rect class="src" x="20" y="125" width="200" height="80" rx="14" fill="#1E293B" stroke="#334155" stroke-width="2"/>
+<text class="mono" x="42" y="161" font-size="17" font-weight="700" fill="#F8FAFC">["todos"]</text>
+<text x="42" y="183" font-size="13" fill="#94A3B8">query refetches</text>
+<circle cx="395" cy="165" r="78" fill="#1E293B" stroke="#334155" stroke-width="2"/>
+<g transform="translate(395 165) scale(.62) translate(-128 -128)"><g fill="none" stroke-width="22" stroke-linecap="round"><path d="M58.14 110.58A72 72 0 0 1 110.58 58.14" stroke="#7C3AED"/><path d="M145.42 58.14A72 72 0 0 1 197.86 110.58" stroke="#3B82F6"/><path d="M197.86 145.42A72 72 0 0 1 145.42 197.86" stroke="#06B6D4"/><path d="M110.58 197.86A72 72 0 0 1 58.14 145.42" stroke="#10B981"/></g><path d="M112 102L143 128L112 154" fill="none" stroke="#F8FAFC" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></g>
+<text class="mono" x="395" y="269" font-size="13" text-anchor="middle" fill="#94A3B8">@omnifront/query</text>
+<g>
+<rect x="620" y="10" width="240" height="64" rx="14" fill="#1E293B" stroke="#334155" stroke-width="2"/>
+<rect class="flash" x="620" y="10" width="240" height="64" rx="14" fill="none" stroke="#06B6D4" stroke-width="3"/>
+<rect x="634" y="26" width="5" height="32" rx="2.5" fill="#06B6D4"/>
+<text x="652" y="38" font-size="17" font-weight="700" fill="#F8FAFC">React</text>
+<text class="mono" x="652" y="58" font-size="12.5" fill="#94A3B8">useQuery</text>
+<text class="mono v2" x="842" y="49" font-size="15" text-anchor="end" fill="#94A3B8">2 items</text>
+<text class="mono v3" x="842" y="49" font-size="15" font-weight="700" text-anchor="end" fill="#06B6D4">3 items</text>
+</g>
+<g>
+<rect x="620" y="90" width="240" height="64" rx="14" fill="#1E293B" stroke="#334155" stroke-width="2"/>
+<rect class="flash" x="620" y="90" width="240" height="64" rx="14" fill="none" stroke="#3B82F6" stroke-width="3"/>
+<rect x="634" y="106" width="5" height="32" rx="2.5" fill="#3B82F6"/>
+<text x="652" y="118" font-size="17" font-weight="700" fill="#F8FAFC">Next.js</text>
+<text class="mono" x="652" y="138" font-size="12.5" fill="#94A3B8">useQuery · SSR</text>
+<text class="mono v2" x="842" y="129" font-size="15" text-anchor="end" fill="#94A3B8">2 items</text>
+<text class="mono v3" x="842" y="129" font-size="15" font-weight="700" text-anchor="end" fill="#3B82F6">3 items</text>
+</g>
+<g>
+<rect x="620" y="170" width="240" height="64" rx="14" fill="#1E293B" stroke="#334155" stroke-width="2"/>
+<rect class="flash" x="620" y="170" width="240" height="64" rx="14" fill="none" stroke="#10B981" stroke-width="3"/>
+<rect x="634" y="186" width="5" height="32" rx="2.5" fill="#10B981"/>
+<text x="652" y="198" font-size="17" font-weight="700" fill="#F8FAFC">Vue</text>
+<text class="mono" x="652" y="218" font-size="12.5" fill="#94A3B8">useQuery</text>
+<text class="mono v2" x="842" y="209" font-size="15" text-anchor="end" fill="#94A3B8">2 items</text>
+<text class="mono v3" x="842" y="209" font-size="15" font-weight="700" text-anchor="end" fill="#10B981">3 items</text>
+</g>
+<g>
+<rect x="620" y="250" width="240" height="64" rx="14" fill="#1E293B" stroke="#334155" stroke-width="2"/>
+<rect class="flash" x="620" y="250" width="240" height="64" rx="14" fill="none" stroke="#7C3AED" stroke-width="3"/>
+<rect x="634" y="266" width="5" height="32" rx="2.5" fill="#7C3AED"/>
+<text x="652" y="278" font-size="17" font-weight="700" fill="#F8FAFC">Angular</text>
+<text class="mono" x="652" y="298" font-size="12.5" fill="#94A3B8">injectQuery</text>
+<text class="mono v2" x="842" y="289" font-size="15" text-anchor="end" fill="#94A3B8">2 items</text>
+<text class="mono v3" x="842" y="289" font-size="15" font-weight="700" text-anchor="end" fill="#7C3AED">3 items</text>
+</g>
+<circle class="pulse" r="6" fill="#7C3AED" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.14;0.28;1"><mpath href="#p0"/></animateMotion><animate attributeName="opacity" dur="6s" repeatCount="indefinite" calcMode="discrete" values="0;1;0;0" keyTimes="0;0.14;0.28;1"/></circle>
+<circle class="pulse" r="6" fill="#06B6D4" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.28;0.45;1"><mpath href="#p1"/></animateMotion><animate attributeName="opacity" dur="6s" repeatCount="indefinite" calcMode="discrete" values="0;1;0;0" keyTimes="0;0.28;0.45;1"/></circle>
+<circle class="pulse" r="6" fill="#3B82F6" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.28;0.45;1"><mpath href="#p2"/></animateMotion><animate attributeName="opacity" dur="6s" repeatCount="indefinite" calcMode="discrete" values="0;1;0;0" keyTimes="0;0.28;0.45;1"/></circle>
+<circle class="pulse" r="6" fill="#10B981" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.28;0.45;1"><mpath href="#p3"/></animateMotion><animate attributeName="opacity" dur="6s" repeatCount="indefinite" calcMode="discrete" values="0;1;0;0" keyTimes="0;0.28;0.45;1"/></circle>
+<circle class="pulse" r="6" fill="#7C3AED" opacity="0"><animateMotion dur="6s" repeatCount="indefinite" calcMode="linear" keyPoints="0;0;1;1" keyTimes="0;0.28;0.45;1"><mpath href="#p4"/></animateMotion><animate attributeName="opacity" dur="6s" repeatCount="indefinite" calcMode="discrete" values="0;1;0;0" keyTimes="0;0.28;0.45;1"/></circle>
+<text x="440.0" y="342" font-size="14" text-anchor="middle" fill="#64748B">One update in the core. Every adapter sees it. No logic written twice.</text>
+</svg>
