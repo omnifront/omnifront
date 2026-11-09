@@ -15,6 +15,8 @@
 core  -> (هیچ)
 query -> core
 store -> core
+api   -> core   (ADR-0009: دسترسی به query و store فقط ساختاری است، با import نیست)
+query-infinite / persist / devtools -> query, core
 react / vue / angular -> query, store, core  (+ peerDependency روی فریم‌ورک)
 next  -> react
 ```
@@ -22,6 +24,10 @@ next  -> react
 قاعده‌ی اجباری: هیچ پکیجی جز آداپترها حق import از `react`، `vue` یا `@angular/*` ندارد. `next` فقط از طریق `react` به React می‌رسد.
 
 اجرا: `dependency-cruiser` با فایل `.dependency-cruiser.cjs` و اسکریپت `pnpm deps:check` که در CI اجرا می‌شود.
+
+## به‌روزرسانی (۲۰۲۶-۱۱-۰۹)
+
+پکیج `api` اضافه شد و قاعده‌ی `api-imports-core-only` در `.dependency-cruiser.cjs` اجرا می‌شود. هر بسته‌ی جدید باید همین‌جا و در آن فایل قاعده بگیرد.
 
 ## گزینه‌های ردشده
 

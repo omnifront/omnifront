@@ -88,6 +88,19 @@ On the server, after the first render, it holds the application "unstable" until
 
 Use a new `QueryClient` per request: `provideOmnifront(new QueryClient())` inside the server `ApplicationConfig` that Angular builds per request, not a module-level singleton shared by all requests. `examples/angular-ssr` is a complete `@angular/ssr` app (Express server, `RenderMode.Server`, client hydration): the HTML has the data, `ng-state` carries the cache, a second request does not see the first one's data, and the browser starts with no initial request. Two details from that app: build the config in a **function** called per request (`createAppConfig()`), because a module-level `provideOmnifront(new QueryClient())` would be one client for all users; and Angular rejects unknown `Host` headers, so give `AngularNodeAppEngine` an `allowedHosts` list for your domains. The unit tests additionally render with `renderApplication` directly.
 
+## The HTTP client on the server
+
+[`@omnifront/api`](/guide/http-client) has no global state, so the rules above apply to it as they do to the cache: create the instance **per request** when it carries that request's cookies or token, and pass `fetch` to choose how requests leave the server.
+
+```ts
+// per request: forward the incoming cookie, call the API in-process or over HTTP
+const api = createApi({ baseURL: process.env.API_URL, headers: { cookie: request.headers.get("cookie") ?? "" } })
+const todos = api.queryOptions<Todo[]>("/todos")
+await client.fetchQuery(todos.queryKey, todos.queryFn)
+```
+
+The browser's `queryOptions("/todos")` has the same key, so the hydrated data is found and not fetched again. The Next, Nuxt, Angular and Vue SSR examples all use it this way (in Nuxt, `fetch: $fetch.native` makes relative URLs work on the server without a network round trip).
+
 ## React and Next.js
 
 See [Next.js](/guide/next); plain React SSR uses `HydrationBoundary` as shown above, and [Suspense](/guide/suspense) works with streaming.

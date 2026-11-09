@@ -20,7 +20,7 @@ If your pnpm is configured with a mirror that lacks some packages, add `--regist
 | Where | What |
 |---|---|
 | `packages/core` | `Subscribable`, `notifyManager`, `Scheduler`, `derive`, `combine` |
-| `packages/query`, `store`, `query-infinite`, `persist`, `devtools` | framework-free logic |
+| `packages/query`, `store`, `api`, `query-infinite`, `persist`, `devtools` | framework-free logic |
 | `packages/react`, `vue`, `angular`, `next` | adapters |
 | `packages/conformance` | the behaviour suite every adapter must pass (private) |
 | `apps/docs`, `apps/benchmarks` | documentation site, benchmarks |

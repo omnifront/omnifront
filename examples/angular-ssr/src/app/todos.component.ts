@@ -1,5 +1,6 @@
 import { Component, PLATFORM_ID, inject } from "@angular/core"
 import { isPlatformServer } from "@angular/common"
+import { createApi } from "@omnifront/api"
 import { injectMutation, injectQuery, injectQueryClient } from "@omnifront/angular"
 
 @Component({
@@ -24,20 +25,22 @@ export class TodosComponent {
 	private client = injectQueryClient()
 	private onServer = isPlatformServer(inject(PLATFORM_ID))
 
+	private api = createApi()
+	private list = this.api.queryOptions<string[]>("/api/todos")
+
 	// On the server the query reads the database directly; in the browser it calls the API.
 	// provideOmnifrontSsr() makes the server wait for it and sends the result along with the page.
 	todos = injectQuery({
-		queryKey: ["todos"],
-		queryFn: async () =>
-			this.onServer ? (await import("./db")).listTodos() : ((await fetch("/api/todos").then((r) => r.json())) as string[]),
+		queryKey: this.list.queryKey,
+		queryFn: async (context) => (this.onServer ? (await import("./db")).listTodos() : this.list.queryFn(context)),
 		staleTime: 10_000,
 	})
 
 	add = injectMutation({
 		mutationFn: async (title: string) => {
-			await fetch("/api/todos", { method: "POST", body: JSON.stringify({ title }) })
+			await this.api.post("/api/todos", { title })
 		},
-		onSuccess: () => this.client.invalidateQueries({ queryKey: ["todos"] }),
+		onSuccess: () => this.client.invalidateQueries({ queryKey: this.api.queryKey("/api/todos") }),
 	})
 
 	submit(event: Event, input: HTMLInputElement) {

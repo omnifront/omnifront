@@ -10,6 +10,7 @@
 		"typecheck": "nuxt prepare"
 	},
 	"dependencies": {
+		"@omnifront/api": "workspace:*",
 		"@omnifront/query": "workspace:*",
 		"@omnifront/vue": "workspace:*",
 		"nuxt": "^4.6.4",

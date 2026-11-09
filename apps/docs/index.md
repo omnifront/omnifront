@@ -20,6 +20,8 @@ features:
     details: The query core is about 3 KB gzipped (including the shared core), the store about 0.5 KB. That is a deliberate trade against feature count; see the benchmarks for exactly what you give up.
   - title: One mental model
     details: Everything the UI listens to (a query observer, a store, a derived slice) implements the same tiny Subscribable contract, so selectors and tests work the same on all of them.
+  - title: An HTTP client that fits
+    details: A small fetch-based client with interceptors, typed errors and cancellation. Its query and mutation options plug into every adapter, and its auth helpers read from a store, with no framework code inside.
   - title: SSR that does not mismatch
     details: dehydrate/hydrate, a clock-independent server snapshot and a Next.js package for the App Router and Pages Router. Hydration mismatches are covered by tests.
 ---

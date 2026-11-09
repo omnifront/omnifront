@@ -3,10 +3,9 @@
 import { build } from "esbuild"
 import { readFileSync } from "node:fs"
 import { gzipSync } from "node:zlib"
-import { createRequire } from "node:module"
+import { join } from "node:path"
 
-const require = createRequire(import.meta.url)
-const version = (name) => JSON.parse(readFileSync(require.resolve(`${name}/package.json`), "utf8")).version
+const version = (name) => JSON.parse(readFileSync(join(process.cwd(), "node_modules", name, "package.json"), "utf8")).version
 
 async function measure(name, code) {
 	const result = await build({
@@ -33,6 +32,12 @@ const sections = {
 		["@omnifront/react (incl. query + core)", `import { QueryProvider, useQuery, useMutation } from "@omnifront/react"; import { QueryClient } from "@omnifront/query"; console.log(QueryProvider, useQuery, useMutation, QueryClient)`],
 		[`@tanstack/react-query ${version("@tanstack/react-query")}`, `import { QueryClientProvider, useQuery, useMutation, QueryClient } from "@tanstack/react-query"; console.log(QueryClientProvider, useQuery, useMutation, QueryClient)`],
 		[`swr ${version("swr")} (useSWR + useSWRMutation)`, `import useSWR from "swr"; import useSWRMutation from "swr/mutation"; console.log(useSWR, useSWRMutation)`],
+	],
+	"HTTP client: create an instance, get + post": [
+		["@omnifront/api (incl. core)", `import { createApi } from "@omnifront/api"; const a = createApi({ baseURL: "/" }); console.log(a.get, a.post)`],
+		["@omnifront/api + /xhr adapter (upload progress)", `import { createApi } from "@omnifront/api"; import { xhrAdapter } from "@omnifront/api/xhr"; console.log(createApi({ adapter: xhrAdapter }).post)`],
+		[`axios ${version("axios")}`, `import axios from "axios"; const a = axios.create({ baseURL: "/" }); console.log(a.get, a.post)`],
+		[`ky ${version("ky")}`, `import ky from "ky"; const a = ky.create({ prefix: "/" }); console.log(a.get, a.post)`],
 	],
 	"Store (omnifront only, for reference)": [
 		["@omnifront/store (incl. core)", `import { createStore } from "@omnifront/store"; console.log(createStore)`],

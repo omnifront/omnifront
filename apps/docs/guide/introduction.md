@@ -1,6 +1,6 @@
 # Introduction
 
-omnifront is a small data layer for front-end apps: **queries** (fetching, caching, deduplication, retries, invalidation), **mutations**, and a tiny **store**. The logic is written once in a framework-free core, and adapters connect it to React, Next.js, Vue and Angular.
+omnifront is a small data layer for front-end apps: an **HTTP client**, **queries** (caching, deduplication, retries, invalidation), **mutations**, and a tiny **store**. The logic is written once in a framework-free core, and adapters connect it to React, Next.js, Vue and Angular.
 
 ## Why another one?
 
@@ -16,6 +16,7 @@ The aim is not to out-feature TanStack Query. It is a different trade:
 core        Subscribable contract, notifyManager (batching), Scheduler (injectable timers), derive
 query       QueryClient, QueryObserver, Mutation, hydration      → depends on core
 store       createStore                                           → depends on core
+api         HTTP client (fetch), interceptors, auth helpers       → depends on core
 react / vue / angular   thin adapters                             → depend on query, store, core
 next        server helpers + client entry, built on react
 ```
@@ -28,4 +29,4 @@ The hard rule: only the adapters may import `react`, `vue` or `@angular/*`. It i
 
 ## Next steps
 
-Pick your framework: [React](/guide/react), [Next.js](/guide/next), [Vue](/guide/vue) or [Angular](/guide/angular). Then read about [queries](/guide/queries).
+Pick your framework: [React](/guide/react), [Next.js](/guide/next), [Vue](/guide/vue) or [Angular](/guide/angular). Then read about [queries](/guide/queries) and the [HTTP client](/guide/http-client). Coming from another library? See [TanStack Query](/guide/migrating-from-tanstack) or [axios](/guide/migrating-from-axios).

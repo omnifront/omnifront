@@ -9,6 +9,7 @@
 		"typecheck": "vue-tsc --noEmit"
 	},
 	"dependencies": {
+		"@omnifront/api": "workspace:*",
 		"@omnifront/query": "workspace:*",
 		"@omnifront/vue": "workspace:*"
 	},

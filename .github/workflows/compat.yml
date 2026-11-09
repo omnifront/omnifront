@@ -27,6 +27,29 @@ jobs:
           cache: pnpm
       - run: scripts/test-matrix.sh ${{ matrix.entry }}
 
+  node18:
+    name: Node 18 (oldest supported runtime)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # Switch the runtime AFTER installing and building (pnpm itself needs a newer Node), then run
+      # the framework-free packages' tests on Node 18, which `engines` promises to support.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - run: node --version
+      - run: |
+          for pkg in core store query query-infinite api; do
+            (cd packages/$pkg && node ../../node_modules/vitest/vitest.mjs run)
+          done
+
   packaging:
     name: npm tarballs (publint + attw)
     runs-on: ubuntu-latest

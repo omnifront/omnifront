@@ -262,5 +262,14 @@
 		"path": "packages/api/dist/testing.js",
 		"limit": "1 KB",
 		"gzip": true
+	},
+	{
+		"name": "@omnifront/query/prefetch",
+		"path": "packages/query/dist/prefetch.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
 	}
 ]

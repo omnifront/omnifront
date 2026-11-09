@@ -1,19 +1,23 @@
 <script setup lang="ts">
+import { createApi } from "@omnifront/api"
 import { useMutation, useQuery, useQueryClient } from "@omnifront/vue"
 
 const client = useQueryClient()
 const title = ref("")
 
-// $fetch works on both sides: on the server Nuxt calls the API handler directly (no HTTP round trip).
+// Created per request (this setup runs once per request on the server). `$fetch.native` is a
+// fetch that works on both sides: on the server Nuxt calls the API handler directly, without an
+// HTTP round trip, and relative URLs resolve.
+const api = createApi({ fetch: ((input, init) => $fetch.native(input, init)) as typeof fetch })
+
 const { data, status, isFetching, isStale } = useQuery({
-	queryKey: ["todos"],
-	queryFn: () => $fetch<string[]>("/api/todos"),
+	...api.queryOptions<string[]>("/api/todos"),
 	staleTime: 10_000,
 })
 
 const add = useMutation({
-	mutationFn: (value: string) => $fetch("/api/todos", { method: "POST", body: { title: value } }),
-	onSuccess: () => client.invalidateQueries({ queryKey: ["todos"] }),
+	mutationFn: (value: string) => api.post("/api/todos", { title: value }),
+	onSuccess: () => client.invalidateQueries({ queryKey: api.queryKey("/api/todos") }),
 })
 
 function submit() {

@@ -4,7 +4,7 @@
 
 > **Status: pre-release.** Not on npm yet and the API can still change. Everything below is covered by tests and runs in the example apps.
 >
-> **Name:** `omnifront` is a working name. The `@omnifront` scope is already taken on npm, so the project will be renamed before its first publish; see [`docs/PUBLISHING.md`](docs/PUBLISHING.md).
+> **Private for now.** The project stays private until every planned package is finished; see [`docs/PUBLISHING.md`](docs/PUBLISHING.md) for the publishing checklist.
 
 ## Why
 
@@ -32,6 +32,8 @@ todos = injectQuery({ queryKey: ["todos"], queryFn: listTodos, staleTime: 5_000 
 // todos.status(), todos.data(), ...
 ```
 
+The HTTP client plugs straight in, with cancellation wired through: `useQuery(api.queryOptions("/todos"))`. See the [HTTP client guide](apps/docs/guide/http-client.md).
+
 Mutations (`useMutation` / `injectMutation`), stores (`createStore`, `useStore` / `injectStore`) and invalidation (`client.invalidateQueries`) line up the same way.
 
 ## Packages
@@ -41,6 +43,7 @@ Mutations (`useMutation` / `injectMutation`), stores (`createStore`, `useStore` 
 | [`@omnifront/core`](packages/core) | `Subscribable` contract, `notifyManager`, injectable `Scheduler`, `derive` | ~0.8 KB |
 | [`@omnifront/query`](packages/query) | `QueryClient`, `QueryObserver`, `Mutation`, hydration | ~3.0 KB |
 | [`@omnifront/store`](packages/store) | `createStore` | ~0.4 KB |
+| [`@omnifront/api`](packages/api) | `fetch`-based HTTP client: interceptors, typed errors, abort/timeout, retry, `queryOptions`/`mutationOptions`; entries `/xhr` (upload progress), `/auth`, `/testing` | ~2.7 KB |
 | [`@omnifront/react`](packages/react) | `QueryProvider`, `useQuery`, `useMutation`, `useStore`, `HydrationBoundary` | ~0.8 KB |
 | [`@omnifront/vue`](packages/vue) | `QueryPlugin`, `useQuery`, `useMutation`, `useStore` | ~0.8 KB |
 | [`@omnifront/angular`](packages/angular) | `provideOmnifront`, `injectQuery`, `injectMutation`, `injectStore` | ~0.8 KB |

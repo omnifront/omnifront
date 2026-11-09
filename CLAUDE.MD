@@ -22,7 +22,7 @@ Non-goals for v1: forms/validation, Svelte/Solid/Qwik adapters, a custom GraphQL
 - **Build:** `tsup` per package (ESM + CJS + `.d.ts`). Angular package may later need `ng-packagr`; revisit in the Angular phase.
 - **Test:** Vitest. Type tests with `expect-type` or `tsd`. Adapter tests use a shared conformance suite (see section 6).
 - **Release:** Changesets.
-- **Size guard:** `size-limit` in CI. Budgets (gzip): `core` ≤ 1KB, `query` ≤ 3KB, each adapter ≤ 1KB.
+- **Size guard:** `size-limit` in CI. Budgets (gzip): `core` ≤ 1KB, `query` ≤ 3KB, `api` ≤ 3KB (ADR-0009), each adapter ≤ 1KB.
 - **Supported targets:** React ≥ 18, Vue ≥ 3.3, Angular ≥ 17, Next ≥ 14 (App Router and Pages Router).
 - **Package manager:** pnpm 9. Package scope: `@omnifront/*`.
 
@@ -44,6 +44,8 @@ omnifront/
 │   ├─ core/                   # Subscribable, notifyManager, Scheduler, utils
 │   ├─ query/                  # QueryClient, Query, QueryObserver, Mutation
 │   ├─ store/                  # phase 4
+│   ├─ api/                    # fetch-based HTTP client (ADR-0009); entries ./xhr ./auth ./testing
+│   ├─ query-infinite/ persist/ devtools/   # opt-in extras (ADR-0006, ADR-0007)
 │   ├─ react/                  # hooks
 │   ├─ vue/                    # composables
 │   ├─ angular/                # inject* / provide*
@@ -66,6 +68,8 @@ omnifront/
 core  → (nothing)
 query → core
 store → core
+api   → core   (never query or store: integration is structural, ADR-0009)
+query-infinite / persist / devtools → query, core
 react / vue / angular → query, store, core   (+ peerDependency on the framework)
 next  → react
 ```

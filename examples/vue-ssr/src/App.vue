@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { createApi } from "@omnifront/api"
 import { useMutation, useQuery, useQueryClient } from "@omnifront/vue"
 import { ref } from "vue"
 
@@ -7,20 +8,20 @@ const title = ref("")
 
 // On the server the query runs against the database directly; in the browser it calls the API.
 // Vue waits for it (onServerPrefetch inside useQuery) before rendering, so the HTML has the list.
+const api = createApi()
+const list = api.queryOptions<string[]>("/api/todos")
+
 const { data, status, isFetching, isStale } = useQuery({
-	queryKey: ["todos"],
-	queryFn: async () =>
-		import.meta.env.SSR
-			? (await import("./db")).listTodos()
-			: ((await fetch("/api/todos").then((r) => r.json())) as string[]),
+	queryKey: list.queryKey,
+	queryFn: async (context) => (import.meta.env.SSR ? (await import("./db")).listTodos() : list.queryFn(context)),
 	staleTime: 10_000,
 })
 
 const add = useMutation({
 	mutationFn: async (value: string) => {
-		await fetch("/api/todos", { method: "POST", body: JSON.stringify({ title: value }) })
+		await api.post("/api/todos", { title: value })
 	},
-	onSuccess: () => client.invalidateQueries({ queryKey: ["todos"] }),
+	onSuccess: () => client.invalidateQueries({ queryKey: api.queryKey("/api/todos") }),
 })
 
 function submit() {

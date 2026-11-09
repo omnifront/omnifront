@@ -2,7 +2,7 @@
 
 import { useMutation, useQuery, useQueryClient } from "@omnifront/next/client"
 import { useState } from "react"
-import { todosQuery } from "../lib/queries"
+import { api, todosQuery } from "../lib/queries"
 
 export function Todos({ where }: { where: string }) {
 	const client = useQueryClient()
@@ -10,9 +10,9 @@ export function Todos({ where }: { where: string }) {
 	const todos = useQuery(todosQuery)
 	const add = useMutation<void, string>({
 		mutationFn: async (title) => {
-			await fetch("/api/todos", { method: "POST", body: JSON.stringify({ title }) })
+			await api.post("/api/todos", { title })
 		},
-		onSuccess: () => client.invalidateQueries({ queryKey: todosQuery.queryKey }),
+		onSuccess: () => client.invalidateQueries({ queryKey: api.queryKey("/api/todos") }),
 	})
 
 	return (

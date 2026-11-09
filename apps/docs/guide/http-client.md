@@ -159,6 +159,8 @@ const api = createApi({ adapter })
 // adapter.calls: every request received. Unmatched routes reply 404.
 ```
 
+Coming from axios? See [Migrating from axios](/guide/migrating-from-axios) for a side-by-side list.
+
 ## Not supported
 
 Things axios has that this client leaves out on purpose: automatic cookie jars and proxies in Node, `maxRedirects` and other options of Node's `http`, request cancellation by a `CancelToken` (use `AbortSignal`), and `XSRF` helpers (add a header in an interceptor).

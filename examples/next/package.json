@@ -9,6 +9,7 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
+		"@omnifront/api": "workspace:*",
 		"@omnifront/next": "workspace:*",
 		"next": "^16.4.5",
 		"react": "^19.3.1",
