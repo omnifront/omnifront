@@ -1,13 +1,30 @@
-import { defineConfig } from "vitepress"
+import { defineConfig, type HeadConfig } from "vitepress"
 
 // Set DOCS_BASE (for example "/omnifront/") when hosting under a sub-path such as GitHub Pages.
+// Set DOCS_URL (for example "https://docs.example.dev", no trailing slash) once the site has an
+// address: link previews need an absolute URL for the image, so og:image is only emitted then.
+const base = process.env.DOCS_BASE ?? "/"
+const site = process.env.DOCS_URL?.replace(/\/$/, "")
+const title = "omnifront"
+const description = "One data layer (queries and state) for React, Next.js, Vue and Angular."
+
+const head: HeadConfig[] = [
+	["link", { rel: "icon", type: "image/svg+xml", href: `${base}favicon.svg` }],
+	["meta", { property: "og:type", content: "website" }],
+	["meta", { property: "og:title", content: title }],
+	["meta", { property: "og:description", content: description }],
+	["meta", { name: "twitter:card", content: site ? "summary_large_image" : "summary" }],
+]
+if (site) head.push(["meta", { property: "og:image", content: `${site}${base}social.png` }])
+
 export default defineConfig({
-	title: "omnifront",
-	description: "One data layer (queries and state) for React, Next.js, Vue and Angular.",
-	base: process.env.DOCS_BASE ?? "/",
+	title,
+	description,
+	base,
 	cleanUrls: true,
-	head: [["link", { rel: "icon", type: "image/svg+xml", href: `${process.env.DOCS_BASE ?? "/"}favicon.svg` }]],
+	head,
 	themeConfig: {
+		logo: { light: "/logo-mark.svg", dark: "/logo-mark-dark.svg", alt: "omnifront" },
 		nav: [
 			{ text: "Guide", link: "/guide/introduction" },
 			{ text: "API", link: "/api/query" },

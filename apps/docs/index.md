@@ -15,7 +15,7 @@ hero:
 
 features:
   - title: Write the logic once
-    details: Query and store logic lives in a framework-free core. React, Vue and Angular get thin adapters (about 0.7 KB each) over the same engine, so teams on more than one framework, or migrating between them, share their data layer.
+    details: Query and store logic lives in a framework-free core. React, Vue and Angular get thin adapters (about 1 KB or less each) over the same engine, so teams on more than one framework, or migrating between them, share their data layer.
   - title: Small on purpose
     details: The query core is about 3 KB gzipped (including the shared core), the store about 0.5 KB. That is a deliberate trade against feature count; see the benchmarks for exactly what you give up.
   - title: One mental model
@@ -25,6 +25,14 @@ features:
   - title: SSR that does not mismatch
     details: dehydrate/hydrate, a clock-independent server snapshot and a Next.js package for the App Router and Pages Router. Hydration mismatches are covered by tests.
 ---
+
+<script setup>
+import { withBase } from "vitepress"
+</script>
+
+<p style="text-align: center; margin: 2rem 0">
+	<img :src="withBase('/flow.svg')" alt="One query update leaves the omnifront core and reaches the React, Next.js, Vue and Angular adapters at the same time." width="720" style="display: block; margin: 0 auto; max-width: 100%; height: auto" />
+</p>
 
 ::: warning Pre-release
 omnifront is not on npm yet and the API can still change. Everything in these docs is exercised by the repository's tests and example apps.

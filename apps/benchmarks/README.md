@@ -12,7 +12,7 @@ pnpm --filter @omnifront/benchmarks bench   # speed (varies by machine; compare 
 
 omnifront is **much smaller and does much less**. These numbers are not "omnifront beats TanStack Query"; they are "what you give up and gain by choosing a small core".
 
-Things TanStack Query has that omnifront does **not** (yet): structural sharing of results, the `select` option (use `derive`/`useStore` instead), `useIsFetching`. Structural sharing exists but is opt-in, and the benchmarks run without it. Part of the size and speed difference is simply that work not being done. Several of those are on the roadmap and will cost bytes.
+Things TanStack Query has that omnifront does **not** (yet): `fetchStatus` flags, a `mutationKey` filter for `useIsMutating`, and the `select` option (use `derive`/`useStore` instead). Structural sharing exists but is opt-in, and the benchmarks run without it; `useIsFetching`, `useIsMutating` and `combine` exist. Part of the size and speed difference is simply that work not being done. Several of those are on the roadmap and will cost bytes.
 
 ## Bundle size (minified + gzip, React excluded)
 
@@ -20,16 +20,16 @@ Each entry imports the features shown, bundled with esbuild (tree-shaking on). `
 
 | Scope | Library | min | min+gzip |
 |---|---|---:|---:|
-| Framework-agnostic core (client + observer + mutation) | `@omnifront/query` | 9.38 KB | **3.07 KB** |
+| Framework-agnostic core (client + observer + mutation) | `@omnifront/query` | 9.68 KB | **3.15 KB** |
 | | `@tanstack/query-core` | 32.11 KB | 9.31 KB |
-| React (provider + `useQuery` + `useMutation` + client) | `@omnifront/react` | 10.52 KB | **3.52 KB** |
+| React (provider + `useQuery` + `useMutation` + client) | `@omnifront/react` | 11.32 KB | **3.78 KB** |
 | | `@tanstack/react-query` | 34.63 KB | 10.27 KB |
 | | `swr` (`useSWR` + `useSWRMutation`) | 13.12 KB | 6.02 KB |
-| State store (reference) | `@omnifront/store` | 1.12 KB | 0.52 KB |
+| State store (reference) | `@omnifront/store` | 1.15 KB | 0.54 KB |
 | HTTP client (instance + get + post) | `@omnifront/api` | 5.79 KB | **2.58 KB** |
 | | `@omnifront/api` + `/xhr` adapter | 6.82 KB | 2.92 KB |
 | | `axios` | 57.18 KB | 21.73 KB |
-| | `ky` | 30.38 KB | 10.71 KB |
+| | `ky` | 30.37 KB | 10.71 KB |
 
 The repo's `size-limit` budgets (`pnpm size`) are per package and exclude their `@omnifront/*` dependencies, so they report smaller numbers than the table above.
 

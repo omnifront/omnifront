@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 640" width="1280" height="640" role="img" aria-label="omnifront: one data layer, every framework">
+<defs><linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1E1B4B"/><stop offset="1" stop-color="#0B1020"/></linearGradient></defs>
+<rect width="1280" height="640" fill="url(#bg)"/>
+<g transform="translate(540 50) scale(1.14) translate(-40 -40)"><g fill="none" stroke-width="22" stroke-linecap="round">
+    <path d="M58.14 110.58A72 72 0 0 1 110.58 58.14" stroke="#7C3AED"/>
+    <path d="M145.42 58.14A72 72 0 0 1 197.86 110.58" stroke="#3B82F6"/>
+    <path d="M197.86 145.42A72 72 0 0 1 145.42 197.86" stroke="#06B6D4"/>
+    <path d="M110.58 197.86A72 72 0 0 1 58.14 145.42" stroke="#10B981"/>
+  </g>
+  <path d="M112 102L143 128L112 154" fill="none" stroke="#F8FAFC" stroke-width="20" stroke-linecap="round" stroke-linejoin="round"/></g>
+<g transform="translate(179.2 285) scale(2.4)"><defs><linearGradient id="wg" gradientUnits="userSpaceOnUse" x1="190" y1="0" x2="390" y2="0">
+      <stop offset="0" stop-color="#6366F1"/><stop offset="1" stop-color="#06B6D4"/></linearGradient></defs>
+    <g fill="none" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <g stroke="#F8FAFC">
+        <circle cx="18" cy="42" r="18"/>
+        <path d="M52 24V60M52 37A13 13 0 0 1 78 37V60M78 37A13 13 0 0 1 104 37V60"/>
+        <path d="M120 24V60M120 40A16 16 0 0 1 152 40V60"/>
+        <path d="M168 24V60"/>
+      </g>
+      <g stroke="url(#wg)">
+        <path d="M196 60V22C196 13 202 8 213 8M187 24H210"/>
+        <path d="M226 24V60M226 44C226 31 234 24 245 24"/>
+        <circle cx="280" cy="42" r="18"/>
+        <path d="M314 24V60M314 40A16 16 0 0 1 346 40V60"/>
+        <path d="M370 8V48C370 56 374 60 383 60M362 24H384"/>
+      </g>
+    </g>
+    <circle cx="168" cy="6.5" r="5.5" fill="#7C3AED"/></g>
+<text x="640" y="525" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="40" font-weight="600" text-anchor="middle" fill="#F8FAFC">One data layer. Every framework.</text>
+<text x="640" y="578" font-family="Helvetica Neue, Helvetica, Arial, sans-serif" font-size="26" text-anchor="middle" fill="#94A3B8">React · Next.js · Vue · Angular   |   a 3 KB core</text>
+</svg>

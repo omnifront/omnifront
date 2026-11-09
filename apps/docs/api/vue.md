@@ -1,6 +1,6 @@
 # @omnifront/vue
 
-Vue 3.3+. About 0.8 KB gzipped. See the [Vue guide](/guide/vue).
+Vue 3.3+. About 1 KB gzipped. See the [Vue guide](/guide/vue).
 
 ### `QueryPlugin`
 

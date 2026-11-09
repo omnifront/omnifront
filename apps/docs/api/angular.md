@@ -1,6 +1,6 @@
 # @omnifront/angular
 
-Angular 17+. About 0.7 KB gzipped. See the [Angular guide](/guide/angular).
+Angular 17+. About 0.9 KB gzipped. See the [Angular guide](/guide/angular).
 
 ### `provideOmnifront`
 

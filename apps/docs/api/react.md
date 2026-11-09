@@ -1,6 +1,6 @@
 # @omnifront/react
 
-React 18+. About 0.7 KB gzipped. See the [React guide](/guide/react).
+React 18+. About 0.8 KB gzipped. See the [React guide](/guide/react).
 
 ### `QueryProvider`
 

@@ -7,7 +7,7 @@ omnifront is a small data layer for front-end apps: an **HTTP client**, **querie
 The aim is not to out-feature TanStack Query. It is a different trade:
 
 - **Shared logic across frameworks.** If your organisation has React and Angular apps, or you are moving from one to the other, the same query definitions and store code work in both. The [example apps](https://github.com/omnifront/omnifront/tree/main/examples) share one `examples/shared` package between the React, Vue and Angular demos; only the rendering code differs.
-- **Small.** About 3 KB for the query core (including `@omnifront/core`) and about 0.8 KB per adapter (gzipped). See [benchmarks](/benchmarks).
+- **Small.** About 3 KB for the query core (including `@omnifront/core`) and about 1 KB or less per adapter (gzipped). See [benchmarks](/benchmarks).
 - **One model for queries and state.** `useStore(store, selector)` and `useStore(queryObserver, selector)` are the same function.
 
 ## How it is layered

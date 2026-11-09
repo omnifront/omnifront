@@ -1,6 +1,6 @@
 # @omnifront/core
 
-The framework-free plumbing everything else is built on. About 0.7 KB gzipped.
+The framework-free plumbing everything else is built on. About 0.9 KB gzipped.
 
 ## Contract
 
