@@ -57,3 +57,13 @@ Re-exported from `@omnifront/query-infinite` ([options](/api/query-infinite#infi
 ### `QueriesResult`
 
 One query's result in that array: the [query result](/api/query#queryresult) fields plus `refetch`.
+
+## Activity (`@omnifront/vue/activity`)
+
+### `useIsFetching`
+
+`useIsFetching(filter?)` returns a `ComputedRef<number>` of the queries fetching right now (first loads and background refetches), for a global spinner. `filter` is `{ queryKey?, exact? }` like `invalidateQueries`, and may be a ref or getter. Stops with the scope; does not subscribe on the server. See [Queries](/guide/queries#a-global-loading-indicator).
+
+### `useIsMutating`
+
+`useIsMutating()` returns a `ComputedRef<number>` of the pending mutations started with [`useMutation`](/api/vue#usemutation) while the plugin is installed. `useMutation` still works without the plugin; it just has no client to count towards.

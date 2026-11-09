@@ -72,7 +72,7 @@ Start with the Introduction, the guide for your framework, then Queries. The API
 
 ## What is not here yet
 
-`useIsFetching`, and server rendering for Vue and Angular is verified in real apps: Vite SSR, Nuxt 4 and `@angular/ssr`. See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
+A `combine` option for `useQueries`, per-query `fetchStatus` flags and a `mutationKey` filter for `useIsMutating`. Server rendering for Vue and Angular is verified in real apps: Vite SSR, Nuxt 4 and `@angular/ssr`. See [Migrating from TanStack Query](apps/docs/guide/migrating-from-tanstack.md) for the full comparison.
 
 ## Examples
 

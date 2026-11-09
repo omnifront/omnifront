@@ -12,13 +12,13 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "../..")
 // page -> [package, [d.ts entry files relative to packages/<package>/dist]]
 const pages = {
 	core: ["core", ["index.d.ts", "testing.d.ts"]],
-	query: ["query", ["index.d.ts", "hydration.d.ts", "structural.d.ts", "prefetch.d.ts"]],
+	query: ["query", ["index.d.ts", "hydration.d.ts", "structural.d.ts", "prefetch.d.ts", "activity.d.ts"]],
 	"query-infinite": ["query-infinite", ["index.d.ts"]],
 	store: ["store", ["index.d.ts"]],
 	api: ["api", ["index.d.ts", "xhr.d.ts", "auth.d.ts", "testing.d.ts"]],
-	react: ["react", ["index.d.ts", "infinite.d.ts", "suspense.d.ts", "queries.d.ts"]],
-	vue: ["vue", ["index.d.ts", "infinite.d.ts", "queries.d.ts"]],
-	angular: ["angular", ["index.d.ts", "infinite.d.ts", "ssr.d.ts", "queries.d.ts"]],
+	react: ["react", ["index.d.ts", "infinite.d.ts", "suspense.d.ts", "queries.d.ts", "activity.d.ts"]],
+	vue: ["vue", ["index.d.ts", "infinite.d.ts", "queries.d.ts", "activity.d.ts"]],
+	angular: ["angular", ["index.d.ts", "infinite.d.ts", "ssr.d.ts", "queries.d.ts", "activity.d.ts"]],
 	next: ["next", ["index.d.ts", "client.d.ts"]],
 	persist: ["persist", ["index.d.ts", "indexeddb.d.ts"]],
 	devtools: ["devtools", ["index.d.ts", "panel.d.ts"]],

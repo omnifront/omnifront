@@ -140,6 +140,25 @@ prefetchQuery(client, { queryKey: ["user", id], queryFn: () => loadUser(id), sta
 
 It skips the fetch when the cached data is younger than `staleTime` (default 0: always fetch, unless a request is already running, which it joins). It **never rejects**; a failure stays in the cache and the component that mounts later retries by itself. Use `client.fetchQuery` when you need the error, for example to prefetch on the server and fail the request. It is a separate entry so apps that do not prefetch do not pay for it ([ADR-0010](https://github.com/omnifront/omnifront/blob/main/docs/adr/0010-prefetch.md)).
 
+## A global loading indicator
+
+For a top progress bar or a spinner next to the logo, count what is loading across the whole cache:
+
+```tsx
+import { useIsFetching, useIsMutating } from "@omnifront/react/activity"
+
+function TopBar() {
+	const fetching = useIsFetching()                              // every query, first loads and background refetches
+	const todos = useIsFetching({ queryKey: ["todos"] })          // only queries whose key starts with "todos"
+	const saving = useIsMutating()                                // pending mutations
+	return fetching + saving > 0 ? <ProgressBar /> : null
+}
+```
+
+Vue has the same names returning a `ComputedRef<number>` (the filter may be a ref or getter); Angular has `injectIsFetching()` and `injectIsMutating()` returning a `Signal<number>` (the filter may be a function reading signals). Outside a framework, `createFetchingCount(client, filter?)` and `createMutatingCount(client)` from `@omnifront/query/activity` are plain subscribables.
+
+`useIsMutating` counts mutations started with `useMutation` under the same provider; it has no filter because mutations have no key. They are separate entries, so apps without a global indicator do not pay for them ([ADR-0011](https://github.com/omnifront/omnifront/blob/main/docs/adr/0011-activity.md)).
+
 ## Turning a query off
 
 `enabled: false` means no automatic fetch; the entry stays `"idle"`. Flipping it to `true` fetches.

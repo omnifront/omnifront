@@ -1,5 +1,6 @@
 import { addTodoMutation, matchesFilter, server, todoFilter, todosQuery } from "@omnifront/example-shared"
 import { useMutation, useQuery, useQueryClient, useStore } from "@omnifront/react"
+import { useIsFetching, useIsMutating } from "@omnifront/react/activity"
 import { useState } from "react"
 
 const selectFilter = (s: { filter: string }) => s.filter
@@ -13,6 +14,9 @@ export function App() {
 	const add = useMutation(addTodoMutation(client))
 	const filter = useStore(todoFilter, selectFilter)
 	const visible = todos.data?.filter((t) => matchesFilter(t, filter))
+	// Cache-wide counters, the kind a global progress bar would use.
+	const fetchingAll = useIsFetching()
+	const mutatingAll = useIsMutating()
 
 	return (
 		<main style={{ fontFamily: "system-ui", maxWidth: 480, margin: "2rem auto" }}>
@@ -21,6 +25,10 @@ export function App() {
 			<p>
 				status: <b>{todos.status}</b> · fetching: <b>{String(todos.isFetching)}</b> · stale:{" "}
 				<b>{String(todos.isStale)}</b> · failures: <b>{todos.failureCount}</b>
+			</p>
+			<p>
+				all queries fetching: <b data-testid="fetching-all">{fetchingAll}</b> · all mutations pending:{" "}
+				<b data-testid="mutating-all">{mutatingAll}</b>
 			</p>
 
 			<input value={filter} onChange={(e) => todoFilter.getState().setFilter(e.target.value)} placeholder="Filter" />

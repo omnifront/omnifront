@@ -18,6 +18,7 @@ Options type: `QueryClientOptions`. `gcTime` is the default for new entries (5 m
 | `getQueryData(key)` / `getQueryState(key)` | Read the cache (`undefined` if no entry). |
 | `setQueryData(key, data or updater)` | Write the cache (new data, or a function from the old data); the entry becomes `success`. |
 | `invalidateQueries({ queryKey?, exact? })` | Mark entries outdated; active observers refetch. Resolves when those refetches finish. Filter type: `InvalidateFilter`. |
+| `onChange(listener)` | Run `listener` after any entry changes (and once on `clear()`); returns the way to stop. One listener on the client instead of one per query, so unobserved entries stay collectable. What [`createFetchingCount`](/api/query#createfetchingcount) is built on. |
 | `cancelQuery(key)` | Abort the in-flight fetch and retry; rejects it with `CancelledError`. |
 | `getQuery(key, gcTime?)` | The cache entry (a `Query`), created if missing. |
 | `getQueries()` | All entries as `{ key, query }` (used by `dehydrate` and the devtools). |
@@ -147,3 +148,31 @@ Fetch unless the cache holds fresh data (younger than `staleTime`, not invalidat
 ### `PrefetchOptions`
 
 The options object of `prefetchQuery`: `queryKey`, `queryFn`, `staleTime` and the retry options.
+
+## Activity (`@omnifront/query/activity`)
+
+How much is loading right now, for a global spinner or top progress bar. The adapters wrap these as `useIsFetching` / `useIsMutating`; use them directly from any other UI. See [Queries](/guide/queries#a-global-loading-indicator) and [ADR-0011](https://github.com/omnifront/omnifront/blob/main/docs/adr/0011-activity.md).
+
+### `createFetchingCount`
+
+```ts
+createFetchingCount(client, filter?: InvalidateFilter): Subscribable<number>
+```
+
+The number of queries fetching right now, first loads and background refetches alike. `filter` is the same as for `invalidateQueries`: `{ queryKey }` matches by prefix, add `exact: true` for that one key. It only listens to the client while somebody is subscribed, and only notifies when the number changes. `getServerSnapshot()` is `0`.
+
+### `createMutatingCount`
+
+```ts
+createMutatingCount(client): Subscribable<number>
+```
+
+The number of **tracked** mutations that are `pending` (see `trackMutation`). There is no filter: mutations have no key.
+
+### `trackMutation`
+
+```ts
+trackMutation(client, mutation): () => void
+```
+
+Make a `Mutation` count towards `createMutatingCount(client)`. The adapters' `useMutation` / `injectMutation` call it for you when a client is provided; call it yourself if you create `Mutation`s by hand. The returned function stops tracking, but a mutation that is still pending keeps counting until it settles.

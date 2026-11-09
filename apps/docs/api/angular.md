@@ -59,3 +59,13 @@ Environment providers: on the server, wait for started queries and write the cac
 ### `QueriesResult`
 
 A [query result](/api/query#queryresult) plus `refetch`.
+
+## Activity (`@omnifront/angular/activity`)
+
+### `injectIsFetching`
+
+`injectIsFetching(filter?)` returns a `Signal<number>` of the queries fetching right now (first loads and background refetches), for a global spinner. `filter` is `{ queryKey?, exact? }` like `invalidateQueries`, or a function reading signals to make it reactive. Must run in an injection context. See [Queries](/guide/queries#a-global-loading-indicator).
+
+### `injectIsMutating`
+
+`injectIsMutating()` returns a `Signal<number>` of the pending mutations started with [`injectMutation`](/api/angular#injectmutation) under the same `provideOmnifront` client. `injectMutation` still works without a provider; it just has no client to count towards.

@@ -75,3 +75,13 @@ The mapped result type of `useQueries`: one `UseQueryResult` per query.
 ### `UseSuspenseInfiniteQueryResult`
 
 Like `UseInfiniteQueryResult` with `data` always defined and `status` `"success" | "error"`.
+
+## Activity (`@omnifront/react/activity`)
+
+### `useIsFetching`
+
+`useIsFetching(filter?)` returns the number of queries fetching right now (first loads and background refetches), for a global spinner. `filter` is `{ queryKey?, exact? }` like `invalidateQueries`; defining it inline is fine, it is compared by value. Renders `0` on the server and while hydrating. See [Queries](/guide/queries#a-global-loading-indicator).
+
+### `useIsMutating`
+
+`useIsMutating()` returns the number of pending mutations started with [`useMutation`](/api/react#usemutation) under the same `QueryProvider`. `useMutation` still works without a provider; it just has no client to count towards.
