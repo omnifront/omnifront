@@ -22,7 +22,7 @@ Non-goals for v1: forms/validation, Svelte/Solid/Qwik adapters, a custom GraphQL
 - **Build:** `tsup` per package (ESM + CJS + `.d.ts`). Angular package may later need `ng-packagr`; revisit in the Angular phase.
 - **Test:** Vitest. Type tests with `expect-type` or `tsd`. Adapter tests use a shared conformance suite (see section 6).
 - **Release:** Changesets.
-- **Size guard:** `size-limit` in CI. Budgets (gzip): `core` ≤ 1KB, `query` ≤ 3KB, `api` ≤ 3KB (ADR-0009), each adapter ≤ 1KB.
+- **Size guard:** `size-limit` in CI. Budgets (gzip): `core` ≤ 1KB, `query` ≤ 4KB (ADR-0013, with a per-feature byte ledger), `api` ≤ 3KB (ADR-0009), each adapter ≤ 1KB (Vue ≤ 1.1KB), plus a budget per opt-in entry (see `.size-limit.json`).
 - **Supported targets:** React ≥ 18, Vue ≥ 3.3, Angular ≥ 17, Next ≥ 14 (App Router and Pages Router).
 - **Package manager:** pnpm 9. Package scope: `@omnifront/*`.
 
