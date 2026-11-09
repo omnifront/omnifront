@@ -45,6 +45,22 @@ const harness: Harness = {
 		}
 	},
 
+	mountCombinedQueries(client, options, combine) {
+		const current = signal(options)
+		const { result: r, unmount } = mountInjectable(
+			() => injectQueries(() => current(), { combine: combine as never }),
+			[provideOmnifront(client)],
+		)
+		return {
+			current: () => r() as never,
+			update: (next) => {
+				current.set(next)
+				flushEffects()
+			},
+			unmount,
+		}
+	},
+
 	mountInfiniteQuery(client, options) {
 		const current = signal(options)
 		const { result: r, unmount } = mountInjectable(() => injectInfiniteQuery(() => current()), [provideOmnifront(client)])

@@ -43,6 +43,15 @@ const harness: Harness = {
 		}
 	},
 
+	mountCombinedQueries(client, options, combine) {
+		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
+		const hook = renderHook((props: typeof options) => useQueries<unknown[], ReturnType<typeof combine>>(props as never, { combine: combine as never }), {
+			wrapper,
+			initialProps: options,
+		})
+		return { current: () => hook.result.current, update: (next) => hook.rerender(next), unmount: () => hook.unmount() }
+	},
+
 	mountInfiniteQuery(client, options) {
 		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
 		const hook = renderHook((props: typeof options) => useInfiniteQuery(props), { wrapper, initialProps: options })

@@ -1,6 +1,7 @@
 import { createStore } from "@omnifront/store"
 import { describe, expect, expectTypeOf, it } from "vitest"
 import { useMutation, useQuery, useStore, type UseMutationResult, type UseQueryResult } from "../src"
+import { useQueries } from "../src/queries"
 
 // Never called: only type-checked.
 function hooks() {
@@ -20,6 +21,23 @@ function hooks() {
 	expectTypeOf(useStore(store, (s) => s.count)).toEqualTypeOf<number>()
 	// @ts-expect-error the selector must read existing fields
 	useStore(store, (s) => s.nope)
+
+	const queries = [
+		{ queryKey: ["n"], queryFn: async () => 1 },
+		{ queryKey: ["s"], queryFn: async () => "x" },
+	] as const
+	const [n, s] = useQueries([queries[0], queries[1]])
+	expectTypeOf(n.data).toEqualTypeOf<number | undefined>()
+	expectTypeOf(s.data).toEqualTypeOf<string | undefined>()
+	// With `combine` the hook returns what combine returns, and combine sees each query's own data type.
+	const summary = useQueries([queries[0], queries[1]], {
+		combine: ([a, b]) => {
+			expectTypeOf(a.data).toEqualTypeOf<number | undefined>()
+			expectTypeOf(b.data).toEqualTypeOf<string | undefined>()
+			return { loading: a.status === "loading" || b.status === "loading", label: `${a.data}-${b.data}` }
+		},
+	})
+	expectTypeOf(summary).toEqualTypeOf<{ loading: boolean; label: string }>()
 }
 
 describe("react types", () => {

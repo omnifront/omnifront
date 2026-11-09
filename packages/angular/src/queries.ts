@@ -1,4 +1,4 @@
-import { DestroyRef, effect, inject, signal, untracked, type Signal } from "@angular/core"
+import { DestroyRef, computed, effect, inject, signal, untracked, type Signal } from "@angular/core"
 import { combine } from "@omnifront/core"
 import { hashKey, QueryObserver, type QueryObserverOptions, type QueryResult } from "@omnifront/query"
 import { injectQueryClient } from "./provide"
@@ -12,7 +12,16 @@ export type QueriesResult<TData> = QueryResult<TData> & { refetch: () => Promise
  */
 export function injectQueries<TData = unknown>(
 	queries: readonly QueryObserverOptions<TData>[] | (() => readonly QueryObserverOptions<TData>[]),
-): Signal<QueriesResult<TData>[]> {
+): Signal<QueriesResult<TData>[]>
+/** With `combine` you get a signal of its return value; it runs again only when some result changed. */
+export function injectQueries<TData, TCombined>(
+	queries: readonly QueryObserverOptions<TData>[] | (() => readonly QueryObserverOptions<TData>[]),
+	options: { combine: (results: QueriesResult<TData>[]) => TCombined },
+): Signal<TCombined>
+export function injectQueries<TData = unknown>(
+	queries: readonly QueryObserverOptions<TData>[] | (() => readonly QueryObserverOptions<TData>[]),
+	options?: { combine?: (results: QueriesResult<TData>[]) => unknown },
+): Signal<unknown> {
 	const client = injectQueryClient()
 	const read = () => {
 		const list = typeof queries === "function" ? queries() : queries
@@ -44,5 +53,7 @@ export function injectQueries<TData = unknown>(
 			else rebuild(list)
 		})
 	})
-	return results.asReadonly()
+	// A computed re-runs only when `results` got a new array, so `combine` runs once per change.
+	const combineResults = options?.combine
+	return combineResults ? computed(() => combineResults(results())) : results.asReadonly()
 }

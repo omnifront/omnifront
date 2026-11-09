@@ -23,7 +23,16 @@ export type QueriesResult<TData> = { [K in keyof UseQueryReturn<TData>]: UseQuer
  * Run several queries at once; `queries` may be an array, a ref or a getter (the list can grow and
  * shrink). Dependent queries: set `enabled` on the later ones.
  */
-export function useQueries<TData = unknown>(queries: MaybeRefOrGetter<readonly QueryObserverOptions<TData>[]>): ComputedRef<QueriesResult<TData>[]> {
+export function useQueries<TData = unknown>(queries: MaybeRefOrGetter<readonly QueryObserverOptions<TData>[]>): ComputedRef<QueriesResult<TData>[]>
+/** With `combine` you get a ref of its return value; it runs again only when some result changed. */
+export function useQueries<TData, TCombined>(
+	queries: MaybeRefOrGetter<readonly QueryObserverOptions<TData>[]>,
+	options: { combine: (results: QueriesResult<TData>[]) => TCombined },
+): ComputedRef<TCombined>
+export function useQueries<TData = unknown>(
+	queries: MaybeRefOrGetter<readonly QueryObserverOptions<TData>[]>,
+	options?: { combine?: (results: QueriesResult<TData>[]) => unknown },
+): ComputedRef<unknown> {
 	const client = useQueryClient()
 	const serverOptions = (list: readonly QueryObserverOptions<TData>[]) =>
 		typeof window === "undefined" ? list.map((q) => ({ ...q, retry: q.retry ?? false })) : list
@@ -77,5 +86,7 @@ export function useQueries<TData = unknown>(queries: MaybeRefOrGetter<readonly Q
 			else refresh()
 		},
 	)
-	return computed(() => results.value)
+	// A computed only re-runs when `results` got a new array, so `combine` runs once per change.
+	const combineResults = options?.combine
+	return computed(() => (combineResults ? combineResults(results.value) : results.value))
 }

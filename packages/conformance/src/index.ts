@@ -44,6 +44,13 @@ export interface QueriesHandle {
 	unmount(): void
 }
 
+export interface CombinedQueriesHandle<T> {
+	/** What useQueries(options, { combine }) returns. */
+	current(): T
+	update(options: ReadonlyArray<QueryObserverOptions<unknown>>): void
+	unmount(): void
+}
+
 export interface ActivityHandle {
 	/** What the framework's useIsFetching shows. */
 	fetching(): number
@@ -68,6 +75,12 @@ export interface Harness {
 	/** Mount useIsFetching(filter) and useIsMutating() together under `client`. */
 	mountActivity(client: QueryClient, filter?: InvalidateFilter): ActivityHandle
 	mountQueries(client: QueryClient, options: ReadonlyArray<QueryObserverOptions<unknown>>): QueriesHandle
+	/** Like mountQueries, with the adapter's `combine` option. `combine` is the same function on every render. */
+	mountCombinedQueries<T>(
+		client: QueryClient,
+		options: ReadonlyArray<QueryObserverOptions<unknown>>,
+		combine: (results: ReadonlyArray<QueryResult<unknown>>) => T,
+	): CombinedQueriesHandle<T>
 	mountInfiniteQuery<TPage, TPageParam>(
 		client: QueryClient,
 		options: InfiniteQueryObserverOptions<TPage, TPageParam>,
@@ -302,6 +315,40 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 			await settle()
 			expect(dependent).toHaveBeenCalledTimes(1)
 			expect(q.current()[1]?.data).toBe("posts")
+			q.unmount()
+		})
+
+		it("combine returns its own value instead of the array, and follows the queries", async () => {
+			const { client } = setup()
+			const combine = (results: ReadonlyArray<QueryResult<unknown>>) => ({
+				loading: results.some((r) => r.status === "loading"),
+				data: results.map((r) => r.data),
+			})
+			const q = h.mountCombinedQueries(client, [one("a", 1), one("b", "two")], combine)
+			expect(q.current()).toEqual({ loading: true, data: [undefined, undefined] })
+			await settle()
+			expect(q.current()).toEqual({ loading: false, data: [1, "two"] })
+			q.unmount()
+		})
+
+		it("combine runs again only when a result changed, and keeps its value's identity in between", async () => {
+			const { client } = setup()
+			const combine = vi.fn((results: ReadonlyArray<QueryResult<unknown>>) => ({ data: results.map((r) => r.data) }))
+			const q = h.mountCombinedQueries(client, [one("a", 1), one("b", 2)], combine)
+			await settle()
+			const settled = q.current()
+			const runs = combine.mock.calls.length
+			await h.act(() => {}) // more renders, nothing changed
+			await settle()
+			expect(q.current()).toBe(settled)
+			expect(combine).toHaveBeenCalledTimes(runs)
+
+			await h.act(() => void client.invalidateQueries({ queryKey: ["a"] })) // a refetch changes a result
+			await settle()
+			const changed = q.current() // Vue and Angular compute lazily, on the first read
+			expect(combine.mock.calls.length).toBeGreaterThan(runs)
+			expect(changed).not.toBe(settled)
+			expect(changed).toEqual({ data: [1, 2] })
 			q.unmount()
 		})
 

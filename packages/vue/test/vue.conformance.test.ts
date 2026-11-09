@@ -54,6 +54,18 @@ const harness: Harness = {
 		}
 	},
 
+	mountCombinedQueries(client, options, combine) {
+		const current = shallowRef(options)
+		const { result: r, unmount } = mountComposable(() => useQueries(current, { combine: combine as never }), client)
+		return {
+			current: () => r.value as never,
+			update: (next) => {
+				current.value = next
+			},
+			unmount,
+		}
+	},
+
 	mountInfiniteQuery(client, options) {
 		const current = shallowRef(options)
 		const { result: r, unmount } = mountComposable(() => useInfiniteQuery(current), client)

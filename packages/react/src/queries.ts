@@ -14,10 +14,26 @@ export type UseQueriesResults<T extends readonly unknown[]> = { [K in keyof T]: 
  *     { queryKey: ["user", id], queryFn: () => loadUser(id) },
  *     { queryKey: ["posts", id], queryFn: () => loadPosts(id), enabled: userLoaded },
  *   ])
+ *
+ * With `combine` you get its return value instead of the array. It runs again only when some
+ * result changed (or when the function itself changes: keep it stable, define it outside the
+ * component or memoize it), and its return value keeps its identity in between.
+ *
+ *   const { loading, data } = useQueries(queries, {
+ *     combine: (results) => ({ loading: results.some((r) => r.status === "loading"), data: results.map((r) => r.data) }),
+ *   })
  */
 export function useQueries<T extends readonly unknown[]>(
 	queries: readonly [...{ [K in keyof T]: QueryObserverOptions<T[K]> }],
-): UseQueriesResults<T> {
+): UseQueriesResults<T>
+export function useQueries<T extends readonly unknown[], TCombined>(
+	queries: readonly [...{ [K in keyof T]: QueryObserverOptions<T[K]> }],
+	options: { combine: (results: UseQueriesResults<T>) => TCombined },
+): TCombined
+export function useQueries<T extends readonly unknown[]>(
+	queries: readonly [...{ [K in keyof T]: QueryObserverOptions<T[K]> }],
+	options?: { combine?: (results: UseQueriesResults<T>) => unknown },
+): unknown {
 	const client = useQueryClient()
 	const list = queries as readonly QueryObserverOptions<unknown>[]
 	// A new set of keys means new observers (and a new combined view); rendering never touches subscribed ones.
@@ -30,8 +46,9 @@ export function useQueries<T extends readonly unknown[]>(
 	const getServerSnapshot = useCallback(() => combined.getServerSnapshot?.() ?? combined.getSnapshot(), [combined])
 	const snapshots = useSyncExternalStore(combined.subscribe, getSnapshot, getServerSnapshot)
 
-	return useMemo(
-		() => snapshots.map((result, i) => ({ ...result, refetch: () => (observers[i] as QueryObserver<unknown>).refetch() })),
-		[snapshots, observers],
-	) as unknown as UseQueriesResults<T>
+	const combineResults = options?.combine
+	return useMemo(() => {
+		const results = snapshots.map((result, i) => ({ ...result, refetch: () => (observers[i] as QueryObserver<unknown>).refetch() }))
+		return combineResults ? combineResults(results as unknown as UseQueriesResults<T>) : results
+	}, [snapshots, observers, combineResults])
 }
