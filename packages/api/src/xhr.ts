@@ -23,6 +23,7 @@ export function xhrAdapter(request: ApiRequest): Promise<RawResponse> {
 		xhr.open(request.method, request.url, true)
 		for (const [name, value] of Object.entries(request.headers)) xhr.setRequestHeader(name, value)
 		xhr.responseType = request.responseType === "json" ? "text" : request.responseType.toLowerCase() as XMLHttpRequestResponseType
+		xhr.withCredentials = request.fetchOptions?.credentials ? request.fetchOptions.credentials === "include" : !!request.withCredentials
 		if (request.onUploadProgress) {
 			const report = request.onUploadProgress
 			xhr.upload.onprogress = (e) => report({ loaded: e.loaded, total: e.lengthComputable ? e.total : undefined })

@@ -38,7 +38,13 @@ async function readBody(res: Response, request: ApiRequest): Promise<unknown> {
 /** Default adapter, built on `fetch`. Upload progress is not available here (use `@omnifront/api/xhr`). */
 export async function fetchAdapter(request: ApiRequest): Promise<RawResponse> {
 	const doFetch = request.fetch ?? fetch
-	const init: RequestInit = { method: request.method, headers: request.headers, signal: request.signal }
+	const init: RequestInit = {
+		...(request.withCredentials ? { credentials: "include" } : {}),
+		...request.fetchOptions,
+		method: request.method,
+		headers: request.headers,
+		signal: request.signal,
+	}
 	if (request.body !== undefined && request.body !== null) {
 		init.body = request.body
 		// Node's fetch requires this for stream bodies.

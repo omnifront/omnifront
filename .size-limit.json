@@ -346,5 +346,17 @@
 		"ignore": [
 			"@omnifront/core"
 		]
+	},
+	{
+		"name": "@omnifront/api/serialize",
+		"path": "packages/api/dist/serialize.js",
+		"limit": "1 KB",
+		"gzip": true
+	},
+	{
+		"name": "@omnifront/api/progress",
+		"path": "packages/api/dist/progress.js",
+		"limit": "0.5 KB",
+		"gzip": true
 	}
 ]

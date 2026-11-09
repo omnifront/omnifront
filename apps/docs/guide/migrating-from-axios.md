@@ -26,9 +26,14 @@ const { data } = await api.get<Todo[]>("/todos", { params: { done: false } })
 | `baseURL`, `headers`, `params`, `timeout`, `responseType`, `validateStatus`, `transformRequest`, `transformResponse` | the same names and meaning |
 | `signal` (an `AbortSignal`) | the same |
 | `onDownloadProgress` | the same, `({ loaded, total })` |
-| `paramsSerializer` | a function `(params) => string` (axios also accepts an options object) |
+| `paramsSerializer` | a function `(params) => string`; for axios's options object use `createParamsSerializer({ indexes, dots, encode })` from `@omnifront/api/serialize` |
 | `interceptors.request.use` / `response.use` | the same, and `use` returns the function that removes it |
 | `instance.defaults` | `api.defaults` |
+| `withCredentials`, `allowAbsoluteUrls`, `timeoutErrorMessage`, `parseReviver` | the same names and meaning |
+| `fetchOptions` | the same: passed to `fetch` unchanged |
+| `instance.getUri(config)` | `api.getUri(config)` |
+| `interceptors.request.use(fn, { runWhen })` | the same (there is no `synchronous` option: the chain is always asynchronous) |
+| `axios.mergeConfig` | `mergeConfig` |
 
 ## Different
 
@@ -36,10 +41,16 @@ const { data } = await api.get<Todo[]>("/todos", { params: { done: false } })
 |---|---|
 | Request interceptors run **last-added first** | Interceptors run **in the order added**, on both sides |
 | Errors are `AxiosError` (`error.response`, `error.code` like `"ECONNABORTED"`) | `ApiError` with `error.code` of `"HTTP"`, `"TIMEOUT"`, `"ABORT"`, `"NETWORK"` or `"PARSE"`; `error.status`, `error.data`, `error.response`; `isApiError(e)` instead of `axios.isAxiosError(e)` |
-| `axios.isCancel(error)` | `isApiError(error) && error.code === "ABORT"` |
+| `axios.isCancel(error)` | `isCancel(error)` (the same as `isApiError(error) && error.code === "ABORT"`) |
 | `onUploadProgress` works in the browser | needs the XHR adapter: `adapter: xhrAdapter` from `@omnifront/api/xhr` (`fetch` cannot report upload progress) |
 | `data` of a non-JSON body is the string | the same; a **bad JSON success body** is a `PARSE` error, a non-JSON **error** body stays as text |
 | `timeout` per request | per **attempt** (matters when `retry` is on) |
+| Arrays in `params` are written `a[]=1&a[]=2` | `a=1&a=2` by default; `createParamsSerializer()` gives the axios format |
+| `auth: { username, password }` | `basicAuth(api, { username, password })` from `@omnifront/api/auth` |
+| `xsrfCookieName`, `xsrfHeaderName`, `withXSRFToken` | `withXsrf(api, { cookieName, headerName, send })` from `@omnifront/api/auth` |
+| A plain object with a form `content-type` becomes `FormData` / urlencoded | opt in with `transformRequest: formTransform()` from `@omnifront/api/serialize` |
+| `api.postForm` / `putForm` / `patchForm`, `axios.toFormData`, `axios.formToJSON` | `postForm(api, url, data)` etc., `toFormData`, `formToJSON` from `@omnifront/api/serialize` |
+| Progress events carry `progress`, `rate`, `estimated` | wrap the callback: `onDownloadProgress: trackProgress(cb)` from `@omnifront/api/progress` |
 | Retries via `axios-retry` | `retry: { attempts }` built in, **off** by default (queries already retry) |
 | `axios.defaults.headers.common` | `createApi({ headers })` or `api.extend({ headers })`; there are no per-method default headers |
 | Global `axios` instance | no global instance: create one and export it |
@@ -48,9 +59,8 @@ const { data } = await api.get<Todo[]>("/todos", { params: { done: false } })
 
 - `CancelToken` (deprecated in axios too): use `AbortSignal`.
 - `maxRedirects`, `proxy`, `httpAgent`, `decompress`, cookie jar and other options of Node's `http`: the client is `fetch`-based, so it runs wherever a global `fetch` exists (browsers, current Node, edge runtimes) and leaves these to `fetch`. Pass your own `fetch` (`createApi({ fetch })`) for an `undici` agent, for example.
-- `withCredentials`, `xsrfCookieName`, `xsrfHeaderName`: use `fetch`'s credentials through a custom `fetch`, and add the XSRF header in a request interceptor.
 - `maxContentLength` and `maxBodyLength`.
-- Automatic transformation of `FormData` from plain objects: build the `FormData` yourself.
+- `formSerializer`'s `visitor` and `metaTokens`, and `maxDepth`.
 - `axios.all` / `axios.spread`: use `Promise.all`.
 
 ## Why switch
