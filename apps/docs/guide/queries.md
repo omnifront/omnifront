@@ -115,6 +115,27 @@ const [user, posts] = useQueries([
 
 Vue: `import { useQueries } from "@omnifront/vue/queries"` (one array of plain results). Angular: `injectQueries` from `@omnifront/angular/queries` (one signal of an array). **Dependent queries** need no special API: set `enabled` on the later query. (The `user` above is the previous render's result, so the second query starts once the first has data.)
 
+### Combining the results
+
+Pass `combine` in a second argument to turn the results into one value, for example a single loading flag or a merged list. The hook returns what `combine` returns instead of the array:
+
+```tsx
+const combine = (results) => ({
+	loading: results.some((r) => r.status === "loading"),
+	data: results.map((r) => r.data),
+})
+
+const { loading, data } = useQueries(
+	[
+		{ queryKey: ["user", id], queryFn: () => loadUser(id) },
+		{ queryKey: ["posts", id], queryFn: () => loadPosts(id) },
+	],
+	{ combine },
+)
+```
+
+`combine` runs again only when some result changed, and its return value keeps its identity until then, so it is safe to feed into memoized children or effects. Keep the function itself stable (define it outside the component, or memoize it): a new function means it runs again. In Vue and Angular the same second argument gives you a `ref` / `Signal` of the combined value (`useQueries(queries, { combine })`, `injectQueries(queries, { combine })`). Unlike TanStack Query, the list goes first and `combine` second, not `{ queries, combine }` in one object.
+
 ## Stable references: structural sharing
 
 By default a refetch that returns equal data still produces a new object, so anything memoized on it re-runs. Opt in to keep the old references for the parts that did not change:

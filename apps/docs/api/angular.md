@@ -54,7 +54,7 @@ Environment providers: on the server, wait for started queries and write the cac
 
 ### `injectQueries`
 
-`injectQueries(queries)`; `queries` may be an array or a function reading signals. Returns one `Signal` of an array of results, each with `refetch()`.
+`injectQueries(queries)`; `queries` may be an array or a function reading signals. Returns one `Signal` of an array of results, each with `refetch()`. `injectQueries(queries, { combine })` returns a `Signal` of whatever `combine(results)` returns instead; see [Queries](/guide/queries#combining-the-results).
 
 ### `QueriesResult`
 

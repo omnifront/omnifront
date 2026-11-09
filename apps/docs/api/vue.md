@@ -52,7 +52,7 @@ Re-exported from `@omnifront/query-infinite` ([options](/api/query-infinite#infi
 
 ### `useQueries`
 
-`useQueries(queries)`; `queries` may be an array, a ref or a getter. Returns a `ComputedRef` of an array with one plain result per query (`results.value[0].data`), each with `refetch()`. Server-side it prefetches them all and fails fast.
+`useQueries(queries)`; `queries` may be an array, a ref or a getter. Returns a `ComputedRef` of an array with one plain result per query (`results.value[0].data`), each with `refetch()`. Server-side it prefetches them all and fails fast. `useQueries(queries, { combine })` returns a `ComputedRef` of whatever `combine(results)` returns instead; see [Queries](/guide/queries#combining-the-results).
 
 ### `QueriesResult`
 
