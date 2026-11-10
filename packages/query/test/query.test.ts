@@ -32,6 +32,7 @@ describe("Query", () => {
 			data: 7,
 			error: undefined,
 			isFetching: false,
+			isPaused: false,
 			isInvalidated: false,
 			failureCount: 0,
 			dataUpdatedAt: 100,

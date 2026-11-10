@@ -1,13 +1,16 @@
 import { defaultScheduler, notifyManager, type Scheduler } from "@omnifront/core"
 import { hashKey, matchesKey, type DataTag, type QueryKey, type UntaggedKey } from "./hash-key"
 import { DEFAULT_GC_TIME, Query, type FetchOptions, type QueryFn, type QueryState } from "./query"
+import type { MutationOptions } from "./mutation"
 import type { QueryObserverOptions } from "./query-observer"
 import type { DefaultError } from "./register"
 import type { RetryOptions } from "./retry"
 import { noop, resolve } from "./resolve"
 
-/** Options every query gets unless it sets its own. */
+/** Options every query / mutation gets unless it sets its own. */
 export interface DefaultOptions {
+	/** For every `Mutation` created with this client (the adapters' mutation hooks). */
+	mutations?: Partial<Omit<MutationOptions<unknown, DefaultError, unknown>, "mutationFn">> | undefined
 	queries?:
 		| Partial<Omit<QueryObserverOptions<unknown>, "queryKey" | "queryFn" | "initialData" | "initialDataUpdatedAt" | "placeholderData">>
 		| undefined

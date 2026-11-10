@@ -1,9 +1,12 @@
 import type { Subscribable } from "@omnifront/core"
+import type { QueryKey } from "./hash-key"
 import type { MutationStatus } from "./mutation"
 import type { QueryClient } from "./query-client"
 
 /** What tracking needs from a `Mutation`; any of them fits whatever its data and variables types are. */
-export type Tracked = Subscribable<{ status: MutationStatus }>
+export type Tracked = Subscribable<{ status: MutationStatus }> & {
+	options?: { mutationKey?: QueryKey | undefined; meta?: Record<string, unknown> | undefined }
+}
 
 export interface Registry {
 	mutations: Set<Tracked>

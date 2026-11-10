@@ -4,6 +4,7 @@ import type { QueryClient } from "./query-client"
 import { getRetryDelay, shouldRetry, type RetryOptions } from "./retry"
 import { noop } from "./resolve"
 import { CancelledError } from "./cancelled-error"
+import { whenOnline, type NetworkMode } from "./online"
 import type { DefaultError } from "./register"
 
 export { CancelledError }
@@ -17,7 +18,10 @@ export interface QueryState<TData = unknown, TError = DefaultError> {
 	data: TData | undefined
 	/** `undefined` when there is none. */
 	error: TError | undefined
+	/** A request is in flight, running or waiting (for a retry, or for the network: see `isPaused`). */
 	isFetching: boolean
+	/** The fetch is waiting for the network to come back. */
+	isPaused: boolean
 	/** Marked outdated by invalidation; cleared when the next fetch starts. */
 	isInvalidated: boolean
 	/** Failures in the current fetch so far (0 once it succeeds or a new one starts). */
@@ -48,6 +52,7 @@ export interface SkipToken {
 /** What `Query.fetch` takes besides the function. */
 export interface FetchOptions<TError = DefaultError> extends RetryOptions<TError> {
 	meta?: Record<string, unknown> | undefined
+	networkMode?: NetworkMode | undefined
 }
 
 const initial: QueryState<never, never> = {
@@ -55,6 +60,7 @@ const initial: QueryState<never, never> = {
 	data: undefined,
 	error: undefined,
 	isFetching: false,
+	isPaused: false,
 	isInvalidated: false,
 	failureCount: 0,
 	failureReason: undefined,
@@ -82,6 +88,7 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 	private inflight: Promise<TData> | undefined
 	private cancelRequest: (() => void) | undefined
 	private retryTimer: TimerHandle | undefined
+	private stopWaiting: (() => void) | undefined
 	private gcTime: number
 	private gcTimer: TimerHandle | undefined
 
@@ -148,6 +155,9 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 		const context = { signal: controller.signal, queryKey, meta: options.meta, client: client as QueryClient }
 		const request: Promise<TData> = new Promise<TData>((resolve, reject) => {
 			const attempt = (): void => {
+				this.stopWaiting = whenOnline(options.networkMode, !this.state.failureCount, run, (isPaused) => this.update({ isPaused }))
+			}
+			const run = (): void => {
 				new Promise<TData>((r) => r(fn(context))).then(resolve, (error: unknown) => {
 					if (controller.signal.aborted) return // cancelled meanwhile; already settled
 					const failures = this.state.failureCount + 1
@@ -169,6 +179,7 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 					status: before.status,
 					error: before.error,
 					isFetching: false,
+					isPaused: false,
 					isInvalidated: before.isInvalidated,
 					failureCount: 0,
 					failureReason: undefined,
@@ -240,6 +251,8 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 	private clearRetry(): void {
 		if (this.retryTimer !== undefined) this.scheduler.clearTimeout(this.retryTimer)
 		this.retryTimer = undefined
+		this.stopWaiting?.()
+		this.stopWaiting = undefined
 	}
 
 	private scheduleGc(): void {

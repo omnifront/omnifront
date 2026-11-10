@@ -7,7 +7,7 @@ import {
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifront/query"
 import { isRef, nextTick, shallowRef } from "vue"
 import { useMutation, useQuery, useStore } from "../src"
-import { useIsFetching, useIsMutating } from "../src/activity"
+import { useIsFetching, useIsMutating, useMutationState } from "../src/activity"
 import { useInfiniteQuery } from "../src/infinite"
 import { useQueries } from "../src/queries"
 import { mountComposable } from "./mount"
@@ -100,19 +100,22 @@ const harness: Harness = {
 		return { fetching: () => r.fetching.value, mutating: () => r.mutating.value, unmount }
 	},
 
+	mountMutationInsight(client, filters, select) {
+		const { result: r, unmount } = mountComposable(
+			() => ({ mutating: useIsMutating(filters), states: useMutationState({ filters, select }) }),
+			client,
+		)
+		return { mutating: () => r.mutating.value, states: () => r.states.value, unmount }
+	},
+
 	mountMutation<TData, TVariables, TContext = unknown>(
 		options: MutationOptions<TData, Error, TVariables, TContext>,
 		client?: QueryClient,
 	): MutationHandle<TData, TVariables> {
 		const { result: r, unmount } = mountComposable(() => useMutation(options), client)
 		return {
-			current: () => ({
-				status: r.status.value,
-				data: r.data.value,
-				error: r.error.value,
-				variables: r.variables.value,
-			}),
-			mutate: (variables: TVariables) => r.mutate(variables),
+			current: () => values(r) as never,
+			mutate: (variables: TVariables, callbacks) => r.mutate(variables, callbacks as never),
 			mutateAsync: (variables: TVariables) => r.mutateAsync(variables),
 			reset: () => r.reset(),
 			unmount,

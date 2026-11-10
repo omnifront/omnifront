@@ -329,6 +329,26 @@
 
 خروج: مثال آفلاین (ثبت در حالت قطع، reload، ارسال بعد از وصل شدن) در هر چهار example کار می‌کند.
 
+**وضعیت (2026-11-10):** قلم‌های ۱، ۲ و ۴ انجام شد؛ قلم ۳ نیمه و قلم ۵ باز است، پس **معیار خروج هنوز برقرار نیست**. `query` اصلی ۳.۹۴KB از ۴KB است.
+
+انجام‌شده:
+
+- `Mutation`: callbackهای هر فراخوانی، فلگ‌های `isIdle` / `isPending` / `isSuccess` / `isError`، `mutationKey`، `meta`، `retry` / `retryDelay`، `failureCount`، `failureReason`، `submittedAt`، و `defaultOptions.mutations` (آرگومان دوم سازنده `client` است و scheduler همان client برای تأخیر retry استفاده می‌شود).
+- `networkMode` (`online` / `always` / `offlineFirst`)، `fetchStatus` و `isPaused` برای کوئری؛ `networkMode` و `isPaused` برای mutation. بدون شبکه هر دو منتظر می‌مانند و با برگشتن شبکه ادامه می‌دهند.
+- `/activity`: فیلتر (`mutationKey`، `exact`، `status`، `predicate`) برای `useIsMutating` / `injectIsMutating`، و `createMutationState` با `useMutationState` (React، Vue) و `injectMutationState` (Angular).
+
+تفاوت‌ها و کارهای باقی‌مانده:
+
+- **تغییر رفتار پیش‌فرض:** کوئری و mutation حالا بدون شبکه متوقف می‌شوند (مثل TanStack). قبلاً درخواست فرستاده می‌شد و شکست می‌خورد. برای کاری که شبکه نمی‌خواهد `networkMode: "always"` لازم است.
+- `QueryState.isFetching` روی entry کش هنگام توقف `true` می‌ماند؛ `QueryResult.isFetching` (آنچه هوک‌ها می‌دهند) `false` می‌شود، مثل TanStack.
+- `scope` نیامد: در ورودی اصلی جا نیست (۶۰ بایت مانده) و در ورودی فرعی به یک قلاب در `Mutation` نیاز دارد. باید با قلم ۳ طراحی شود.
+- `@omnifront/query/offline` و `resumePausedMutations` نیامدند: توقف و ادامه خودکار است و تا mutationها persist نشوند (قلم ۵) چیزی برای resume دستی وجود ندارد.
+- قلم ۵ (persist و hydration برای mutationهای متوقف‌شده، `serializeData` / `deserializeData`، کوئری‌های pending) شروع نشده.
+- `useMutationState` فقط mutationهای mount‌شده یا pending را می‌بیند؛ کش mutation نداریم که تمام‌شده‌ها را نگه دارد.
+- `context` در `MutationState` و `gcTime` برای mutation نیامدند.
+- callbackهای هر فراخوانی await نمی‌شوند و فقط برای آخرین فراخوانی اجرا می‌شوند؛ بر خلاف TanStack به mount بودن کامپوننت وابسته نیستند.
+- بودجه‌ها: `@omnifront/query/activity` از ۱KB به ۱.۳KB، `@omnifront/react/activity` از ۰.۶KB به ۰.۷۵KB (هر دو به‌خاطر `useMutationState`).
+
 ### فاز ۵: مخصوص آداپتر
 
 React: `@omnifront/react/errors` (`throwOnError`، `QueryErrorResetBoundary`)، `useSuspenseQueries`، `usePrefetchQuery`، شکل آبجکتی `useQueries`. همان شکل آبجکتی برای Vue و Angular. Next: استریم کوئری‌های pending.

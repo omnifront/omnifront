@@ -7,7 +7,7 @@ import {
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifront/query"
 import { signal } from "@angular/core"
 import { injectMutation, injectQuery, injectStore, provideOmnifront } from "../src"
-import { injectIsFetching, injectIsMutating } from "../src/activity"
+import { injectIsFetching, injectIsMutating, injectMutationState } from "../src/activity"
 import { injectInfiniteQuery } from "../src/infinite"
 import { injectQueries } from "../src/queries"
 import { flushEffects, mountInjectable } from "./mount"
@@ -105,14 +105,27 @@ const harness: Harness = {
 		return { fetching: () => r.fetching(), mutating: () => r.mutating(), unmount }
 	},
 
+	mountMutationInsight(client, filters, select) {
+		const { result: r, unmount } = mountInjectable(
+			() => ({ mutating: injectIsMutating(filters), states: injectMutationState({ filters, select }) }),
+			[provideOmnifront(client)],
+		)
+		return { mutating: () => r.mutating(), states: () => r.states(), unmount }
+	},
+
 	mountMutation<TData, TVariables, TContext = unknown>(
 		options: MutationOptions<TData, Error, TVariables, TContext>,
 		client?: QueryClient,
 	): MutationHandle<TData, TVariables> {
 		const { result: r, unmount } = mountInjectable(() => injectMutation(options), client ? [provideOmnifront(client)] : [])
 		return {
-			current: () => ({ status: r.status(), data: r.data(), error: r.error(), variables: r.variables() }),
-			mutate: (variables: TVariables) => r.mutate(variables),
+			current: () =>
+				Object.fromEntries(
+					Object.entries(r)
+						.filter(([key]) => !["mutate", "mutateAsync", "reset"].includes(key))
+						.map(([key, read]) => [key, (read as () => unknown)()]),
+				) as never,
+			mutate: (variables: TVariables, callbacks) => r.mutate(variables, callbacks as never),
 			mutateAsync: (variables: TVariables) => r.mutateAsync(variables),
 			reset: () => r.reset(),
 			unmount,

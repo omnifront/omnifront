@@ -28,7 +28,7 @@ Returns the provided client; throws a helpful error if `provideOmnifront` is mis
 
 ### `InjectMutationResult`
 
-`status`, `data`, `error`, `variables` as signals, plus `mutate`, `mutateAsync`, `reset`.
+One signal per field of [`MutationState`](/api/query#mutationstate) (`status`, `data`, `error`, `variables`, `isIdle`, `isPending`, `isSuccess`, `isError`, `isPaused`, `failureCount`, `failureReason`, `submittedAt`), plus `mutate(variables, callbacks?)`, `mutateAsync(variables, callbacks?)` and `reset`.
 
 ### `injectStore`
 
@@ -70,6 +70,10 @@ A [query result](/api/query#queryresult) plus `refetch`.
 
 `injectIsFetching(filter?)` returns a `Signal<number>` of the queries fetching right now (first loads and background refetches), for a global spinner. `filter` is `{ queryKey?, exact? }` like `invalidateQueries`, or a function reading signals to make it reactive. Must run in an injection context. See [Queries](/guide/queries#a-global-loading-indicator).
 
+### `injectMutationState`
+
+`injectMutationState({ filters?, select? })` returns a `Signal` of the state of the mutations under the same client that pass the filters. `select` picks what to keep of each (default: the whole state). The options may be a function reading signals.
+
 ### `injectIsMutating`
 
-`injectIsMutating()` returns a `Signal<number>` of the pending mutations started with [`injectMutation`](/api/angular#injectmutation) under the same `provideOmnifront` client. `injectMutation` still works without a provider; it just has no client to count towards.
+`injectIsMutating(filters?)` (`filters`: [`MutationFilters`](/api/query#mutationfilters), or a function reading signals) returns a `Signal<number>` of the pending mutations started with [`injectMutation`](/api/angular#injectmutation) under the same `provideOmnifront` client. `injectMutation` still works without a provider; it just has no client to count towards.

@@ -24,7 +24,7 @@ Returns the provided client; throws a helpful error without a provider.
 
 ### `useMutation`
 
-`useMutation(options: MutationOptions)` returns a `UseMutationResult`: `status`, `data`, `error`, `variables`, `mutate`, `mutateAsync`, `reset`.
+`useMutation(options: MutationOptions)` returns a `UseMutationResult`: every field of [`MutationState`](/api/query#mutationstate) (`status`, `data`, `error`, `variables`, `isIdle`, `isPending`, `isSuccess`, `isError`, `isPaused`, `failureCount`, `failureReason`, `submittedAt`), plus `mutate(variables, callbacks?)`, `mutateAsync(variables, callbacks?)` and `reset`. Under a `QueryProvider` it starts from the client's `defaultOptions.mutations`.
 
 ### `UseMutationResult`
 
@@ -86,6 +86,14 @@ Like `UseInfiniteQueryResult` with `data` always defined and `status` `"success"
 
 `useIsFetching(filter?)` returns the number of queries fetching right now (first loads and background refetches), for a global spinner. `filter` is `{ queryKey?, exact? }` like `invalidateQueries`; defining it inline is fine, it is compared by value. Renders `0` on the server and while hydrating. See [Queries](/guide/queries#a-global-loading-indicator).
 
+### `useMutationState`
+
+```ts
+const adding = useMutationState({ filters: { mutationKey: ["addTodo"], status: "pending" }, select: (m) => m.state.variables })
+```
+
+The state of the mutations under the same `QueryProvider` that pass the filters, for showing elsewhere what a mutation is doing (an optimistic row in a list, say). `select` picks what to keep of each; default: the whole state.
+
 ### `useIsMutating`
 
-`useIsMutating()` returns the number of pending mutations started with [`useMutation`](/api/react#usemutation) under the same `QueryProvider`. `useMutation` still works without a provider; it just has no client to count towards.
+`useIsMutating(filters?)` returns the number of pending mutations (`filters`: [`MutationFilters`](/api/query#mutationfilters), compared by value, so writing them inline is fine) started with [`useMutation`](/api/react#usemutation) under the same `QueryProvider`. `useMutation` still works without a provider; it just has no client to count towards.

@@ -50,7 +50,7 @@ What the adapters use. It is a `Subscribable<QueryResult>`: the first subscripti
 
 ### `QueryObserverOptions`
 
-`queryKey`, `queryFn`, `staleTime`, `gcTime`, `enabled`, `retry`, `retryDelay`, `refetchOnMount`, `refetchOnWindowFocus`, `refetchOnReconnect`, `refetchInterval`, `refetchIntervalInBackground`, `meta`, `initialData`, `initialDataUpdatedAt`, `placeholderData`. See the [options table](/guide/queries#options-reference).
+`queryKey`, `queryFn`, `staleTime`, `gcTime`, `enabled`, `retry`, `retryDelay`, `networkMode`, `refetchOnMount`, `refetchOnWindowFocus`, `refetchOnReconnect`, `refetchInterval`, `refetchIntervalInBackground`, `meta`, `initialData`, `initialDataUpdatedAt`, `placeholderData`. See the [options table](/guide/queries#options-reference).
 
 ### `FromState`
 
@@ -62,7 +62,7 @@ What the adapters use. It is a `Subscribable<QueryResult>`: the first subscripti
 
 ### `DefaultOptions`
 
-`{ queries?: Partial<QueryObserverOptions> }` without the per-query fields (`queryKey`, `queryFn`, `initialData`, `initialDataUpdatedAt`, `placeholderData`).
+`{ queries?: Partial<QueryObserverOptions>, mutations?: Partial<MutationOptions> }` without the per-query fields (`queryKey`, `queryFn`, `initialData`, `initialDataUpdatedAt`, `placeholderData`).
 
 ### `FetchQueryOptions`
 
@@ -74,11 +74,11 @@ The object form of `fetchQuery`: `queryKey`, `queryFn`, `staleTime`, `retry`, `r
 
 ### `QueryResult`
 
-A `QueryState` plus `isStale`, `isPlaceholderData` and the flags `isPending`, `isLoading`, `isRefetching`, `isSuccess`, `isError`, `isLoadingError`, `isRefetchError`.
+A `QueryState` plus `isStale`, `isPlaceholderData`, `fetchStatus` (`"fetching"`, `"paused"` or `"idle"`) and the flags `isPending`, `isLoading`, `isRefetching`, `isSuccess`, `isError`, `isLoadingError`, `isRefetchError`.
 
 ### `QueryState`
 
-`status`, `data`, `error`, `isFetching`, `isInvalidated`, `failureCount`, `failureReason`, `dataUpdatedAt`. `QueryStatus` is `"idle" | "loading" | "success" | "error"`.
+`status`, `data`, `error`, `isFetching`, `isPaused`, `isInvalidated`, `failureCount`, `failureReason`, `dataUpdatedAt`. On the cache entry `isFetching` stays true while a fetch waits for the network (`isPaused`); the observer's `QueryResult.isFetching` is false then. `QueryStatus` is `"idle" | "loading" | "success" | "error"`.
 
 ### `QueryFn`
 
@@ -149,18 +149,26 @@ An `EnvironmentSignal`: whether the network is up (`online`/`offline` events). O
 ### `Mutation`
 
 ```ts
-new Mutation({ mutationFn, onSuccess?, onError?, onSettled? })   // MutationOptions
+new Mutation({ mutationFn, onSuccess?, onError?, onSettled? }, client?)   // MutationOptions
 ```
 
-A `Subscribable<MutationState>` (type parameters: data, variables, context). Members: `mutate(variables)` (fire and forget), `mutateAsync(variables)`, `reset()`, `setOptions(options)`. Details in [Mutations](/guide/mutations).
+A `Subscribable<MutationState>` (type parameters: data, error, variables, context). Members: `mutate(variables, callbacks?)` (fire and forget), `mutateAsync(variables, callbacks?)`, `reset()`, `setOptions(options)`, `options` (the options in effect). With a `client` it starts from that client's `defaultOptions.mutations` and uses its scheduler for retry delays; the adapters pass theirs. Details in [Mutations](/guide/mutations).
 
 ### `MutationOptions`
 
-`mutationFn(variables) => Promise<TData>` and the optional `onMutate(variables)` (returns the context), `onSuccess(data, variables, context)`, `onError(error, variables, context)`, `onSettled(data, error, variables, context)` callbacks (may return promises, which are awaited).
+`mutationFn(variables) => Promise<TData>` and the optional `onMutate(variables)` (returns the context), `onSuccess(data, variables, context)`, `onError(error, variables, context)`, `onSettled(data, error, variables, context)` callbacks (may return promises, which are awaited). Also `retry` / `retryDelay` (default: no retries), `networkMode`, `mutationKey` and `meta` (both for the filters of `useIsMutating` and `useMutationState`).
+
+### `MutateOptions`
+
+`{ onSuccess?, onError?, onSettled? }` for one `mutate` call. They run after the callbacks in the options, only for the latest call, and are not awaited.
+
+### `NetworkMode`
+
+`"online"` (default): wait for the network before fetching and before each retry; the query or mutation is paused meanwhile. `"always"`: never wait (for work that does not use the network). `"offlineFirst"`: try once regardless, then wait before retrying. An option of queries and mutations.
 
 ### `MutationState`
 
-`status`, `data`, `error`, `variables`. `MutationStatus` is `"idle" | "pending" | "success" | "error"`.
+`status`, `data`, `error`, `variables`, the flags `isIdle`, `isPending`, `isSuccess`, `isError`, `isPaused` (waiting for the network), and `failureCount`, `failureReason`, `submittedAt`. `MutationStatus` is `"idle" | "pending" | "success" | "error"`.
 
 ## Hydration (`@omnifront/query/hydration`)
 
@@ -211,10 +219,30 @@ The number of queries fetching right now, first loads and background refetches a
 ### `createMutatingCount`
 
 ```ts
-createMutatingCount(client): Subscribable<number>
+createMutatingCount(client, filters?: MutationFilters): Subscribable<number>
 ```
 
-The number of **tracked** mutations that are `pending` (see `trackMutation`). There is no filter: mutations have no key.
+The number of **tracked** mutations that are `pending` (see `trackMutation`) and pass the filters.
+
+### `MutationFilters`
+
+`mutationKey` (prefix match), `exact`, `status` and `predicate: (mutation: MutationInfo) => boolean`.
+
+### `MutationInfo`
+
+`{ mutationKey, meta, state }`: what a `predicate` or `select` sees of a tracked mutation.
+
+### `createMutationState`
+
+```ts
+createMutationState(client, { filters?, select? }): Subscribable<TResult[]>
+```
+
+The state of every tracked mutation that passes the filters (`select` picks what to keep of each; default: the whole state). The array keeps its identity until a selected value changes. Only mutations that are mounted or still pending are tracked: unlike TanStack's mutation cache, a finished one disappears with the component that owned it.
+
+### `MutationStateOptions`
+
+The options object of `createMutationState`.
 
 ### `trackMutation`
 

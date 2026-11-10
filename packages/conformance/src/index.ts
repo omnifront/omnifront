@@ -5,12 +5,14 @@ import { FakeScheduler } from "@omnifront/core/testing"
 import {
 	QueryClient,
 	type InvalidateFilter,
+	type MutateOptions,
 	type MutationOptions,
 	type MutationState,
 	type QueryObserverOptions,
 	type QueryResult,
 } from "@omnifront/query"
-import { focusManager, keepPreviousData, QueryObserver } from "@omnifront/query"
+import { focusManager, keepPreviousData, onlineManager, QueryObserver } from "@omnifront/query"
+import type { MutationFilters, MutationInfo } from "@omnifront/query/activity"
 import type { InfiniteQueryObserverOptions, InfiniteQueryResult } from "@omnifront/query-infinite"
 import { createStore } from "@omnifront/store"
 import { describe, expect, it, vi } from "vitest"
@@ -33,7 +35,7 @@ export interface SelectedQueryHandle<TData, TSelected> {
 
 export interface MutationHandle<TData, TVariables> {
 	current(): MutationState<TData, Error, TVariables>
-	mutate(variables: TVariables): void
+	mutate(variables: TVariables, callbacks?: MutateOptions<TData, Error, TVariables>): void
 	mutateAsync(variables: TVariables): Promise<TData>
 	reset(): void
 	unmount(): void
@@ -67,6 +69,14 @@ export interface ActivityHandle {
 	unmount(): void
 }
 
+export interface MutationInsightHandle<TResult> {
+	/** What the framework's useIsMutating(filters) shows. */
+	mutating(): number
+	/** What the framework's useMutationState({ filters, select }) shows. */
+	states(): TResult[]
+	unmount(): void
+}
+
 export interface StoreHandle<TSelected> {
 	current(): TSelected
 	unmount(): void
@@ -88,6 +98,12 @@ export interface Harness {
 	): MutationHandle<TData, TVariables>
 	/** Mount useIsFetching(filter) and useIsMutating() together under `client`. */
 	mountActivity(client: QueryClient, filter?: InvalidateFilter): ActivityHandle
+	/** Mount useIsMutating(filters) and useMutationState({ filters, select }) together under `client`. */
+	mountMutationInsight<TResult>(
+		client: QueryClient,
+		filters: MutationFilters,
+		select: (mutation: MutationInfo) => TResult,
+	): MutationInsightHandle<TResult>
 	mountQueries(client: QueryClient, options: ReadonlyArray<QueryObserverOptions<unknown>>): QueriesHandle
 	/** Like mountQueries, with the adapter's `combine` option. `combine` is the same function on every render. */
 	mountCombinedQueries<T>(
@@ -774,6 +790,110 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 			await settle()
 			expect(q.current().data).toBe(7)
 			q.unmount()
+		})
+	})
+	describe(`${adapterName}: mutations and the network`, () => {
+		it("exposes the flags, and runs the callbacks of one mutate call after the ones in the options", async () => {
+			const order: string[] = []
+			const m = h.mountMutation<string, number>({
+				mutationFn: (n) => (n > 0 ? Promise.resolve(`ok ${n}`) : Promise.reject(new Error("neg"))),
+				onSuccess: () => void order.push("options.onSuccess"),
+				onSettled: () => void order.push("options.onSettled"),
+			})
+			expect(m.current()).toMatchObject({ isIdle: true, isPending: false, isSuccess: false, isError: false })
+			await h.act(() => m.mutate(1, { onSuccess: (data) => void order.push(`call.onSuccess ${data}`), onSettled: () => void order.push("call.onSettled") }))
+			await settle()
+			expect(m.current()).toMatchObject({ isIdle: false, isSuccess: true, data: "ok 1" })
+			expect(order).toEqual(["options.onSuccess", "options.onSettled", "call.onSuccess ok 1", "call.onSettled"])
+			const onError = vi.fn()
+			await h.act(() => m.mutate(-1, { onError }))
+			await settle()
+			expect(m.current()).toMatchObject({ isError: true, isSuccess: false })
+			expect(onError).toHaveBeenCalledWith(new Error("neg"), -1, undefined)
+			m.unmount()
+		})
+
+		it("retries with the client's scheduler and starts from the client's default mutation options", async () => {
+			const scheduler = new FakeScheduler()
+			const onSuccess = vi.fn()
+			const client = new QueryClient({ scheduler, defaultOptions: { mutations: { retry: 1, retryDelay: 50, onSuccess } } })
+			let calls = 0
+			const m = h.mountMutation<string, void>({ mutationFn: () => (++calls === 1 ? Promise.reject(new Error("flaky")) : Promise.resolve("done")) }, client)
+			await h.act(() => m.mutate())
+			await settle()
+			expect(m.current()).toMatchObject({ isPending: true, failureCount: 1, failureReason: new Error("flaky") })
+			await h.act(() => scheduler.advance(50))
+			await settle()
+			expect(m.current()).toMatchObject({ isSuccess: true, data: "done", failureCount: 0 })
+			expect(calls).toBe(2)
+			expect(onSuccess).toHaveBeenCalledTimes(1)
+			m.unmount()
+		})
+
+		it("pauses a mutation and a query while offline and sends them when the network is back", async () => {
+			const { client } = setup()
+			const mutationFn = vi.fn((title: string) => Promise.resolve(title.toUpperCase()))
+			const queryFn = vi.fn(() => Promise.resolve("list"))
+			// Something has to be listening to the network signal already: the first listener makes it
+			// read the real `navigator.onLine`, which would undo the `set(false)` below.
+			const keeper = h.mountQuery(client, { queryKey: ["keeper"], queryFn: () => Promise.resolve(0), staleTime: Infinity })
+			await settle()
+			try {
+				await h.act(() => onlineManager.set(false))
+				const m = h.mountMutation<string, string>({ mutationFn }, client)
+				const q = h.mountQuery(client, { queryKey: ["offline"], queryFn })
+				await h.act(() => m.mutate("a"))
+				await settle()
+				expect(m.current()).toMatchObject({ isPending: true, isPaused: true })
+				expect(q.current()).toMatchObject({ fetchStatus: "paused", isPaused: true, isFetching: false, isPending: true, isLoading: false })
+				expect(mutationFn).not.toHaveBeenCalled()
+				expect(queryFn).not.toHaveBeenCalled()
+				await h.act(() => onlineManager.set(true))
+				await settle()
+				expect(m.current()).toMatchObject({ isSuccess: true, isPaused: false, data: "A" })
+				expect(q.current()).toMatchObject({ fetchStatus: "idle", isPaused: false, data: "list" })
+				m.unmount()
+				q.unmount()
+
+				await h.act(() => onlineManager.set(false))
+				const always = h.mountQuery(client, { queryKey: ["local"], queryFn, networkMode: "always" })
+				await settle()
+				expect(always.current().data).toBe("list") // not a network request: do not wait
+				always.unmount()
+			} finally {
+				onlineManager.set(true)
+				keeper.unmount()
+			}
+		})
+
+		it("filters the mutation count by key and shows another component what a mutation is doing", async () => {
+			const { client } = setup()
+			const releases: Array<() => void> = []
+			const pending = () => new Promise<void>((resolve) => releases.push(resolve))
+			const add = h.mountMutation<void, string>({ mutationKey: ["todos", "add"], mutationFn: pending }, client)
+			const remove = h.mountMutation<void, number>({ mutationKey: ["todos", "remove"], mutationFn: pending }, client)
+			const other = h.mountMutation<void, string>({ mutationKey: ["users"], mutationFn: pending }, client)
+			const todos = h.mountMutationInsight(client, { mutationKey: ["todos"], status: "pending" }, (m) => m.state.variables)
+			const adds = h.mountMutationInsight(client, { mutationKey: ["todos", "add"], exact: true }, (m) => m.state.status)
+			expect(todos.mutating()).toBe(0)
+			expect(todos.states()).toEqual([])
+			expect(adds.states()).toEqual(["idle"])
+			await h.act(() => {
+				add.mutate("milk")
+				remove.mutate(7)
+				other.mutate("x")
+			})
+			await settle()
+			expect(todos.mutating()).toBe(2)
+			expect(todos.states()).toEqual(["milk", 7])
+			expect(adds.mutating()).toBe(1)
+			expect(adds.states()).toEqual(["pending"])
+			await h.act(() => releases.forEach((release) => release()))
+			await settle()
+			expect(todos.mutating()).toBe(0)
+			expect(todos.states()).toEqual([])
+			expect(adds.states()).toEqual(["success"])
+			for (const handle of [add, remove, other, todos, adds]) handle.unmount()
 		})
 	})
 }

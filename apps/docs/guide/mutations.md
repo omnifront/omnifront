@@ -25,6 +25,37 @@ add.reset()                            // back to "idle"
 4. `onSettled` runs afterwards, on either outcome.
 5. If `onMutate`, `mutationFn` **or** `onSuccess` throws, `onError` runs (and is awaited) and the status becomes `"error"`. If `onMutate` threw, `context` is `undefined`.
 
+## Callbacks for one call
+
+```ts
+add.mutate(title, {
+	onSuccess: (todo) => navigate(`/todos/${todo.id}`),
+	onError: (error) => toast(error.message),
+})
+```
+
+They run after the callbacks in the options (and after those have been awaited), and only for the **latest** call: if `mutate` is called again first, the earlier call's own callbacks are skipped. Put what must always happen (invalidating the cache) in the options, and what belongs to this screen (navigating away) here.
+
+## Retries and the network
+
+Mutations are not retried unless you ask: `retry: 2` (or a function), with the same `retryDelay` as queries.
+
+Without a network a mutation waits instead of failing: `isPaused` is true, `status` stays `"pending"`, and it is sent when the network is back. Queries do the same (`fetchStatus: "paused"`). Set `networkMode: "always"` for work that does not use the network, or `"offlineFirst"` to try once before waiting. The wait lasts as long as the page: a paused mutation is not saved across a reload.
+
+## Seeing a mutation from elsewhere
+
+Give it a `mutationKey`, and any component can count it or read its state:
+
+```ts
+const add = useMutation({ mutationKey: ["addTodo"], mutationFn: addTodo })
+
+// in the list component: rows for the todos being added right now
+const adding = useMutationState({ filters: { mutationKey: ["addTodo"], status: "pending" }, select: (m) => m.state.variables })
+const saving = useIsMutating({ mutationKey: ["addTodo"] }) > 0
+```
+
+Vue has the same names; Angular has `injectMutationState` and `injectIsMutating`.
+
 ## Calling it several times
 
 If you call `mutate` again before the previous call finishes, both run to completion and both resolve their own promise, but only the **latest** call drives `status`, `data` and `error`.

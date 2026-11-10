@@ -1,5 +1,6 @@
 import { BaseSubscribable, type Subscribable } from "@omnifront/core"
-import { hashKey, matchesKey } from "./hash-key"
+import { hashKey, matchesKey, type QueryKey } from "./hash-key"
+import type { MutationState, MutationStatus } from "./mutation"
 import { registryOf, type Tracked } from "./mutation-registry"
 import type { InvalidateFilter, QueryClient } from "./query-client"
 
@@ -103,25 +104,127 @@ export function trackMutation(client: QueryClient, mutation: Tracked): () => voi
 	}
 }
 
+/** What a filter's `predicate` (and `select` of `createMutationState`) sees of a tracked mutation. */
+export interface MutationInfo {
+	mutationKey: QueryKey | undefined
+	meta: Record<string, unknown> | undefined
+	state: MutationState<unknown, unknown, unknown>
+}
+
+export interface MutationFilters {
+	/** Only mutations whose `mutationKey` starts with / contains this key. */
+	mutationKey?: QueryKey | undefined
+	/** Match `mutationKey` exactly instead of as a prefix. */
+	exact?: boolean | undefined
+	status?: MutationStatus | undefined
+	/** Runs last, on the mutations the other filters let through. */
+	predicate?: ((mutation: MutationInfo) => boolean) | undefined
+}
+
+const infoOf = (mutation: Tracked): MutationInfo => ({
+	mutationKey: mutation.options?.mutationKey,
+	meta: mutation.options?.meta,
+	state: mutation.getSnapshot() as MutationState<unknown, unknown, unknown>,
+})
+
+/** The tracked mutations of `client` that pass `filters`. */
+function matching(client: QueryClient, { mutationKey, exact, status, predicate }: MutationFilters): MutationInfo[] {
+	const matched: MutationInfo[] = []
+	for (const mutation of registryOf(client).mutations) {
+		const info = infoOf(mutation)
+		const key = info.mutationKey
+		if (mutationKey && !(key && (exact ? hashKey(key) === hashKey(mutationKey) : matchesKey(key, mutationKey)))) continue
+		if (status && info.state.status !== status) continue
+		if (!predicate || predicate(info)) matched.push(info)
+	}
+	return matched
+}
+
+const listen = (client: QueryClient, refresh: () => void): (() => void) => {
+	const { listeners } = registryOf(client)
+	listeners.add(refresh)
+	return () => void listeners.delete(refresh)
+}
+
 class MutatingCount extends Count {
-	constructor(private readonly client: QueryClient) {
+	constructor(
+		private readonly client: QueryClient,
+		private readonly filters: MutationFilters,
+	) {
 		super()
 	}
 
 	protected count(): number {
-		let n = 0
-		for (const mutation of registryOf(this.client).mutations) if (mutation.getSnapshot().status === "pending") n++
-		return n
+		return matching(this.client, { status: "pending", ...this.filters }).length
 	}
 
 	protected attach(refresh: () => void): () => void {
-		const { listeners } = registryOf(this.client)
-		listeners.add(refresh)
-		return () => void listeners.delete(refresh)
+		return listen(this.client, refresh)
 	}
 }
 
-/** How many tracked mutations are pending (see `trackMutation`). */
-export function createMutatingCount(client: QueryClient): Subscribable<number> {
-	return new MutatingCount(client)
+/**
+ * How many tracked mutations are pending (see `trackMutation`). Pass filters to count only some:
+ * `{ mutationKey: ["todos"] }` matches by prefix.
+ */
+export function createMutatingCount(client: QueryClient, filters: MutationFilters = {}): Subscribable<number> {
+	return new MutatingCount(client, filters)
+}
+
+export interface MutationStateOptions<TResult = MutationState<unknown, unknown, unknown>> {
+	filters?: MutationFilters | undefined
+	/** What to keep of each mutation. Default: its state. */
+	select?: ((mutation: MutationInfo) => TResult) | undefined
+}
+
+class MutationStates<TResult> extends BaseSubscribable<TResult[]> {
+	private value: TResult[] = []
+	private detach: (() => void) | undefined
+
+	constructor(
+		private readonly client: QueryClient,
+		private readonly options: MutationStateOptions<TResult>,
+	) {
+		super()
+	}
+
+	/** The same array until some selected value changes (compared item by item). */
+	private read(): TResult[] {
+		const next = matching(this.client, this.options.filters ?? {}).map(
+			this.options.select ?? ((mutation) => mutation.state as TResult),
+		)
+		const same = next.length === this.value.length && next.every((item, i) => Object.is(item, this.value[i]))
+		return same ? this.value : (this.value = next)
+	}
+
+	getSnapshot(): TResult[] {
+		return this.detach ? this.value : this.read() // unsubscribed: nothing keeps `value` current
+	}
+
+	protected override onSubscribe(): void {
+		this.read()
+		this.detach = listen(this.client, () => {
+			const before = this.value
+			if (this.read() !== before) this.notify()
+		})
+	}
+
+	protected override onUnsubscribe(): void {
+		this.detach?.()
+		this.detach = undefined
+	}
+}
+
+/**
+ * The state of every tracked mutation that passes the filters, to show from another component what
+ * a mutation somewhere else is doing (TanStack's `useMutationState`). Only mutations that are mounted
+ * or still pending are tracked; a finished one disappears with the component that owned it.
+ *
+ *   createMutationState(client, { filters: { mutationKey: ["addTodo"], status: "pending" }, select: (m) => m.state.variables })
+ */
+export function createMutationState<TResult = MutationState<unknown, unknown, unknown>>(
+	client: QueryClient,
+	options: MutationStateOptions<TResult> = {},
+): Subscribable<TResult[]> {
+	return new MutationStates(client, options)
 }

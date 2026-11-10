@@ -1,6 +1,7 @@
 import { BaseSubscribable, type TimerHandle } from "@omnifront/core"
 import { focusManager, onlineManager } from "./environment"
 import { hashKey, type QueryKey } from "./hash-key"
+import type { NetworkMode } from "./online"
 import type { Query, QueryFn, QueryState, SkipToken } from "./query"
 import type { DefaultError } from "./register"
 import type { RetryOptions } from "./retry"
@@ -41,6 +42,8 @@ export interface QueryObserverOptions<TData, TError = DefaultError> extends Retr
 	refetchInterval?: FromState<number | false | undefined, TData, TError> | undefined
 	/** Keep polling while the page is hidden. Default false. */
 	refetchIntervalInBackground?: boolean | undefined
+	/** What to do without a network. Default `"online"`: wait for it (the query is "paused"). */
+	networkMode?: NetworkMode | undefined
 	/** Free-form data handed to the query function as `context.meta`. */
 	meta?: Record<string, unknown> | undefined
 	/** Data to start with when the cache has none. Stored in the cache like fetched data. */
@@ -58,6 +61,10 @@ export interface QueryObserverOptions<TData, TError = DefaultError> extends Retr
 export const keepPreviousData = <TData>(previousData: TData | undefined): TData | undefined => previousData
 
 export interface QueryResult<TData, TError = DefaultError> extends QueryState<TData, TError> {
+	/** A request is running. Unlike the cache entry's own flag, this is false while it waits for the network. */
+	isFetching: boolean
+	/** `"fetching"`, `"paused"` (waiting for the network) or `"idle"`. */
+	fetchStatus: "fetching" | "paused" | "idle"
 	isStale: boolean
 	/** `data` is the `placeholderData`, not real data. */
 	isPlaceholderData: boolean
@@ -200,12 +207,15 @@ export class QueryObserver<TData, TError = DefaultError> extends BaseSubscribabl
 		const placeholder =
 			state.data === undefined && placeholderData !== undefined ? resolve(placeholderData, this.lastData) : undefined
 		const shown = placeholder === undefined ? base : { ...base, status: "success" as const, data: placeholder }
-		const { status, isFetching } = shown
+		const { status, isPaused } = shown
+		const isFetching = shown.isFetching && !isPaused
 		const isPending = status === "idle" || status === "loading"
 		const isError = status === "error"
 		const hasData = shown.data !== undefined
 		slot.result = {
 			...shown,
+			isFetching,
+			fetchStatus: isFetching ? "fetching" : isPaused ? "paused" : "idle",
 			isStale,
 			isPlaceholderData: placeholder !== undefined,
 			isPending,

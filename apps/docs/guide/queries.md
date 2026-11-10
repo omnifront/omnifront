@@ -31,6 +31,7 @@ Invalidation and cancellation match **by prefix**: `["todos"]` also matches `["t
 | `isPending` | No data yet (`status` is `"idle"` or `"loading"`) |
 | `isLoading` | The first load is running (`isPending && isFetching`) |
 | `isRefetching` | A background refetch is running (there is data, and `isFetching`) |
+| `fetchStatus`, `isPaused` | `"fetching"`, `"paused"` (waiting for the network; `isFetching` is false then) or `"idle"` |
 | `isSuccess`, `isError` | `status` is `"success"` / `"error"` |
 | `isLoadingError`, `isRefetchError` | Failed with nothing to show / a refetch failed and the old data is kept |
 
@@ -253,6 +254,7 @@ While a request for a key is in flight, every other fetch of that key (another c
 | `refetchOnReconnect` | `true` | the same, for when the network is back |
 | `refetchInterval` | off | ms between polls, or a function of the state (return `false` to stop) |
 | `refetchIntervalInBackground` | `false` | keep polling while the page is hidden |
+| `networkMode` | `"online"` | `"online"` waits for the network (`fetchStatus: "paused"`), `"always"` never waits, `"offlineFirst"` tries once first |
 | `meta` | none | free-form object handed to the query function |
 | `select` | none | adapters only: derive `data` from the cached value |
 | `initialData` | none | data (or a function returning it) to seed an empty cache entry |

@@ -32,7 +32,7 @@ One `ComputedRef` per field of [`QueryResult`](/api/query#queryresult) (`status`
 
 ### `UseMutationReturn`
 
-`status`, `data`, `error`, `variables` as `ComputedRef`s, plus `mutate`, `mutateAsync`, `reset`.
+One `ComputedRef` per field of [`MutationState`](/api/query#mutationstate) (`status`, `data`, `error`, `variables`, `isIdle`, `isPending`, `isSuccess`, `isError`, `isPaused`, `failureCount`, `failureReason`, `submittedAt`), plus `mutate(variables, callbacks?)`, `mutateAsync(variables, callbacks?)` and `reset`.
 
 ### `useStore`
 
@@ -68,6 +68,10 @@ One query's result in that array: the [query result](/api/query#queryresult) fie
 
 `useIsFetching(filter?)` returns a `ComputedRef<number>` of the queries fetching right now (first loads and background refetches), for a global spinner. `filter` is `{ queryKey?, exact? }` like `invalidateQueries`, and may be a ref or getter. Stops with the scope; does not subscribe on the server. See [Queries](/guide/queries#a-global-loading-indicator).
 
+### `useMutationState`
+
+`useMutationState({ filters?, select? })` returns a `ComputedRef` of the state of the mutations under the plugin's client that pass the filters. `select` picks what to keep of each (default: the whole state). The options may be a ref or a getter.
+
 ### `useIsMutating`
 
-`useIsMutating()` returns a `ComputedRef<number>` of the pending mutations started with [`useMutation`](/api/vue#usemutation) while the plugin is installed. `useMutation` still works without the plugin; it just has no client to count towards.
+`useIsMutating(filters?)` (`filters`: [`MutationFilters`](/api/query#mutationfilters), plain, a ref or a getter) returns a `ComputedRef<number>` of the pending mutations started with [`useMutation`](/api/vue#usemutation) while the plugin is installed. `useMutation` still works without the plugin; it just has no client to count towards.

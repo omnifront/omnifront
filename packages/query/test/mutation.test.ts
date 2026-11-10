@@ -15,7 +15,7 @@ describe("Mutation", () => {
 	it("starts idle, goes pending, then success", async () => {
 		const d = deferred<string>()
 		const m = new Mutation<string, Error, number>({ mutationFn: () => d.promise })
-		expect(m.getSnapshot()).toEqual({ status: "idle", data: undefined, error: undefined, variables: undefined })
+		expect(m.getSnapshot()).toMatchObject({ status: "idle", data: undefined, error: undefined, variables: undefined })
 		const p = m.mutateAsync(5)
 		expect(m.getSnapshot()).toMatchObject({ status: "pending", variables: 5 })
 		d.resolve("ok")
