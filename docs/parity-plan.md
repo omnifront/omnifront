@@ -307,6 +307,18 @@
 
 خروج: بخش «Renamed or changed» راهنمای TanStack فقط تفاوت‌های عمدی را دارد (`status`، ترتیب interceptor، notify همگام).
 
+**وضعیت (2026-11-10):** هر هفت قلم انجام شد. `query` اصلی از ۳.۰۶KB به ۳.۵۶KB رسید (سقف ۴KB). تفاوت‌ها با متن بالا:
+
+- `select` در آداپترهاست، نه در `QueryObserver` (دلیل: ADR-0013 بند ۷). فعلاً برای `useQuery`، `useSuspenseQuery` و `injectQuery`؛ برای infinite و `useQueries` نه.
+- `defaultOptions` فقط `queries` دارد و فقط روی observerها (هوک‌ها) اعمال می‌شود، نه `fetchQuery`. `mutations` با فاز ۴ می‌آید.
+- `refetch()` همچنان به درخواست جاری می‌پیوندد؛ `cancelRefetch` پیش‌فرض `false` است (در TanStack `true`). `throwOnError` برای `refetch` نیامد.
+- `resetQueries` مقدار `initialData` را برنمی‌گرداند: entry خالی می‌شود و کوئری‌های روی صفحه دوباره load می‌کنند.
+- `removeQueries` برای entryهای بدون observer است؛ کامپوننت mount‌شده کپی خودش را نگه می‌دارد.
+- نیامدند (اولویت L): `isFetched`، `isFetchedAfterMount`، `errorUpdatedAt`، `errorUpdateCount`، `isEnabled`، `isInitialLoading`، `retryOnMount`، `refetchType`، `structuralSharing` برای هر کوئری، `queryKeyHashFn`.
+- فلگ‌های mutation (`isPending`، `isIdle` و بقیه) با فاز ۴ می‌آیند.
+- بودجه‌ی `@omnifront/query/filters` از ۱KB به ۱.۲KB رفت (دو تابع تازه).
+- آداپترهای Vue و Angular فیلدهای نتیجه را از کلیدهای خود snapshot می‌سازند، نه از فهرست ثابت؛ هر فیلد تازه‌ی `QueryResult` خودکار ref / signal می‌گیرد.
+
 ### فاز ۴: mutation و آفلاین
 
 1. `Mutation`: callbackهای هر فراخوانی، فلگ‌ها، `mutationKey`، `meta`، `retry`، فیلدهای state.

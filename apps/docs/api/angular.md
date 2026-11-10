@@ -16,7 +16,11 @@ Returns the provided client; throws a helpful error if `provideOmnifront` is mis
 
 ### `InjectQueryResult`
 
-`result` (the whole `QueryResult` as one signal), one signal per field (`status`, `data`, `error`, `isFetching`, `isStale`, `isInvalidated`, `isPlaceholderData`, `failureCount`, `dataUpdatedAt`) and `refetch()`.
+`result` (the whole `QueryResult` as one signal), one signal per field of [`QueryResult`](/api/query#queryresult) (`status`, `data`, `error`, `isFetching`, `isStale`, `isPending`, `isLoading`, `isRefetching`, `isSuccess`, `isError`, `isLoadingError`, `isRefetchError`, `failureCount`, `failureReason`, ...) and `refetch(options?)`.
+
+### `InjectQueryOptions`
+
+`QueryObserverOptions & { select? }`. `select: (data) => derived` makes `data` (also inside `result`) the derived value; the cache keeps the original. It runs inside a `computed`, so signals it reads are tracked.
 
 ### `injectMutation`
 

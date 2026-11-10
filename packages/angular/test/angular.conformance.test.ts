@@ -32,6 +32,23 @@ const harness: Harness = {
 		}
 	},
 
+	mountSelectedQuery(client, options, select) {
+		const current = signal(select)
+		const { result: r, unmount } = mountInjectable(
+			() => injectQuery(() => ({ ...options, select: current() })),
+			[provideOmnifront(client)],
+		)
+		return {
+			current: () => r.result(),
+			setSelect: (next) => {
+				current.set(next)
+				flushEffects()
+			},
+			refetch: () => r.refetch(),
+			unmount,
+		}
+	},
+
 	mountQueries(client, options) {
 		const current = signal(options)
 		const { result: r, unmount } = mountInjectable(() => injectQueries(() => current()), [provideOmnifront(client)])

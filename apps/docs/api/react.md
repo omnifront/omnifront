@@ -16,7 +16,11 @@ Returns the provided client; throws a helpful error without a provider.
 
 ### `UseQueryResult`
 
-`QueryResult & { refetch: () => Promise<TData> }`.
+`QueryResult & { refetch: (options?) => Promise<TData> }`. `refetch({ cancelRefetch: true })` aborts a request in flight instead of joining it.
+
+### `UseQueryOptions`
+
+`QueryObserverOptions & { select? }`. `select: (data) => derived` makes `data` (and what `refetch` resolves with) the derived value; the cache keeps the original. It is memoized with `useMemo` on the data and the function, so pass a stable function to avoid recomputing on every render. `useSuspenseQuery` takes it too.
 
 ### `useMutation`
 

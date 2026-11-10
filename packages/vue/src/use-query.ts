@@ -30,10 +30,29 @@ export interface UseQueryReturn<TData, TError = DefaultError> {
 	isStale: ComputedRef<boolean>
 	isInvalidated: ComputedRef<boolean>
 	isPlaceholderData: ComputedRef<boolean>
+	isPending: ComputedRef<boolean>
+	isLoading: ComputedRef<boolean>
+	isRefetching: ComputedRef<boolean>
+	isSuccess: ComputedRef<boolean>
+	isError: ComputedRef<boolean>
+	isLoadingError: ComputedRef<boolean>
+	isRefetchError: ComputedRef<boolean>
 	failureCount: ComputedRef<number>
+	failureReason: ComputedRef<TError | undefined>
 	dataUpdatedAt: ComputedRef<number | undefined>
-	refetch: () => Promise<TData>
+	/** Joins a request in flight; `{ cancelRefetch: true }` aborts it and starts over. */
+	refetch: (options?: { cancelRefetch?: boolean | undefined }) => Promise<TData>
 }
+
+export type UseQueryOptions<TQueryFnData, TError = DefaultError, TData = TQueryFnData> = QueryObserverOptions<TQueryFnData, TError> & {
+	/**
+	 * Derive what the component needs from the cached data. `data` (and `refetch`) give the derived
+	 * value; the cache keeps the original. It is a `computed`, so refs it reads are tracked.
+	 */
+	select?: ((data: TQueryFnData) => TData) | undefined
+}
+
+
 
 /**
  * `options` may be a plain object, a ref/computed, or a getter. Reactive inputs (a key built from
@@ -42,12 +61,12 @@ export interface UseQueryReturn<TData, TError = DefaultError> {
  *   const id = ref(1)
  *   const { data } = useQuery(() => ({ queryKey: ['user', id.value], queryFn: () => fetchUser(id.value) }))
  */
-export function useQuery<TData, TError = DefaultError>(
-	options: MaybeRefOrGetter<QueryObserverOptions<TData, TError>>,
+export function useQuery<TQueryFnData, TError = DefaultError, TData = TQueryFnData>(
+	options: MaybeRefOrGetter<UseQueryOptions<TQueryFnData, TError, TData>>,
 ): UseQueryReturn<TData, TError> {
 	// On the server a failing request must not hold the render open through retries with backoff
 	// (~7 s by default): fail fast and let the browser retry. An explicit `retry` is respected.
-	const forServer = (o: QueryObserverOptions<TData, TError>): QueryObserverOptions<TData, TError> =>
+	const forServer = (o: QueryObserverOptions<TQueryFnData, TError>): QueryObserverOptions<TQueryFnData, TError> =>
 		typeof window === "undefined" ? { ...o, retry: o.retry ?? false } : o
 	const observer = new QueryObserver(useQueryClient(), forServer(toValue(options)))
 
@@ -60,7 +79,7 @@ export function useQuery<TData, TError = DefaultError>(
 	// hydration, so it is live from the start.
 	let live = !getCurrentInstance()
 	const read = () => (live ? observer.getSnapshot() : observer.getServerSnapshot())
-	const snapshot = shallowRef<QueryResult<TData, TError>>(read())
+	const snapshot = shallowRef<QueryResult<TQueryFnData, TError>>(read())
 
 	if (typeof window === "undefined") {
 		// Server: no subscription (nothing would ever unsubscribe it). Vue waits for onServerPrefetch
@@ -97,17 +116,20 @@ export function useQuery<TData, TError = DefaultError>(
 		},
 	)
 
-	const pick = <K extends keyof QueryResult<TData, TError>>(key: K) => computed(() => snapshot.value[key])
+	// `select` runs inside a computed: Vue memoizes it and tracks whatever refs it reads.
+	const selected = (raw: TQueryFnData | undefined): TData | undefined => {
+		const { select } = toValue(options)
+		return select && raw !== undefined ? select(raw) : (raw as TData | undefined)
+	}
+	const fields: Record<string, ComputedRef<unknown>> = {}
+	// One computed per field of the result, so templates can destructure. The snapshot always has
+	// every field, so its keys are the list (`data` gets its own computed below, for `select`).
+	for (const key of Object.keys(snapshot.value) as Array<keyof QueryResult<TQueryFnData, TError>>) {
+		fields[key] = computed(() => snapshot.value[key])
+	}
 	return {
-		status: pick("status"),
-		data: pick("data"),
-		error: pick("error"),
-		isFetching: pick("isFetching"),
-		isStale: pick("isStale"),
-		isInvalidated: pick("isInvalidated"),
-		isPlaceholderData: pick("isPlaceholderData"),
-		failureCount: pick("failureCount"),
-		dataUpdatedAt: pick("dataUpdatedAt"),
-		refetch: () => observer.refetch(),
+		...(fields as unknown as Omit<UseQueryReturn<TData, TError>, "data" | "refetch">),
+		data: computed(() => selected(snapshot.value.data)),
+		refetch: (o) => observer.refetch(o).then((raw) => selected(raw) as TData),
 	}
 }

@@ -23,6 +23,14 @@ export interface QueryHandle<TData> {
 	unmount(): void
 }
 
+export interface SelectedQueryHandle<TData, TSelected> {
+	current(): QueryResult<TSelected>
+	/** Re-render with another `select` function (same query). */
+	setSelect(select: (data: TData) => TSelected): void
+	refetch(): Promise<TSelected>
+	unmount(): void
+}
+
 export interface MutationHandle<TData, TVariables> {
 	current(): MutationState<TData, Error, TVariables>
 	mutate(variables: TVariables): void
@@ -67,6 +75,12 @@ export interface StoreHandle<TSelected> {
 /** What an adapter package must provide so the shared behaviour tests can drive it. */
 export interface Harness {
 	mountQuery<TData>(client: QueryClient, options: QueryObserverOptions<TData>): QueryHandle<TData>
+	/** The adapter's query hook with its `select` option. */
+	mountSelectedQuery<TData, TSelected>(
+		client: QueryClient,
+		options: QueryObserverOptions<TData>,
+		select: (data: TData) => TSelected,
+	): SelectedQueryHandle<TData, TSelected>
 	/** With a `client` the mutation sits under that client's provider, so it counts towards useIsMutating. */
 	mountMutation<TData, TVariables, TContext = unknown>(
 		options: MutationOptions<TData, Error, TVariables, TContext>,
@@ -663,6 +677,103 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 			await settle()
 			expect(view.current()).toBe("x")
 			view.unmount()
+		})
+	})
+	describe(`${adapterName}: result flags, select and refetch options`, () => {
+		it("exposes the boolean flags through loading, success and a background refetch", async () => {
+			const { client } = setup()
+			let release!: (value: string) => void
+			const q = h.mountQuery(client, { queryKey: ["flags"], queryFn: () => new Promise<string>((r) => (release = r)) })
+			expect(q.current()).toMatchObject({ isPending: true, isLoading: true, isSuccess: false, isError: false, isRefetching: false })
+			await h.act(() => release("a"))
+			await settle()
+			expect(q.current()).toMatchObject({ isPending: false, isLoading: false, isSuccess: true, isRefetching: false })
+			let refetch!: Promise<unknown>
+			await h.act(() => {
+				refetch = q.refetch()
+			})
+			expect(q.current()).toMatchObject({ isSuccess: true, isRefetching: true, isLoading: false })
+			await h.act(() => release("b"))
+			await h.act(() => refetch)
+			expect(q.current()).toMatchObject({ data: "b", isRefetching: false })
+			q.unmount()
+		})
+
+		it("reports a failed first load as isLoadingError, with the failure reason", async () => {
+			const { client } = setup()
+			const q = h.mountQuery(client, { queryKey: ["bad"], queryFn: () => Promise.reject(new Error("nope")), retry: 0 })
+			await settle()
+			expect(q.current()).toMatchObject({ isError: true, isLoadingError: true, isRefetchError: false, isPending: false })
+			expect(q.current().failureReason).toEqual(new Error("nope"))
+			q.unmount()
+		})
+
+		it("select derives the data, leaves the cache alone, and follows a new select without refetching", async () => {
+			const { client } = setup()
+			const fn = vi.fn(() => Promise.resolve([1, 2, 3, 4]))
+			const q = h.mountSelectedQuery(client, { queryKey: ["nums"], queryFn: fn, staleTime: Infinity }, (nums) => nums.filter((n) => n % 2 === 0))
+			expect(q.current().data).toBeUndefined()
+			await settle()
+			expect(q.current().data).toEqual([2, 4])
+			expect(client.getQueryData(["nums"])).toEqual([1, 2, 3, 4])
+			const stable = q.current().data
+			await settle()
+			expect(q.current().data).toBe(stable) // memoized while nothing changed
+			await h.act(() => q.setSelect((nums) => nums.filter((n) => n > 2)))
+			await settle()
+			expect(q.current().data).toEqual([3, 4])
+			expect(fn).toHaveBeenCalledTimes(1)
+			let refetched: number[] | undefined
+			await h.act(async () => {
+				refetched = await q.refetch()
+			})
+			expect(refetched).toEqual([3, 4])
+			q.unmount()
+		})
+
+		it("refetchOnMount: false shows stale cached data without fetching; 'always' refetches fresh data", async () => {
+			const { client } = setup()
+			client.setQueryData(["cached"], "old")
+			const fn = vi.fn(() => Promise.resolve("new"))
+			const quiet = h.mountQuery(client, { queryKey: ["cached"], queryFn: fn, refetchOnMount: false })
+			expect(quiet.current()).toMatchObject({ data: "old", isFetching: false, isStale: true })
+			await settle()
+			expect(fn).not.toHaveBeenCalled()
+			quiet.unmount()
+			const eager = h.mountQuery(client, { queryKey: ["cached"], queryFn: fn, staleTime: Infinity, refetchOnMount: "always" })
+			await settle()
+			expect(fn).toHaveBeenCalledTimes(1)
+			expect(eager.current().data).toBe("new")
+			eager.unmount()
+		})
+
+		it("applies the client's defaultOptions, and a function-form enabled", async () => {
+			const scheduler = new FakeScheduler()
+			const client = new QueryClient({ scheduler, defaultOptions: { queries: { staleTime: Infinity, retry: 0 } } })
+			client.setQueryData(["d"], 1)
+			const fn = counter()
+			const fresh = h.mountQuery(client, { queryKey: ["d"], queryFn: fn })
+			await settle()
+			expect(fn).not.toHaveBeenCalled() // fresh by default
+			expect(fresh.current().isStale).toBe(false)
+			fresh.unmount()
+
+			const make = (on: boolean): QueryObserverOptions<number> => ({ queryKey: ["gated"], queryFn: fn, enabled: () => on })
+			const gated = h.mountQuery(client, make(false))
+			await settle()
+			expect(gated.current()).toMatchObject({ status: "idle", isPending: true, isLoading: false })
+			gated.update(make(true))
+			await settle()
+			expect(gated.current().data).toBe(1)
+			gated.unmount()
+		})
+
+		it("passes the query key to the query function", async () => {
+			const { client } = setup()
+			const q = h.mountQuery(client, { queryKey: ["echo", 7], queryFn: ({ queryKey }) => Promise.resolve(queryKey[1] as number) })
+			await settle()
+			expect(q.current().data).toBe(7)
+			q.unmount()
 		})
 	})
 }

@@ -32,14 +32,14 @@
 
 | قلم | تخمین (بایت gzip) | واقعی |
 |---|---|---|
-| فلگ‌های بولی و فیلدهای مشتق نتیجه | ۷۰ | |
-| context کامل `queryFn` (`queryKey`، `meta`، `client`) و `meta` | ۳۰ | |
-| `defaultOptions` | ۷۰ | |
-| `refetchOnMount`، شکل‌های `"always"` و تابعی، `refetchIntervalInBackground` | ۱۱۰ | |
-| `select` | ۵۰ | |
-| `failureReason`، `errorUpdatedAt`، `errorUpdateCount`، `isFetched` | ۵۰ | |
-| `Query.reset()` و حذف entry | ۴۰ | |
-| `skipToken`، `initialDataUpdatedAt`، `refetch({ cancelRefetch })`، `fetchQuery` تک‌آبجکتی | ۶۵ | |
+| فلگ‌های بولی و فیلدهای مشتق نتیجه | ۷۰ | ↓ |
+| context کامل `queryFn` (`queryKey`، `meta`، `client`) و `meta` | ۳۰ | ↓ |
+| `defaultOptions` | ۷۰ | ↓ |
+| `refetchOnMount`، شکل‌های `"always"` و تابعی، `refetchIntervalInBackground` | ۱۱۰ | ↓ |
+| `select` | ۵۰ | ۰ (در آداپترها، بند ۷) |
+| `failureReason` (`errorUpdatedAt`، `errorUpdateCount`، `isFetched` نیامدند) | ۵۰ | ↓ |
+| `Query.reset()` و حذف entry | ۴۰ | ↓ |
+| `skipToken`، `initialDataUpdatedAt`، `refetch({ cancelRefetch })`، `fetchQuery` تک‌آبجکتی | ۶۵ | **جمع هشت ردیف بالا: ۵۰۰** (تخمین بدون `select`: ۴۳۵) |
 | `Mutation`: callbackهای هر فراخوانی، فلگ‌ها، `mutationKey`، `meta`، `retry`، فیلدهای state | ۱۳۰ | |
 | `fetchStatus`، `networkMode`، `isPaused` | ۲۲۰ | |
 | **جمع** | **۸۳۵** | |
@@ -48,9 +48,11 @@
 
 بودجه‌ی بقیه‌ی بسته‌ها عوض نمی‌شود. قلم‌های ورودی اصلی `api` (حدود ۱۳۰ بایت) در ۳KB فعلی جا می‌شوند.
 
+بعد از فاز ۳ (2026-11-10) ورودی اصلی ۳.۵۶KB است. ردیف‌ها جدا اندازه‌گیری نشدند، فقط جمعشان. برای دو ردیف باقی‌مانده (فاز ۴، تخمین ۳۵۰ بایت) ۴۴۰ بایت تا سقف مانده.
+
 ### ۳. بازگشایی ADR-0006
 
-- **بند ۳ (`select`):** اضافه می‌شود. `derive` می‌ماند و برای موارد بیرون از کوئری همچنان راه اصلی است.
+- **بند ۳ (`select`):** اضافه می‌شود، ولی در آداپترها (بند ۷). `derive` می‌ماند و برای موارد بیرون از کوئری همچنان راه اصلی است.
 - **بند ۴ (`initialDataUpdatedAt`):** اضافه می‌شود.
 
 ### ۴. فلگ‌های بولی
@@ -64,6 +66,12 @@
 ### ۶. آنچه عمداً برابر نمی‌شود
 
 `status: "pending"` برای کوئری، ترتیب LIFO interceptorهای درخواست، notify با `setTimeout`، instance سراسری، `CancelToken`، `AxiosHeaders`، `mount` / `unmount` روی client. دلیل هر کدام در `parity-plan.md` است و در راهنماهای مهاجرت زیر «Different» می‌ماند.
+
+### ۷. `select` در آداپتر است، نه در `QueryObserver` (افزوده در فاز ۳)
+
+نسخه‌ی اول این ADR `select` را در `view()` می‌گذاشت. در پیاده‌سازی معلوم شد که در React جواب نمی‌دهد: یک `select` که inline نوشته شود در هر render تابع تازه‌ای است. اگر observer با عوض شدن هویت تابع دوباره انتخاب کند، snapshot تازه می‌سازد، `useSyncExternalStore` آن را تغییر می‌بیند و دوباره render می‌کند، و این حلقه تمام نمی‌شود. اگر به هویت تابع بی‌اعتنا باشد، `select` وابسته به props (مثل `d => d.find(x => x.id === id)`) کهنه می‌ماند. TanStack حلقه را با structural sharing عمیق روی خروجی `select` می‌شکند، که ما در ورودی اصلی نداریم (ADR-0008).
+
+پس هر آداپتر با memo خود فریم‌ورکش این کار را می‌کند: `useMemo` در React (کلید: داده و تابع)، `computed` در Vue و Angular (که وابستگی‌های واکنشی `select` را هم دنبال می‌کند). کش داده‌ی اصلی را نگه می‌دارد و `refetch` مقدار انتخاب‌شده را برمی‌گرداند. این با قاعده‌ی جایابی (ردیف ۳: «به مفهوم خود فریم‌ورک گره خورده») می‌خواند و بایتی به `query` اضافه نمی‌کند. محدودیت: فعلاً فقط `useQuery` / `useSuspenseQuery` / `injectQuery`؛ infinite و `useQueries` نه. بیرون از آداپترها `derive` همان کار را می‌کند.
 
 ## گزینه‌های ردشده
 

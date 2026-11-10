@@ -6,12 +6,11 @@ const noop = (): void => {}
 export interface FetchInfiniteQueryOptions<TPage, TError = DefaultError, TPageParam = unknown>
 	extends Pick<
 		InfiniteQueryObserverOptions<TPage, TError, TPageParam>,
-		"queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam" | "retry" | "retryDelay"
+		"queryKey" | "queryFn" | "initialPageParam" | "getNextPageParam" | "retry" | "retryDelay" | "meta" | "staleTime"
 	> {
 	/** How many pages to load, following `getNextPageParam`. Default 1. Stops early when there is no next page. */
 	pages?: number | undefined
-	/** Skip the fetch when the cached pages are younger than this (ms). Default 0: always fetch. */
-	staleTime?: number | undefined
+	// `staleTime` here: skip the fetch when the cached pages are younger than this (ms). Default 0: always fetch.
 }
 
 /**
@@ -23,18 +22,20 @@ export function fetchInfiniteQuery<TPage, TError = DefaultError, TPageParam = un
 	options: FetchInfiniteQueryOptions<TPage, TError, TPageParam>,
 ): Promise<InfiniteData<TPage, TPageParam>> {
 	const { queryKey, queryFn, getNextPageParam } = options
-	const { data, dataUpdatedAt, isInvalidated } = client.getQuery<InfiniteData<TPage, TPageParam>, TError>(queryKey).getSnapshot()
-	if (data && !isInvalidated && client.scheduler.now() - (dataUpdatedAt ?? 0) < (options.staleTime ?? 0)) {
+	const state = client.getQuery<InfiniteData<TPage, TPageParam>, TError>(queryKey).getSnapshot()
+	const { data, dataUpdatedAt, isInvalidated } = state
+	const staleTime = typeof options.staleTime == "function" ? options.staleTime(state) : (options.staleTime ?? 0)
+	if (data && (staleTime === "static" || (!isInvalidated && client.scheduler.now() - (dataUpdatedAt ?? 0) < staleTime))) {
 		return Promise.resolve(data)
 	}
 	return client.fetchQuery<InfiniteData<TPage, TPageParam>, TError>(
 		queryKey,
-		async ({ signal }) => {
+		async (context) => {
 			const pages: TPage[] = []
 			const pageParams: TPageParam[] = []
 			let param: TPageParam | undefined | null = options.initialPageParam
 			for (let i = 0; i < (options.pages ?? 1) && param != null; i++) {
-				const page = await queryFn({ signal, pageParam: param })
+				const page = await queryFn({ ...context, pageParam: param })
 				pages.push(page)
 				pageParams.push(param)
 				param = getNextPageParam(page, pages, param, pageParams)

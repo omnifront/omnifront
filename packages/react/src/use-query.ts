@@ -3,7 +3,25 @@ import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "r
 import { useQueryClient } from "./provider"
 
 export interface UseQueryResult<TData, TError = DefaultError> extends QueryResult<TData, TError> {
-	refetch: () => Promise<TData>
+	/** Joins a request in flight; `{ cancelRefetch: true }` aborts it and starts over. */
+	refetch: (options?: { cancelRefetch?: boolean | undefined }) => Promise<TData>
+}
+
+export type UseQueryOptions<TQueryFnData, TError = DefaultError, TData = TQueryFnData> = QueryObserverOptions<TQueryFnData, TError> & {
+	/**
+	 * Derive what the component needs from the cached data. `data` (and `refetch`) give the derived
+	 * value; the cache keeps the original. Runs when the data or the function changes, so pass a
+	 * stable function (defined outside the component, or with `useCallback`) to keep it memoized.
+	 */
+	select?: ((data: TQueryFnData) => TData) | undefined
+}
+
+/** `select(data)`, memoized on both. React's own memo does the job: nothing about it lives in the cache. */
+export function useSelected<TQueryFnData, TData>(
+	data: TQueryFnData | undefined,
+	select: ((data: TQueryFnData) => TData) | undefined,
+): TData | undefined {
+	return useMemo(() => (select && data !== undefined ? select(data) : (data as TData | undefined)), [data, select])
 }
 
 /** The observer behind a hook and its current snapshot. Shared by useQuery and useSuspenseQuery. */
@@ -37,7 +55,23 @@ export function useObservedQuery<TData, TError = DefaultError>(
 	return [observer, useSyncExternalStore(observer.subscribe, getSnapshot, getServerSnapshot)]
 }
 
-export function useQuery<TData, TError = DefaultError>(options: QueryObserverOptions<TData, TError>): UseQueryResult<TData, TError> {
-	const [observer, snapshot] = useObservedQuery(options)
-	return useMemo(() => ({ ...snapshot, refetch: () => observer.refetch() }), [snapshot, observer])
+export function useQuery<TQueryFnData, TError = DefaultError, TData = TQueryFnData>(
+	options: UseQueryOptions<TQueryFnData, TError, TData>,
+): UseQueryResult<TData, TError> {
+	const [observer, snapshot] = useObservedQuery<TQueryFnData, TError>(options)
+	const data = useSelected(snapshot.data, options.select)
+	// The latest `select` for `refetch`, without making the returned object depend on its identity.
+	const select = useRef(options.select)
+	useEffect(() => {
+		select.current = options.select
+	})
+	return useMemo(
+		() =>
+			({
+				...snapshot,
+				data,
+				refetch: (o) => observer.refetch(o).then((raw) => (select.current ? select.current(raw) : raw)),
+			}) as UseQueryResult<TData, TError>,
+		[snapshot, data, observer],
+	)
 }

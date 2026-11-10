@@ -2,6 +2,7 @@ import { BaseSubscribable } from "@omnifront/core"
 import {
 	QueryObserver,
 	type DefaultError,
+	type FetchOptions,
 	type QueryClient,
 	type QueryFnContext,
 	type QueryObserverOptions,
@@ -157,14 +158,14 @@ export class InfiniteQueryObserver<TPage, TError = DefaultError, TPageParam = un
 	}
 
 	// Reload as many pages as we have (at least one), following the cursors from the first one.
-	private loadAll = async ({ signal }: QueryFnContext): Promise<InfiniteData<TPage, TPageParam>> => {
+	private loadAll = async (context: QueryFnContext): Promise<InfiniteData<TPage, TPageParam>> => {
 		const existing = this.data()
 		const count = Math.max(existing?.pages.length ?? 1, 1)
 		const pages: TPage[] = []
 		const pageParams: TPageParam[] = []
 		let param: TPageParam | undefined | null = existing?.pageParams[0] ?? this.options.initialPageParam
 		for (let i = 0; i < count && param != null; i++) {
-			pages.push(await this.options.queryFn({ signal, pageParam: param }))
+			pages.push(await this.options.queryFn({ ...context, pageParam: param }))
 			pageParams.push(param)
 			param = this.nextParam({ pages, pageParams })
 		}
@@ -190,8 +191,8 @@ export class InfiniteQueryObserver<TPage, TError = DefaultError, TPageParam = un
 		this.notify()
 		try {
 			await query.fetch(
-				async ({ signal }) => {
-					const page = await this.options.queryFn({ signal, pageParam: param })
+				async (context) => {
+					const page = await this.options.queryFn({ ...context, pageParam: param })
 					const current = query.getSnapshot().data ?? data // it may have changed while we waited
 					const grown =
 						direction === "next"
@@ -199,7 +200,7 @@ export class InfiniteQueryObserver<TPage, TError = DefaultError, TPageParam = un
 							: { pages: [page, ...current.pages], pageParams: [param, ...current.pageParams] }
 					return this.trim(grown, direction)
 				},
-				{ retry: this.options.retry ?? 3, retryDelay: this.options.retryDelay },
+				{ ...this.client.getDefaultOptions().queries, ...this.options, retry: this.options.retry ?? this.client.getDefaultOptions().queries?.retry ?? 3 } as FetchOptions<TError>,
 			)
 		} catch {
 			// The failure is in the query state; the old pages stay.

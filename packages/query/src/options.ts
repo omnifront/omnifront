@@ -1,5 +1,6 @@
 import type { DataTag, QueryKey } from "./hash-key"
 import type { MutationOptions } from "./mutation"
+import type { SkipToken } from "./query"
 import type { QueryObserverOptions } from "./query-observer"
 import type { DefaultError } from "./register"
 
@@ -23,3 +24,11 @@ export function mutationOptions<TData, TError = DefaultError, TVariables = void,
 ): MutationOptions<TData, TError, TVariables, TContext> {
 	return options
 }
+
+/**
+ * Use instead of a query function to say "nothing to fetch yet", without `enabled: false` and a
+ * non-null assertion:
+ *
+ *   useQuery({ queryKey: ["user", id], queryFn: id ? () => fetchUser(id) : skipToken })
+ */
+export const skipToken: SkipToken = Symbol() as never

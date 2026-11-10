@@ -1,11 +1,29 @@
 import { defaultScheduler, notifyManager, type Scheduler } from "@omnifront/core"
 import { hashKey, matchesKey, type DataTag, type QueryKey, type UntaggedKey } from "./hash-key"
-import { DEFAULT_GC_TIME, Query, type QueryFn, type QueryState } from "./query"
+import { DEFAULT_GC_TIME, Query, type FetchOptions, type QueryFn, type QueryState } from "./query"
+import type { QueryObserverOptions } from "./query-observer"
 import type { DefaultError } from "./register"
 import type { RetryOptions } from "./retry"
 import { noop, resolve } from "./resolve"
 
+/** Options every query gets unless it sets its own. */
+export interface DefaultOptions {
+	queries?:
+		| Partial<Omit<QueryObserverOptions<unknown>, "queryKey" | "queryFn" | "initialData" | "initialDataUpdatedAt" | "placeholderData">>
+		| undefined
+}
+
+/** `fetchQuery` as one object, as in TanStack Query. */
+export interface FetchQueryOptions<TData, TError = DefaultError> extends FetchOptions<TError> {
+	queryKey: QueryKey
+	queryFn: QueryFn<TData>
+	/** Return the cached data instead of fetching when it is younger than this (ms). Default 0: always fetch. */
+	staleTime?: number | undefined
+}
+
 export interface QueryClientOptions {
+	/** Defaults for every observer (the hooks) of this client. */
+	defaultOptions?: DefaultOptions | undefined
 	scheduler?: Scheduler
 	/** Default gcTime for new cache entries (ms). */
 	gcTime?: number
@@ -33,9 +51,20 @@ export class QueryClient {
 	readonly scheduler: Scheduler
 	private readonly entries = new Map<string, Entry>()
 	private readonly changeListeners = new Set<() => void>()
+	private defaults: DefaultOptions
 
 	constructor(private readonly options: QueryClientOptions = {}) {
 		this.scheduler = options.scheduler ?? defaultScheduler
+		this.defaults = options.defaultOptions ?? {}
+	}
+
+	getDefaultOptions(): DefaultOptions {
+		return this.defaults
+	}
+
+	/** Applies to observers created (or given new options) from now on. */
+	setDefaultOptions(defaults: DefaultOptions): void {
+		this.defaults = defaults
 	}
 
 	/** Get the cache entry for `key`, creating it on first use. */
@@ -48,6 +77,8 @@ export class QueryClient {
 				query: new Query<unknown>(this.scheduler, {
 					gcTime: gcTime ?? this.options.gcTime ?? DEFAULT_GC_TIME,
 					structuralSharing: this.options.structuralSharing,
+					queryKey: key,
+					client: this,
 					onChange: () => this.emit(),
 					onGc: () => {
 						if (this.entries.get(hash) === created) this.entries.delete(hash)
@@ -62,13 +93,35 @@ export class QueryClient {
 		return entry.query as unknown as Query<TData, TError>
 	}
 
-	fetchQuery<TData, TError = DefaultError>(key: QueryKey, fn: QueryFn<TData>, retry?: RetryOptions<TError>): Promise<TData> {
-		return this.getQuery<TData, TError>(key).fetch(fn, retry)
+	/**
+	 * Fetch into the cache, joining a request already in flight. Rejects on failure. The object form
+	 * also takes `staleTime`: cached data younger than that is returned without fetching.
+	 */
+	fetchQuery<TData, TError = DefaultError>(options: FetchQueryOptions<TData, TError>): Promise<TData>
+	fetchQuery<TData, TError = DefaultError>(key: QueryKey, fn: QueryFn<TData>, retry?: RetryOptions<TError>): Promise<TData>
+	fetchQuery<TData, TError>(
+		first: QueryKey | FetchQueryOptions<TData, TError>,
+		fn?: QueryFn<TData>,
+		retry?: RetryOptions<TError>,
+	): Promise<TData> {
+		const options = (Array.isArray(first) ? { ...retry, queryKey: first, queryFn: fn } : first) as FetchQueryOptions<TData, TError>
+		const query = this.getQuery<TData, TError>(options.queryKey)
+		const { data, dataUpdatedAt, isInvalidated } = query.getSnapshot()
+		return dataUpdatedAt !== undefined && !isInvalidated && this.scheduler.now() - dataUpdatedAt < (options.staleTime ?? 0)
+			? Promise.resolve(data as TData)
+			: query.fetch(options.queryFn, options)
 	}
 
 	/** Abort the in-flight fetch for `key`, if any. */
 	cancelQuery(key: QueryKey): void {
 		this.entries.get(hashKey(key))?.query.cancel()
+	}
+
+	/** Drop the entry for `key`. Meant for entries nothing is watching; a mounted component keeps its own copy. */
+	removeQuery(key: QueryKey): void {
+		const hash = hashKey(key)
+		this.entries.get(hash)?.query.destroy()
+		if (this.entries.delete(hash)) this.emit()
 	}
 
 	/**

@@ -5,12 +5,20 @@ import {
 	type QueryHandle,
 } from "@omnifront/conformance"
 import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifront/query"
-import { nextTick, shallowRef } from "vue"
+import { isRef, nextTick, shallowRef } from "vue"
 import { useMutation, useQuery, useStore } from "../src"
 import { useIsFetching, useIsMutating } from "../src/activity"
 import { useInfiniteQuery } from "../src/infinite"
 import { useQueries } from "../src/queries"
 import { mountComposable } from "./mount"
+
+/** The plain values behind a composable's refs (functions like `refetch` are left out). */
+const values = (refs: object): Record<string, unknown> =>
+	Object.fromEntries(
+		Object.entries(refs)
+			.filter(([, value]) => isRef(value))
+			.map(([key, value]) => [key, (value as { value: unknown }).value]),
+	)
 
 const harness: Harness = {
 	// Vue has no act(): run the work, then let watchers (flush: "pre") and microtasks settle.
@@ -23,18 +31,21 @@ const harness: Harness = {
 		const current = shallowRef(options)
 		const { result: r, unmount } = mountComposable(() => useQuery(current), client)
 		return {
-			current: () => ({
-				status: r.status.value,
-				data: r.data.value,
-				error: r.error.value,
-				isFetching: r.isFetching.value,
-				isStale: r.isStale.value,
-				isInvalidated: r.isInvalidated.value,
-				isPlaceholderData: r.isPlaceholderData.value,
-				failureCount: r.failureCount.value,
-				dataUpdatedAt: r.dataUpdatedAt.value,
-			}),
+			current: () => values(r) as never,
 			update: (next: QueryObserverOptions<TData>) => {
+				current.value = next
+			},
+			refetch: () => r.refetch(),
+			unmount,
+		}
+	},
+
+	mountSelectedQuery(client, options, select) {
+		const current = shallowRef(select)
+		const { result: r, unmount } = mountComposable(() => useQuery(() => ({ ...options, select: current.value })), client)
+		return {
+			current: () => values(r) as never,
+			setSelect: (next) => {
 				current.value = next
 			},
 			refetch: () => r.refetch(),
@@ -70,21 +81,7 @@ const harness: Harness = {
 		const current = shallowRef(options)
 		const { result: r, unmount } = mountComposable(() => useInfiniteQuery(current), client)
 		return {
-			current: () => ({
-				status: r.status.value,
-				data: r.data.value,
-				error: r.error.value,
-				isFetching: r.isFetching.value,
-				isStale: r.isStale.value,
-				isInvalidated: false,
-				isPlaceholderData: false,
-				failureCount: 0,
-				dataUpdatedAt: undefined,
-				hasNextPage: r.hasNextPage.value,
-				hasPreviousPage: r.hasPreviousPage.value,
-				isFetchingNextPage: r.isFetchingNextPage.value,
-				isFetchingPreviousPage: r.isFetchingPreviousPage.value,
-			}),
+			current: () => ({ isInvalidated: false, isPlaceholderData: false, failureCount: 0, dataUpdatedAt: undefined, ...values(r) }) as never,
 			fetchNextPage: () => r.fetchNextPage(),
 			update: (next) => {
 				current.value = next

@@ -1,9 +1,9 @@
-import type { DefaultError, QueryObserverOptions } from "@omnifront/query"
+import type { DefaultError } from "@omnifront/query"
 import { useMemo } from "react"
 import type { UseInfiniteQueryResult } from "./infinite"
 import { useObservedInfinite } from "./observed-infinite"
 import type { InfiniteData, InfiniteQueryObserverOptions } from "@omnifront/query-infinite"
-import { useObservedQuery, type UseQueryResult } from "./use-query"
+import { useObservedQuery, useSelected, type UseQueryOptions, type UseQueryResult } from "./use-query"
 
 export interface UseSuspenseQueryResult<TData, TError = DefaultError> extends Omit<UseQueryResult<TData, TError>, "data" | "status"> {
 	/** Always there: the component does not render until it is. */
@@ -25,10 +25,11 @@ const noop = (): void => {}
  * - To retry after an error, call `client.invalidateQueries({ queryKey })` from the error
  *   boundary's reset, then re-render: an invalidated failed query loads again instead of throwing.
  */
-export function useSuspenseQuery<TData, TError = DefaultError>(
-	options: QueryObserverOptions<TData, TError>,
+export function useSuspenseQuery<TQueryFnData, TError = DefaultError, TData = TQueryFnData>(
+	options: UseQueryOptions<TQueryFnData, TError, TData>,
 ): UseSuspenseQueryResult<TData, TError> {
-	const [observer, snapshot] = useObservedQuery<TData, TError>({
+	const { select } = options
+	const [observer, snapshot] = useObservedQuery<TQueryFnData, TError>({
 		...options,
 		enabled: true,
 		staleTime: options.staleTime ?? 1000,
@@ -36,10 +37,14 @@ export function useSuspenseQuery<TData, TError = DefaultError>(
 	})
 
 	const hasData = snapshot.data !== undefined && !snapshot.isPlaceholderData
+	const data = useSelected(snapshot.data, select)
 	// Declared before any throw so the hook order never changes between renders.
 	const result = useMemo(
-		() => (hasData ? { ...snapshot, data: snapshot.data as TData, refetch: () => observer.refetch() } : undefined),
-		[hasData, snapshot, observer],
+		() =>
+			hasData
+				? { ...snapshot, data, refetch: () => observer.refetch().then((raw) => (select ? select(raw) : raw)) }
+				: undefined,
+		[hasData, snapshot, data, observer, select],
 	)
 	if (result) return result as UseSuspenseQueryResult<TData, TError>
 

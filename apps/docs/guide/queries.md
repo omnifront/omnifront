@@ -27,6 +27,12 @@ Invalidation and cancellation match **by prefix**: `["todos"]` also matches `["t
 | `failureCount` | Failures so far in the current fetch (for "retrying…" UI) |
 | `dataUpdatedAt` | Scheduler time of the last success |
 | `isPlaceholderData` | `data` is the `placeholderData`, not real data |
+| `failureReason` | Error of the latest failed attempt, also while it is being retried |
+| `isPending` | No data yet (`status` is `"idle"` or `"loading"`) |
+| `isLoading` | The first load is running (`isPending && isFetching`) |
+| `isRefetching` | A background refetch is running (there is data, and `isFetching`) |
+| `isSuccess`, `isError` | `status` is `"success"` / `"error"` |
+| `isLoadingError`, `isRefetchError` | Failed with nothing to show / a refetch failed and the old data is kept |
 
 `status` and `isFetching` are independent: a background refetch of existing data is `status: "success"` with `isFetching: true`.
 
@@ -188,6 +194,30 @@ Vue has the same names returning a `ComputedRef<number>` (the filter may be a re
 useQuery({ queryKey: ["user", id], queryFn: () => loadUser(id), enabled: id !== undefined })
 ```
 
+`skipToken` says the same through the function, which keeps TypeScript happy without a non-null assertion:
+
+```ts
+import { skipToken } from "@omnifront/query/options"
+
+useQuery({ queryKey: ["user", id], queryFn: id ? () => loadUser(id) : skipToken })
+```
+
+## Deriving data: `select`
+
+```ts
+const { data: names } = useQuery({ ...todosQuery, select: (todos) => todos.map((t) => t.title) })
+```
+
+`data` is what `select` returns; the cache keeps the original, so other components can select something else from the same entry. The adapters memoize it with their framework's own tool (`useMemo` in React, `computed` in Vue and Angular). In React that means: a function defined inline is a new function on every render and runs again each time, so define it outside the component or wrap it in `useCallback` when the work is not trivial. Outside the adapters, [`derive`](/api/core) does the same for any `Subscribable`.
+
+## Defaults for every query
+
+```ts
+const client = new QueryClient({ defaultOptions: { queries: { staleTime: 30_000, retry: 1 } } })
+```
+
+Every hook of this client starts from these; a query's own options win. They apply to observers (the hooks), not to `client.fetchQuery`.
+
 ## Refetching and the cache
 
 ```ts
@@ -212,14 +242,19 @@ While a request for a key is in flight, every other fetch of that key (another c
 | Option | Default | |
 |---|---|---|
 | `queryKey` | required | Array identifying the entry |
-| `queryFn` | required | `({ signal }) => Promise<T>` |
-| `staleTime` | `0` | ms data stays fresh |
+| `queryFn` | required | `({ signal, queryKey, meta, client }) => Promise<T>`, or `skipToken` |
+| `staleTime` | `0` | ms data stays fresh; `"static"` = never refetched once loaded; or a function of the state |
 | `gcTime` | 5 min | ms an unobserved entry is kept |
-| `enabled` | `true` | `false` disables automatic fetching |
+| `enabled` | `true` | `false` (or a function of the state returning it) disables automatic fetching |
 | `retry` | `3` for observers, `0` for `fetchQuery` | number, boolean or `(failureCount, error) => boolean` |
 | `retryDelay` | exponential, max 30 s | number or `(failureCount, error) => number` |
-| `refetchOnWindowFocus` | `true` | refetch stale data when the page is shown again |
-| `refetchOnReconnect` | `true` | refetch stale data when the network is back |
-| `refetchInterval` | off | ms between polls |
+| `refetchOnMount` | `true` | when a component starts watching: `true` fetches stale data, `false` only loads missing data, `"always"` refetches fresh data too |
+| `refetchOnWindowFocus` | `true` | the same three values, for when the page is shown again |
+| `refetchOnReconnect` | `true` | the same, for when the network is back |
+| `refetchInterval` | off | ms between polls, or a function of the state (return `false` to stop) |
+| `refetchIntervalInBackground` | `false` | keep polling while the page is hidden |
+| `meta` | none | free-form object handed to the query function |
+| `select` | none | adapters only: derive `data` from the cached value |
 | `initialData` | none | data (or a function returning it) to seed an empty cache entry |
+| `initialDataUpdatedAt` | now | when that data was fetched, so it can count as stale |
 | `placeholderData` | none | data, or `(previousData) => data`, shown while there is none |

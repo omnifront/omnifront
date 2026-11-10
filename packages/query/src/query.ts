@@ -1,4 +1,6 @@
 import { BaseSubscribable, type Scheduler, type TimerHandle } from "@omnifront/core"
+import type { QueryKey } from "./hash-key"
+import type { QueryClient } from "./query-client"
 import { getRetryDelay, shouldRetry, type RetryOptions } from "./retry"
 import { noop } from "./resolve"
 import { CancelledError } from "./cancelled-error"
@@ -20,6 +22,8 @@ export interface QueryState<TData = unknown, TError = DefaultError> {
 	isInvalidated: boolean
 	/** Failures in the current fetch so far (0 once it succeeds or a new one starts). */
 	failureCount: number
+	/** The error of the latest failed attempt (also while retrying); cleared when a fetch starts or succeeds. */
+	failureReason: TError | undefined
 	/** Scheduler time of the last successful data, if any. */
 	dataUpdatedAt: number | undefined
 }
@@ -27,8 +31,35 @@ export interface QueryState<TData = unknown, TError = DefaultError> {
 /** Passed to every query function. `signal` aborts when the fetch is cancelled. */
 export interface QueryFnContext {
 	signal: AbortSignal
+	/** The key the function is fetching for. */
+	queryKey: QueryKey
+	/** The query's `meta` option. */
+	meta: Record<string, unknown> | undefined
+	client: QueryClient
 }
 export type QueryFn<TData> = (context: QueryFnContext) => Promise<TData>
+
+/** The type of `skipToken` (`@omnifront/query/options`): a `queryFn` that means "do not fetch". */
+export interface SkipToken {
+	/** Types only: tells the token apart from a function. */
+	readonly skipToken: true
+}
+
+/** What `Query.fetch` takes besides the function. */
+export interface FetchOptions<TError = DefaultError> extends RetryOptions<TError> {
+	meta?: Record<string, unknown> | undefined
+}
+
+const initial: QueryState<never, never> = {
+	status: "idle",
+	data: undefined,
+	error: undefined,
+	isFetching: false,
+	isInvalidated: false,
+	failureCount: 0,
+	failureReason: undefined,
+	dataUpdatedAt: undefined,
+}
 
 
 export interface QueryInit {
@@ -40,19 +71,14 @@ export interface QueryInit {
 	onChange?: () => void
 	/** Reuse parts of the previous data in new data; see `replaceEqualDeep`. */
 	structuralSharing?: ((previous: unknown, next: unknown) => unknown) | undefined
+	/** Handed to the query function. */
+	queryKey?: QueryKey
+	client?: QueryClient
 }
 
 /** One cache entry. Immutable snapshots; one in-flight request at a time. */
 export class Query<TData = unknown, TError = DefaultError> extends BaseSubscribable<QueryState<TData, TError>> {
-	private state: QueryState<TData, TError> = {
-		status: "idle",
-		data: undefined,
-		error: undefined,
-		isFetching: false,
-		isInvalidated: false,
-		failureCount: 0,
-		dataUpdatedAt: undefined,
-	}
+	private state: QueryState<TData, TError> = initial
 	private inflight: Promise<TData> | undefined
 	private cancelRequest: (() => void) | undefined
 	private retryTimer: TimerHandle | undefined
@@ -88,6 +114,15 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 		if (!this.state.isInvalidated) this.update({ isInvalidated: true })
 	}
 
+	/**
+	 * Back to the empty state, cancelling a fetch in flight. The entry is left invalidated, so
+	 * observers that are watching load it again.
+	 */
+	reset(): void {
+		this.cancel()
+		this.update({ ...initial, isInvalidated: true })
+	}
+
 	/** Resolves once the in-flight fetch (if any) has finished, successfully or not. */
 	settled(): Promise<void> {
 		return this.inflight ? this.inflight.then(noop, noop) : Promise.resolve()
@@ -97,7 +132,7 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 	 * Run `fn`, or join the request already in flight (deduplication).
 	 * Failed attempts are retried per `retry` (default none) with backoff.
 	 */
-	fetch(fn: QueryFn<TData>, retry: RetryOptions<TError> = {}): Promise<TData> {
+	fetch(fn: QueryFn<TData>, options: FetchOptions<TError> = {}): Promise<TData> {
 		if (this.inflight) return this.inflight
 		const controller = new AbortController()
 		const before = this.state
@@ -107,18 +142,21 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 			isFetching: true,
 			isInvalidated: false,
 			failureCount: 0,
+			failureReason: undefined,
 		})
+		const { queryKey = [], client } = this.init
+		const context = { signal: controller.signal, queryKey, meta: options.meta, client: client as QueryClient }
 		const request: Promise<TData> = new Promise<TData>((resolve, reject) => {
 			const attempt = (): void => {
-				new Promise<TData>((r) => r(fn({ signal: controller.signal }))).then(resolve, (error: unknown) => {
+				new Promise<TData>((r) => r(fn(context))).then(resolve, (error: unknown) => {
 					if (controller.signal.aborted) return // cancelled meanwhile; already settled
 					const failures = this.state.failureCount + 1
-					if (!shouldRetry(retry.retry, failures, error as TError)) return reject(error)
-					this.update({ failureCount: failures })
+					if (!shouldRetry(options.retry, failures, error as TError)) return reject(error)
+					this.update({ failureCount: failures, failureReason: error as TError })
 					this.retryTimer = this.scheduler.setTimeout(() => {
 						this.retryTimer = undefined
 						attempt()
-					}, getRetryDelay(retry.retryDelay, failures, error as TError))
+					}, getRetryDelay(options.retryDelay, failures, error as TError))
 				})
 			}
 			// Cancelling settles the request and puts the state back as it was before.
@@ -133,6 +171,7 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 					isFetching: false,
 					isInvalidated: before.isInvalidated,
 					failureCount: 0,
+					failureReason: undefined,
 				})
 				reject(new CancelledError())
 			}
@@ -146,6 +185,7 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 					error: undefined,
 					isFetching: false,
 					failureCount: 0,
+					failureReason: undefined,
 					dataUpdatedAt: this.scheduler.now(),
 				})
 				return data
@@ -153,7 +193,7 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 			(error: unknown) => {
 				if (error instanceof CancelledError) throw error // state already restored by cancel()
 				this.settle()
-				this.update({ status: "error", error: error as TError, isFetching: false })
+				this.update({ status: "error", error: error as TError, failureReason: error as TError, isFetching: false })
 				throw error
 			},
 		)

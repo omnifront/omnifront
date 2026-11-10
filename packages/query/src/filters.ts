@@ -54,12 +54,12 @@ export function findQueries(client: QueryClient, filters: QueryFilters = {}): En
 	return client.getQueries().filter((entry) => matchQuery(entry, filters))
 }
 
-function invalidate(matched: Entry[]): Promise<void> {
-	notifyManager.batch(() => {
-		for (const { query } of matched) query.invalidate()
-	})
+/** Do `act` to every match in one batch; resolves when the fetches that set off have finished. */
+function each(matched: Entry[], act: (query: Query<unknown>) => void): Promise<void> {
+	notifyManager.batch(() => matched.forEach(({ query }) => act(query)))
 	return Promise.all(matched.map(({ query }) => query.settled())).then(noop)
 }
+const invalidate = (matched: Entry[]): Promise<void> => each(matched, (query) => query.invalidate())
 
 /**
  * `client.invalidateQueries` with the full set of filters: mark the matches outdated. Observed ones
@@ -80,9 +80,23 @@ export function refetchQueries(client: QueryClient, filters: QueryFilters = {}):
 
 /** Abort the in-flight fetch of every match. Each query goes back to the state it had before. */
 export function cancelQueries(client: QueryClient, filters: QueryFilters = {}): void {
-	notifyManager.batch(() => {
-		for (const { query } of findQueries(client, filters)) query.cancel()
-	})
+	void each(findQueries(client, filters), (query) => query.cancel())
+}
+
+/**
+ * Drop every match from the cache. Meant for entries nothing is watching (a logged-out user's data);
+ * a mounted component keeps showing its own copy, so use `resetQueries` for what is on screen.
+ */
+export function removeQueries(client: QueryClient, filters: QueryFilters = {}): void {
+	for (const { key } of findQueries(client, filters)) client.removeQuery(key)
+}
+
+/**
+ * Put every match back to its empty state, cancelling fetches in flight. Queries that are on screen
+ * load again (showing their loading state); resolves when they have.
+ */
+export function resetQueries(client: QueryClient, filters: QueryFilters = {}): Promise<void> {
+	return each(findQueries(client, filters), (query) => query.reset())
 }
 
 /** The data of every match, with its key. */

@@ -1,6 +1,6 @@
 export { provideOmnifront, injectQueryClient } from "./provide"
 export { injectQuery } from "./inject-query"
-export type { InjectQueryResult } from "./inject-query"
+export type { InjectQueryOptions, InjectQueryResult } from "./inject-query"
 export { injectMutation } from "./inject-mutation"
 export type { InjectMutationResult } from "./inject-mutation"
 export { injectStore } from "./inject-store"

@@ -30,6 +30,15 @@ function hooks() {
 	})
 	expectTypeOf(typedMutation.error).toEqualTypeOf<HttpError | undefined>()
 
+	// select changes the type of `data` and of what `refetch` resolves with; the query function's type stays.
+	const selected = useQuery({ queryKey: ["k"], queryFn: async () => ({ id: 1 }), select: (row) => String(row.id) })
+	expectTypeOf(selected.data).toEqualTypeOf<string | undefined>()
+	expectTypeOf(selected.refetch).returns.resolves.toEqualTypeOf<string>()
+	expectTypeOf(selected.isPending).toEqualTypeOf<boolean>()
+	expectTypeOf(selected.failureReason).toEqualTypeOf<Error | undefined>()
+	// @ts-expect-error select receives the query function's data
+	useQuery({ queryKey: ["k"], queryFn: async () => 1, select: (n: string) => n })
+
 	const store = createStore({ count: 0, name: "a" })
 	expectTypeOf(useStore(store)).toEqualTypeOf<{ count: number; name: string }>()
 	expectTypeOf(useStore(store, (s) => s.count)).toEqualTypeOf<number>()

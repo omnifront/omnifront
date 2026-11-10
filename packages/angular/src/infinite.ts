@@ -17,6 +17,13 @@ export interface InjectInfiniteQueryResult<TPage, TError = DefaultError, TPagePa
 	error: Signal<TError | undefined>
 	isFetching: Signal<boolean>
 	isStale: Signal<boolean>
+	isPending: Signal<boolean>
+	isLoading: Signal<boolean>
+	isRefetching: Signal<boolean>
+	isSuccess: Signal<boolean>
+	isError: Signal<boolean>
+	isLoadingError: Signal<boolean>
+	isRefetchError: Signal<boolean>
 	hasNextPage: Signal<boolean>
 	hasPreviousPage: Signal<boolean>
 	isFetchingNextPage: Signal<boolean>
@@ -47,17 +54,13 @@ export function injectInfiniteQuery<TPage, TError = DefaultError, TPageParam = u
 			result.set(observer.getSnapshot())
 		})
 	})
+	const fields: Record<string, Signal<unknown>> = {}
+	for (const key of Object.keys(result()) as Array<keyof InfiniteQueryResult<TPage, TError, TPageParam>>) {
+		fields[key] = computed(() => result()[key])
+	}
 	return {
+		...(fields as unknown as Omit<InjectInfiniteQueryResult<TPage, TError, TPageParam>, "result" | "fetchNextPage" | "fetchPreviousPage" | "refetch">),
 		result,
-		status: computed(() => result().status),
-		data: computed(() => result().data),
-		error: computed(() => result().error),
-		isFetching: computed(() => result().isFetching),
-		isStale: computed(() => result().isStale),
-		hasNextPage: computed(() => result().hasNextPage),
-		hasPreviousPage: computed(() => result().hasPreviousPage),
-		isFetchingNextPage: computed(() => result().isFetchingNextPage),
-		isFetchingPreviousPage: computed(() => result().isFetchingPreviousPage),
 		fetchNextPage: () => observer.fetchNextPage(),
 		fetchPreviousPage: () => observer.fetchPreviousPage(),
 		refetch: () => observer.refetch(),

@@ -33,6 +33,20 @@ const harness: Harness = {
 		}
 	},
 
+	mountSelectedQuery(client, options, select) {
+		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
+		const hook = renderHook((props: { select: typeof select }) => useQuery({ ...options, select: props.select }), {
+			wrapper,
+			initialProps: { select },
+		})
+		return {
+			current: () => hook.result.current,
+			setSelect: (next) => hook.rerender({ select: next }),
+			refetch: () => hook.result.current.refetch(),
+			unmount: () => hook.unmount(),
+		}
+	},
+
 	mountQueries(client, options) {
 		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
 		const hook = renderHook((props: typeof options) => useQueries<unknown[]>(props as never), { wrapper, initialProps: options })

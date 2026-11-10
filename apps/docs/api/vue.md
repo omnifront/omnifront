@@ -20,7 +20,11 @@ Returns the injected client; throws a helpful error if none is installed.
 
 ### `UseQueryReturn`
 
-One `ComputedRef` per field (`status`, `data`, `error`, `isFetching`, `isStale`, `isInvalidated`, `isPlaceholderData`, `failureCount`, `dataUpdatedAt`) and `refetch()`.
+One `ComputedRef` per field of [`QueryResult`](/api/query#queryresult) (`status`, `data`, `error`, `isFetching`, `isStale`, `isPending`, `isLoading`, `isRefetching`, `isSuccess`, `isError`, `isLoadingError`, `isRefetchError`, `failureCount`, `failureReason`, ...) and `refetch(options?)`.
+
+### `UseQueryOptions`
+
+`QueryObserverOptions & { select? }`. `select: (data) => derived` makes `data` the derived value; the cache keeps the original. It runs inside a `computed`, so refs it reads are tracked.
 
 ### `useMutation`
 

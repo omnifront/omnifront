@@ -323,7 +323,7 @@
 	{
 		"name": "@omnifront/query/filters",
 		"path": "packages/query/dist/filters.js",
-		"limit": "1 KB",
+		"limit": "1.2 KB",
 		"gzip": true,
 		"ignore": [
 			"@omnifront/core"

@@ -28,6 +28,13 @@ export interface UseInfiniteQueryReturn<TPage, TError = DefaultError, TPageParam
 	error: ComputedRef<TError | undefined>
 	isFetching: ComputedRef<boolean>
 	isStale: ComputedRef<boolean>
+	isPending: ComputedRef<boolean>
+	isLoading: ComputedRef<boolean>
+	isRefetching: ComputedRef<boolean>
+	isSuccess: ComputedRef<boolean>
+	isError: ComputedRef<boolean>
+	isLoadingError: ComputedRef<boolean>
+	isRefetchError: ComputedRef<boolean>
 	hasNextPage: ComputedRef<boolean>
 	hasPreviousPage: ComputedRef<boolean>
 	isFetchingNextPage: ComputedRef<boolean>
@@ -75,17 +82,12 @@ export function useInfiniteQuery<TPage, TError = DefaultError, TPageParam = unkn
 			snapshot.value = read()
 		},
 	)
-	const pick = <K extends keyof InfiniteQueryResult<TPage, TError, TPageParam>>(key: K) => computed(() => snapshot.value[key])
+	const fields: Record<string, ComputedRef<unknown>> = {}
+	for (const key of Object.keys(snapshot.value) as Array<keyof InfiniteQueryResult<TPage, TError, TPageParam>>) {
+		fields[key] = computed(() => snapshot.value[key])
+	}
 	return {
-		status: pick("status"),
-		data: pick("data"),
-		error: pick("error"),
-		isFetching: pick("isFetching"),
-		isStale: pick("isStale"),
-		hasNextPage: pick("hasNextPage"),
-		hasPreviousPage: pick("hasPreviousPage"),
-		isFetchingNextPage: pick("isFetchingNextPage"),
-		isFetchingPreviousPage: pick("isFetchingPreviousPage"),
+		...(fields as unknown as Omit<UseInfiniteQueryReturn<TPage, TError, TPageParam>, "fetchNextPage" | "fetchPreviousPage" | "refetch">),
 		fetchNextPage: () => observer.fetchNextPage(),
 		fetchPreviousPage: () => observer.fetchPreviousPage(),
 		refetch: () => observer.refetch(),

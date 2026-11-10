@@ -7,14 +7,17 @@ Query client, observers, mutations. About 2.4 KB gzipped (excluding `@omnifront/
 ### `QueryClient`
 
 ```ts
-new QueryClient({ scheduler?, gcTime? })
+new QueryClient({ defaultOptions?, scheduler?, gcTime? })
 ```
 
-Options type: `QueryClientOptions`. `gcTime` is the default for new entries (5 minutes if omitted); `scheduler` replaces the real clock, mostly for tests; `structuralSharing` is an opt-in function (see below).
+Options type: `QueryClientOptions`. `defaultOptions` (`DefaultOptions`) is `{ queries }`: options every observer of this client gets unless it sets its own. `gcTime` is the default for new entries (5 minutes if omitted); `scheduler` replaces the real clock, mostly for tests; `structuralSharing` is an opt-in function (see below).
 
 | Method | |
 |---|---|
 | `fetchQuery(key, fn, retryOptions?)` | Fetch or join the in-flight request. Resolves with the data. No retries unless `retryOptions` is given. |
+| `fetchQuery({ queryKey, queryFn, staleTime?, retry?, retryDelay?, meta? })` | The same as one object (`FetchQueryOptions`). With `staleTime`, cached data younger than that is returned without fetching. |
+| `getDefaultOptions()` / `setDefaultOptions(defaults)` | Read or replace `defaultOptions`. Observers pick the new ones up when created or given new options. |
+| `removeQuery(key)` | Drop the entry. For entries nothing is watching; see `removeQueries`. |
 | `getQueryData(key)` / `getQueryState(key)` | Read the cache (`undefined` if no entry). |
 | `setQueryData(key, data or updater)` | Write the cache (new data, or a function from the old data); the entry becomes `success`. |
 | `invalidateQueries({ queryKey?, exact? })` | Mark entries outdated; active observers refetch. Resolves when those refetches finish. Filter type: `InvalidateFilter`. |
@@ -27,7 +30,7 @@ Options type: `QueryClientOptions`. `gcTime` is the default for new entries (5 m
 
 ### `Query`
 
-One cache entry. It is a `Subscribable<QueryState>`. Methods: `fetch(fn, retryOptions?)`, `setData(data, updatedAt?)`, `invalidate()`, `cancel()`, `settled()`, `updateGcTime(ms)`, `destroy()`. You rarely use it directly.
+One cache entry. It is a `Subscribable<QueryState>`. Methods: `fetch(fn, options?)` (`FetchOptions`: the retry options and `meta`), `setData(data, updatedAt?)`, `invalidate()`, `reset()`, `cancel()`, `settled()`, `updateGcTime(ms)`, `destroy()`. You rarely use it directly.
 
 ### `QueryObserver`
 
@@ -41,25 +44,49 @@ What the adapters use. It is a `Subscribable<QueryResult>`: the first subscripti
 |---|---|
 | `getSnapshot()` | The current `QueryResult` (same reference until something changes). Before anyone subscribes, an entry that will fetch on mount already reports `isFetching: true`. |
 | `getServerSnapshot()` | Clock-independent result for SSR and hydration. |
-| `refetch()` | Run the query function again (joins an in-flight request). Rejects on failure. |
+| `refetch({ cancelRefetch? })` | Run the query function again. Joins an in-flight request, or with `cancelRefetch: true` aborts it and starts over. Rejects on failure. |
 | `setOptions(options)` | Switch key / update options. Safe to call on every render. |
 | `inherit(observer)` | Adopt another observer's "previous data", for adapters that create a new observer per key (so `keepPreviousData` survives key changes). |
 
 ### `QueryObserverOptions`
 
-`queryKey`, `queryFn`, `staleTime`, `gcTime`, `enabled`, `retry`, `retryDelay`, `refetchOnWindowFocus`, `refetchOnReconnect`, `refetchInterval`, `initialData`, `placeholderData`. See the [options table](/guide/queries#options-reference).
+`queryKey`, `queryFn`, `staleTime`, `gcTime`, `enabled`, `retry`, `retryDelay`, `refetchOnMount`, `refetchOnWindowFocus`, `refetchOnReconnect`, `refetchInterval`, `refetchIntervalInBackground`, `meta`, `initialData`, `initialDataUpdatedAt`, `placeholderData`. See the [options table](/guide/queries#options-reference).
+
+### `FromState`
+
+`FromState<T> = T | ((state: QueryState) => T)`: how `staleTime`, `enabled`, `refetchInterval` and the three `refetchOn…` options accept either a value or a function of the query's current state.
+
+### `RefetchWhen`
+
+`boolean | "always"`. `true` refetches stale data, `"always"` refetches fresh data too, `false` never.
+
+### `DefaultOptions`
+
+`{ queries?: Partial<QueryObserverOptions> }` without the per-query fields (`queryKey`, `queryFn`, `initialData`, `initialDataUpdatedAt`, `placeholderData`).
+
+### `FetchQueryOptions`
+
+The object form of `fetchQuery`: `queryKey`, `queryFn`, `staleTime`, `retry`, `retryDelay`, `meta`.
+
+### `FetchOptions`
+
+`RetryOptions` plus `meta`: the second argument of `Query.fetch`.
 
 ### `QueryResult`
 
-A `QueryState` plus `isStale` and `isPlaceholderData`.
+A `QueryState` plus `isStale`, `isPlaceholderData` and the flags `isPending`, `isLoading`, `isRefetching`, `isSuccess`, `isError`, `isLoadingError`, `isRefetchError`.
 
 ### `QueryState`
 
-`status`, `data`, `error`, `isFetching`, `isInvalidated`, `failureCount`, `dataUpdatedAt`. `QueryStatus` is `"idle" | "loading" | "success" | "error"`.
+`status`, `data`, `error`, `isFetching`, `isInvalidated`, `failureCount`, `failureReason`, `dataUpdatedAt`. `QueryStatus` is `"idle" | "loading" | "success" | "error"`.
 
 ### `QueryFn`
 
-`(context: QueryFnContext) => Promise<TData>`; `QueryFnContext` is `{ signal: AbortSignal }`.
+`(context: QueryFnContext) => Promise<TData>`; `QueryFnContext` is `{ signal, queryKey, meta, client }`.
+
+### `SkipToken`
+
+The type of `skipToken`: accepted wherever an observer takes a `queryFn`.
 
 ### `QueryKey`
 
@@ -256,6 +283,22 @@ cancelQueries(client, filters?): void
 
 Abort the in-flight fetch of every match.
 
+### `removeQueries`
+
+```ts
+removeQueries(client, filters?): void
+```
+
+Drop every match from the cache. Meant for entries nothing is watching (a logged-out user's data): a mounted component keeps showing its own copy, so use `resetQueries` for what is on screen.
+
+### `resetQueries`
+
+```ts
+resetQueries(client, filters?): Promise<void>
+```
+
+Put every match back to its empty state, cancelling fetches in flight. Queries on screen show their loading state and load again; resolves when they have. `initialData` is not restored.
+
 ### `getQueriesData`
 
 ```ts
@@ -331,6 +374,14 @@ client.getQueryData(todos.queryKey)      // typed as Todo[] | undefined
 ```
 
 Returns the same object. The key becomes a `DataTag`, so the cache methods know the data type without a generic.
+
+### `skipToken`
+
+```ts
+useQuery({ queryKey: ["user", id], queryFn: id ? () => fetchUser(id) : skipToken })
+```
+
+Use instead of a query function to say "nothing to fetch yet". The query stays `"idle"` until a real function arrives.
 
 ### `mutationOptions`
 
