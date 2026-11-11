@@ -1,6 +1,6 @@
 # ADR-0005: SSR، dehydrate/hydrate و پکیج next
 
-**وضعیت:** Proposed
+**وضعیت:** Accepted
 **تاریخ:** 2026-11-08
 
 ## زمینه

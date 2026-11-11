@@ -1,6 +1,6 @@
 # ADR-0007: infinite query، SSR برای Vue/Angular و Suspense
 
-**وضعیت:** Proposed
+**وضعیت:** Accepted
 **تاریخ:** 2026-11-09
 
 ## زمینه
