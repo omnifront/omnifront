@@ -1,0 +1,9 @@
+:root {
+	--of-violet: #7c3aed;
+	--of-blue: #3b82f6;
+	--of-cyan: #06b6d4;
+	--of-green: #10b981;
+	--of-ink: #0f172a;
+}
+.VPHome { padding-bottom: 0 !important; }
+.VPHome > .vp-doc { display: none; }
