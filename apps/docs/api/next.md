@@ -14,7 +14,7 @@ A new client with `gcTime: Infinity`, for `getServerSideProps`, route handlers o
 
 ### `dehydrate`
 
-Re-exported from `@omnifront/query/hydration`. `DehydratedState` and `DehydrateOptions` are its types.
+Re-exported from `@omnifront/query/hydration`. `DehydratedState`, `DehydrateOptions` and `HydrateOptions` are its types.
 
 ### `hydrate`
 

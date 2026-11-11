@@ -95,6 +95,16 @@
 				"default": "./dist/options.cjs"
 			}
 		},
+		"./offline": {
+			"import": {
+				"types": "./dist/offline.d.ts",
+				"default": "./dist/offline.js"
+			},
+			"require": {
+				"types": "./dist/offline.d.cts",
+				"default": "./dist/offline.cjs"
+			}
+		},
 		"./activity": {
 			"import": {
 				"types": "./dist/activity.d.ts",
@@ -110,7 +120,7 @@
 		"dist"
 	],
 	"scripts": {
-		"build": "tsup src/index.ts src/hydration.ts src/structural.ts src/prefetch.ts src/activity.ts src/filters.ts src/events.ts src/options.ts --format esm,cjs --dts --clean",
+		"build": "tsup src/index.ts src/hydration.ts src/structural.ts src/prefetch.ts src/activity.ts src/filters.ts src/events.ts src/options.ts src/offline.ts --format esm,cjs --dts --clean",
 		"test": "vitest run --coverage",
 		"typecheck": "tsc --noEmit"
 	},

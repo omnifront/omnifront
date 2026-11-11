@@ -329,7 +329,7 @@
 
 خروج: مثال آفلاین (ثبت در حالت قطع، reload، ارسال بعد از وصل شدن) در هر چهار example کار می‌کند.
 
-**وضعیت (2026-11-10):** قلم‌های ۱، ۲ و ۴ انجام شد؛ قلم ۳ نیمه و قلم ۵ باز است، پس **معیار خروج هنوز برقرار نیست**. `query` اصلی ۳.۹۴KB از ۴KB است.
+**وضعیت (2026-11-11):** هر پنج قلم انجام شد و معیار خروج برای React برقرار است: مثال آفلاین (ثبت در حالت قطع، reload، ارسال بعد از وصل شدن، به ترتیب) در مرورگر واقعی بررسی شد؛ Vue و Angular همان منطق را بدون ذخیره دارند، و Next چیزی نگرفت (بخش پایین). `query` اصلی ۳.۹۷۵KB از ۴KB است. بخش اول زیر وضعیت 2026-11-10 است و اصلاح‌ها بعدش آمده‌اند.
 
 انجام‌شده:
 
@@ -341,13 +341,22 @@
 
 - **تغییر رفتار پیش‌فرض:** کوئری و mutation حالا بدون شبکه متوقف می‌شوند (مثل TanStack). قبلاً درخواست فرستاده می‌شد و شکست می‌خورد. برای کاری که شبکه نمی‌خواهد `networkMode: "always"` لازم است.
 - `QueryState.isFetching` روی entry کش هنگام توقف `true` می‌ماند؛ `QueryResult.isFetching` (آنچه هوک‌ها می‌دهند) `false` می‌شود، مثل TanStack.
-- `scope` نیامد: در ورودی اصلی جا نیست (۶۰ بایت مانده) و در ورودی فرعی به یک قلاب در `Mutation` نیاز دارد. باید با قلم ۳ طراحی شود.
-- `@omnifront/query/offline` و `resumePausedMutations` نیامدند: توقف و ادامه خودکار است و تا mutationها persist نشوند (قلم ۵) چیزی برای resume دستی وجود ندارد.
-- قلم ۵ (persist و hydration برای mutationهای متوقف‌شده، `serializeData` / `deserializeData`، کوئری‌های pending) شروع نشده.
+- ~~`scope` نیامد~~، ~~`/offline` و `resumePausedMutations` نیامدند~~، ~~قلم ۵ شروع نشده~~: بعداً انجام شد (بالا و پایین).
 - `useMutationState` فقط mutationهای mount‌شده یا pending را می‌بیند؛ کش mutation نداریم که تمام‌شده‌ها را نگه دارد.
 - `context` در `MutationState` و `gcTime` برای mutation نیامدند.
 - callbackهای هر فراخوانی await نمی‌شوند و فقط برای آخرین فراخوانی اجرا می‌شوند؛ بر خلاف TanStack به mount بودن کامپوننت وابسته نیستند.
 - بودجه‌ها: `@omnifront/query/activity` از ۱KB به ۱.۳KB، `@omnifront/react/activity` از ۰.۶KB به ۰.۷۵KB (هر دو به‌خاطر `useMutationState`).
+
+**تکمیل (2026-11-11):**
+
+- نقطه‌ی توسعه‌ی `wrap` در `MutationOptions` (۲۴ بایت) و `@omnifront/query/offline`: `enableOffline`، `scope`، `setMutationDefaults` / `getMutationDefaults`، `dehydrateMutations`، `hydrateMutations`، `resumePausedMutations`. جزئیات و دلیل در ADR-0013 بند ۸.
+- `persistQueryClient` ذخیره و بازیابی mutationهای منتظر را دارد (`persistMutations`، پیش‌فرض `true`). فراخوانی که متغیرهایش JSON نیست جلوی ذخیره‌ی کوئری‌ها را نمی‌گیرد.
+- `dehydrate` / `hydrate`: `serializeData` / `deserializeData`؛ `HydrationBoundary` و Next آن را رد می‌کنند.
+- `select` برای `useInfiniteQuery` (و نسخه‌ی Suspense)، `useQueries` / `injectQueries`، و infinite در Vue و Angular. در React نوع داده‌ی هر کوئری در tuple از خود optionها خوانده می‌شود (`UseQueriesResultsOf`)؛ در Vue و Angular فهرست یک نوع داده دارد.
+- `refetchType: "none"` در `invalidateQueries` (`/filters`).
+- مثال: helper مشترک (`setupOffline`، `setOffline`، `pendingTodos`) در `examples/shared` و React (با persist، reload و ارسال بعدش بررسی شد)، Vue و Angular (بدون persist).
+
+نیامد (دلیل در ADR-0013 بند ۹): `isFetched`، `isEnabled`، `retryOnMount` (معادل در راهنما)، `refetchType: "inactive" | "all"`، مثال Next (API واقعی و مسیر SSR جدا دارد)، و مثال‌های SSR (`angular-ssr`، `nuxt`، `vue-ssr`). `useMutationState` تک‌تک فراخوانی‌ها را نمی‌بیند. کوئری‌های pending در hydration به فاز ۵ (Next) می‌رود.
 
 ### فاز ۵: مخصوص آداپتر
 

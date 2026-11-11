@@ -65,7 +65,7 @@ const { data } = await api.get<Todo[]>("/todos", { params: { done: false } })
 
 ## Why switch
 
-- **Size:** about 2.6 KB gzipped against about 21.7 KB for axios 1.21 (see the [benchmarks](/benchmarks)).
+- **Size:** about 2.7 KB gzipped against about 21.7 KB for axios 1.21 (see the [benchmarks](/benchmarks)).
 - **Cancellation that follows the query:** `api.queryOptions` passes the query's `signal` to the request, so a cancelled or replaced query stops its HTTP request.
 - **Auth from a store:** `withAuth` and `refreshOnUnauthorized` read the token from any `Subscribable`; see the [HTTP client guide](/guide/http-client#with-the-store-authentication).
 - **Errors you can `switch` on:** one `code` field instead of checking `error.response`, `error.request` and `error.code`.

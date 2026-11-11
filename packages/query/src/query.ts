@@ -116,9 +116,14 @@ export class Query<TData = unknown, TError = DefaultError> extends BaseSubscriba
 		})
 	}
 
-	/** Mark the data outdated. Active observers refetch; others refetch when next mounted. */
-	invalidate(): void {
-		if (!this.state.isInvalidated) this.update({ isInvalidated: true })
+	/**
+	 * Mark the data outdated. Active observers refetch; others refetch when next mounted. `quiet`
+	 * marks it without telling anyone: observers see it the next time they are told something.
+	 */
+	invalidate(quiet?: boolean): void {
+		// Marked quietly earlier and not told yet: a loud call still has to tell observers (they refetch).
+		if (!quiet) this.update({ isInvalidated: true })
+		else if (!this.state.isInvalidated) this.state = { ...this.state, isInvalidated: true }
 	}
 
 	/**

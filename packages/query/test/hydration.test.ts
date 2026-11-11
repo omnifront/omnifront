@@ -127,3 +127,25 @@ describe("QueryObserver.getServerSnapshot", () => {
 		expect(make(client, Infinity).getServerSnapshot()).toMatchObject({ isStale: true })
 	})
 })
+
+describe("serializeData / deserializeData", () => {
+	const reviver = (data: unknown) => (data instanceof Map ? { __map: [...data] } : data)
+	const unrevive = (data: unknown) =>
+		typeof data === "object" && data !== null && "__map" in data ? new Map((data as { __map: [string, number][] }).__map) : data
+
+	it("turns data into JSON-safe form on the way out and back on the way in", () => {
+		const server = new QueryClient()
+		server.setQueryData(["map"], new Map([["a", 1]]))
+		server.setQueryData(["plain"], { n: 1 })
+		const state = dehydrate(server, { serializeData: reviver })
+		const wire = JSON.parse(JSON.stringify(state)) as typeof state
+		const browser = new QueryClient()
+		hydrate(browser, wire, { deserializeData: unrevive })
+		expect(browser.getQueryData(["map"])).toEqual(new Map([["a", 1]]))
+		expect(browser.getQueryData(["plain"])).toEqual({ n: 1 })
+		// Without them the data goes through as it is.
+		const raw = new QueryClient()
+		hydrate(raw, dehydrate(server))
+		expect(raw.getQueryData(["map"])).toBeInstanceOf(Map)
+	})
+})

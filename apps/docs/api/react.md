@@ -1,6 +1,6 @@
 # @omnifront/react
 
-React 18+. About 0.8 KB gzipped. See the [React guide](/guide/react).
+React 18+. About 0.9 KB gzipped. See the [React guide](/guide/react).
 
 ### `QueryProvider`
 
@@ -36,13 +36,17 @@ The state fields plus the three functions.
 
 ### `HydrationBoundary`
 
-`<HydrationBoundary state={dehydratedState}>`: hydrates server-fetched data into the client's cache before its children render. Props type: `HydrationBoundaryProps`.
+`<HydrationBoundary state={dehydratedState} options?>`: hydrates server-fetched data into the client's cache before its children render. `options` is `{ deserializeData }` when the server used `serializeData` (keep it stable). Props type: `HydrationBoundaryProps`.
 
 ## Infinite queries (`@omnifront/react/infinite`)
 
 ### `useInfiniteQuery`
 
 `useInfiniteQuery(options)` returns a `UseInfiniteQueryResult`. Same per-key observer model as `useQuery`.
+
+### `UseInfiniteQueryOptions`
+
+`InfiniteQueryObserverOptions` plus `select: (data: InfiniteData) => derived`. `data` (and what `refetch` resolves with) is the derived value; the cache keeps the pages. It is memoized with `useMemo`, so keep it stable. `useSuspenseInfiniteQuery` takes it too.
 
 ### `UseInfiniteQueryResult`
 
@@ -66,7 +70,19 @@ Like `UseQueryResult` but `data` is always defined and `status` is `"success" | 
 
 ### `useQueries`
 
-`useQueries([options, ...])` runs several queries at once and returns an array of [`UseQueryResult`](/api/react#usequeryresult)s in the same order. With a tuple each result keeps its own data type. A changed set of keys creates new observers. `useQueries(queries, { combine })` returns whatever `combine(results)` returns instead of the array; see [Queries](/guide/queries#combining-the-results). See [Queries](/guide/queries#several-queries-at-once).
+`useQueries([options, ...])` runs several queries at once and returns an array of [`UseQueryResult`](/api/react#usequeryresult)s in the same order. With a tuple each result keeps its own data type. Any query may have a `select`, which should be stable (defined outside the component). A changed set of keys creates new observers. `useQueries(queries, { combine })` returns whatever `combine(results)` returns instead of the array; see [Queries](/guide/queries#combining-the-results). See [Queries](/guide/queries#several-queries-at-once).
+
+### `UseQueriesOption`
+
+What every query of `useQueries` looks like: `QueryObserverOptions` plus an optional `select`. Each result's data type is read off the real options by `QueryData`: what `select` returns, else what the query function resolves to.
+
+### `QueryData`
+
+`QueryData<O>`: the data type a query of `useQueries` ends up with.
+
+### `UseQueriesResultsOf`
+
+`UseQueriesResultsOf<Q>`: the results of a list `Q` of options (`UseQueriesResults` of their `QueryData`).
 
 ### `UseQueriesResults`
 

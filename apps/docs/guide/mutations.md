@@ -40,7 +40,22 @@ They run after the callbacks in the options (and after those have been awaited),
 
 Mutations are not retried unless you ask: `retry: 2` (or a function), with the same `retryDelay` as queries.
 
-Without a network a mutation waits instead of failing: `isPaused` is true, `status` stays `"pending"`, and it is sent when the network is back. Queries do the same (`fetchStatus: "paused"`). Set `networkMode: "always"` for work that does not use the network, or `"offlineFirst"` to try once before waiting. The wait lasts as long as the page: a paused mutation is not saved across a reload.
+Without a network a mutation waits instead of failing: `isPaused` is true, `status` stays `"pending"`, and it is sent when the network is back. Queries do the same (`fetchStatus: "paused"`). Set `networkMode: "always"` for work that does not use the network, or `"offlineFirst"` to try once before waiting. The wait lasts as long as the page, unless you [save the waiting calls](/guide/persistence#mutations-that-are-waiting).
+
+## Sending in order: scopes
+
+Give mutations the same `scope: { id }` and they go out one after another, in the order they were called, instead of all at once:
+
+```ts
+import { enableOffline } from "@omnifront/query/offline"
+
+const client = new QueryClient()
+enableOffline(client)          // once, when the client is created
+
+useMutation({ mutationKey: ["addTodo"], scope: { id: "todos" }, mutationFn: addTodo })
+```
+
+The `onMutate` of a call that has to wait still runs at once, so an optimistic update shows immediately; only the sending waits, and until it is the call's turn it counts as paused (`isPaused`). A call that fails does not hold up the ones behind it. Without `enableOffline` the scope is ignored (the id costs nothing, so it is safe to leave in).
 
 ## Seeing a mutation from elsewhere
 

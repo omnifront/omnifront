@@ -30,9 +30,31 @@ await persister.restored          // true if something was restored
 root.render(<App />)
 ```
 
+## Mutations that are waiting
+
+A mutation called without a network waits and goes out when it is back (see [mutations](/guide/mutations#retries-and-the-network)). `persistQueryClient` also saves those calls, so they survive a reload and are sent after it, with the data they had:
+
+```ts
+import { setMutationDefaults } from "@omnifront/query/offline"
+
+// The function a restored call needs, by key. Register it before the cache is restored.
+setMutationDefaults(client, ["addTodo"], addTodoOptions)
+persistQueryClient(client, { storage: localStorage })
+
+// the same options object in the component:
+useMutation(addTodoOptions)   // addTodoOptions = { mutationKey: ["addTodo"], mutationFn, onSuccess, ... }
+```
+
+- **Only calls that were not sent yet.** One that was already running when the page closed may have reached the server; sending it twice is worse than losing it, so it is not saved. Calls that wait for their turn in a [scope](/guide/mutations#sending-in-order-scopes) are saved too, in order. Every call counts, also several from one `useMutation`.
+- **A `mutationKey` is required**, and `variables` (and what `onMutate` returned) must be JSON-safe. A call with variables that cannot be written does not stop the queries from being saved: the error goes to `onError` and the cache is written without it.
+- **`onMutate` does not run again.** The context it returned before is given back, so a rollback in `onError` still has its snapshot. `onSuccess`, `onError` and `onSettled` run as usual.
+- **No function, no restore.** A saved call whose key has no `setMutationDefaults` is reported to `onError` and dropped at the next write.
+- **To wait for them**, `await resumePausedMutations(client)` from `@omnifront/query/offline`; they go out by themselves when the network is back.
+- Turn it off with `persistMutations: false`. Otherwise `persistQueryClient` calls `enableOffline(client)` for you.
+
 ## What gets written
 
-The same data `dehydrate` produces: queries with successful data (narrow it with `shouldDehydrate`). Mutations and in-flight requests are not stored. The data has to be JSON-safe, or you provide `serialize`/`deserialize`.
+The same data `dehydrate` produces: queries with successful data (narrow it with `shouldDehydrate`), and the [mutations that are waiting](#mutations-that-are-waiting). In-flight requests are not stored. The data has to be JSON-safe, or you provide `serialize`/`deserialize`.
 
 The cache has no change events of its own, so the persister checks for changes every `throttle` ms (default 1000) and writes only when something actually changed. It also writes right away when the page is hidden, so the last changes survive a closing tab.
 
@@ -67,6 +89,7 @@ client.clear()
 | `buster` | `""` | a different value discards the stored cache |
 | `throttle` | `1000` | ms between looks for changes |
 | `shouldDehydrate` | successful queries | choose what to persist |
+| `persistMutations` | `true` | also save calls that are waiting for the network or their scope |
 | `serialize` / `deserialize` | `JSON` | custom format |
 | `onError` | ignore | storage and parsing errors |
 

@@ -6,7 +6,7 @@ import { QueryClient } from "@omnifront/query"
 import * as React from "react"
 
 export { dehydrate, hydrate } from "@omnifront/query/hydration"
-export type { DehydratedState, DehydrateOptions } from "@omnifront/query/hydration"
+export type { DehydratedState, DehydrateOptions, HydrateOptions } from "@omnifront/query/hydration"
 export { QueryClient } from "@omnifront/query"
 export type { QueryKey, QueryObserverOptions, QueryResult } from "@omnifront/query"
 

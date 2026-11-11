@@ -89,6 +89,38 @@ describe("invalidateQueries / refetchQueries", () => {
 	})
 })
 
+describe("invalidateQueries: refetchType", () => {
+	it("'none' marks everything outdated without refetching the queries on screen", async () => {
+		const { client } = setup()
+		const queryFn = vi.fn(() => Promise.resolve("v"))
+		const observer = new QueryObserver(client, { queryKey: ["a"], queryFn, staleTime: Infinity })
+		const off = observer.subscribe(() => {})
+		await flush()
+		client.setQueryData(["b"], 1)
+		const told = vi.fn()
+		client.onChange(told)
+		await invalidateQueries(client, { refetchType: "none" })
+		expect(queryFn).toHaveBeenCalledOnce() // not refetched now
+		expect(client.getQueryState(["a"])?.isInvalidated).toBe(true)
+		expect(client.getQueryState(["b"])?.isInvalidated).toBe(true)
+		expect(told).not.toHaveBeenCalled() // quiet: nobody was told
+		expect(observer.getSnapshot().isStale).toBe(true)
+		// An entry that is already marked is left alone; the default still refetches.
+		await invalidateQueries(client, { refetchType: "none" })
+		await invalidateQueries(client, { refetchType: "active" })
+		expect(queryFn).toHaveBeenCalledTimes(2)
+		// It is refetched the next time the page is focused (the data is stale).
+		await invalidateQueries(client, { refetchType: "none" })
+		expect(queryFn).toHaveBeenCalledTimes(2)
+		off()
+		const later = new QueryObserver(client, { queryKey: ["a"], queryFn, staleTime: Infinity })
+		const offLater = later.subscribe(() => {})
+		await flush()
+		expect(queryFn).toHaveBeenCalledTimes(3) // mounting again loads it
+		offLater()
+	})
+})
+
 describe("cancelQueries", () => {
 	it("aborts matching fetches only", async () => {
 		const { client } = setup()

@@ -209,7 +209,7 @@ useQuery({ queryKey: ["user", id], queryFn: id ? () => loadUser(id) : skipToken 
 const { data: names } = useQuery({ ...todosQuery, select: (todos) => todos.map((t) => t.title) })
 ```
 
-`data` is what `select` returns; the cache keeps the original, so other components can select something else from the same entry. The adapters memoize it with their framework's own tool (`useMemo` in React, `computed` in Vue and Angular). In React that means: a function defined inline is a new function on every render and runs again each time, so define it outside the component or wrap it in `useCallback` when the work is not trivial. Outside the adapters, [`derive`](/api/core) does the same for any `Subscribable`.
+`data` is what `select` returns; the cache keeps the original, so other components can select something else from the same entry. The adapters memoize it with their framework's own tool (`useMemo` in React, `computed` in Vue and Angular). In React that means: a function defined inline is a new function on every render and runs again each time, so define it outside the component or wrap it in `useCallback` when the work is not trivial. Outside the adapters, [`derive`](/api/core) does the same for any `Subscribable`. Queries in `useQueries` and [infinite queries](/guide/infinite-queries#deriving-data-select) take `select` too; in a list of queries give every query one, or none (React reads each result's type off its own options, Vue and Angular give a list one data type).
 
 ## Defaults for every query
 

@@ -56,6 +56,22 @@ Environment providers: on the server, wait for started queries and write the cac
 
 ## Several queries (`@omnifront/angular/queries`)
 
+### `InjectInfiniteQueryOptions`
+
+`InfiniteQueryObserverOptions` plus `select: (data: InfiniteData) => derived`. `data` (also inside `result`, and what `refetch` resolves with) is the derived value; the cache keeps the pages. It runs inside a `computed`, so signals it reads are tracked.
+
+### `PlainQuery`
+
+A query of `injectQueries` without `select`: the data is what the query function resolves to.
+
+### `SelectedQuery`
+
+A query of `injectQueries` with `select`: the data is what it returns (the query function's own type is not checked against it). Give every query of a list one, or none, so the list has one data type.
+
+### `InjectQueriesOption`
+
+`PlainQuery | SelectedQuery`.
+
 ### `injectQueries`
 
 `injectQueries(queries)`; `queries` may be an array or a function reading signals. Returns one `Signal` of an array of results, each with `refetch()`. `injectQueries(queries, { combine })` returns a `Signal` of whatever `combine(results)` returns instead; see [Queries](/guide/queries#combining-the-results).

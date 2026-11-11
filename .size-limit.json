@@ -94,11 +94,12 @@
 	{
 		"name": "@omnifront/persist",
 		"path": "packages/persist/dist/index.js",
-		"limit": "1 KB",
+		"limit": "1.4 KB",
 		"gzip": true,
 		"ignore": [
 			"@omnifront/query",
-			"@omnifront/query/hydration"
+			"@omnifront/query/hydration",
+			"@omnifront/query/offline"
 		]
 	},
 	{
@@ -358,5 +359,14 @@
 		"path": "packages/api/dist/progress.js",
 		"limit": "0.5 KB",
 		"gzip": true
+	},
+	{
+		"name": "@omnifront/query/offline",
+		"path": "packages/query/dist/offline.js",
+		"limit": "1.4 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
 	}
 ]

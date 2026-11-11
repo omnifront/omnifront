@@ -1,8 +1,8 @@
 import type { DefaultError } from "@omnifront/query"
 import { useMemo } from "react"
-import type { UseInfiniteQueryResult } from "./infinite"
+import type { UseInfiniteQueryOptions, UseInfiniteQueryResult } from "./infinite"
 import { useObservedInfinite } from "./observed-infinite"
-import type { InfiniteData, InfiniteQueryObserverOptions } from "@omnifront/query-infinite"
+import type { InfiniteData } from "@omnifront/query-infinite"
 import { useObservedQuery, useSelected, type UseQueryOptions, type UseQueryResult } from "./use-query"
 
 export interface UseSuspenseQueryResult<TData, TError = DefaultError> extends Omit<UseQueryResult<TData, TError>, "data" | "status"> {
@@ -55,16 +55,17 @@ export function useSuspenseQuery<TQueryFnData, TError = DefaultError, TData = TQ
 	throw observer.refetch().then(noop, noop)
 }
 
-export interface UseSuspenseInfiniteQueryResult<TPage, TError = DefaultError, TPageParam = unknown>
-	extends Omit<UseInfiniteQueryResult<TPage, TError, TPageParam>, "data" | "status"> {
-	data: InfiniteData<TPage, TPageParam>
+export interface UseSuspenseInfiniteQueryResult<TPage, TError = DefaultError, TPageParam = unknown, TData = InfiniteData<TPage, TPageParam>>
+	extends Omit<UseInfiniteQueryResult<TPage, TError, TPageParam, TData>, "data" | "status"> {
+	data: TData
 	status: "success" | "error"
 }
 
 /** `useInfiniteQuery` for `<Suspense>` and error boundaries; same rules as {@link useSuspenseQuery}. */
-export function useSuspenseInfiniteQuery<TPage, TError = DefaultError, TPageParam = unknown>(
-	options: InfiniteQueryObserverOptions<TPage, TError, TPageParam>,
-): UseSuspenseInfiniteQueryResult<TPage, TError, TPageParam> {
+export function useSuspenseInfiniteQuery<TPage, TError = DefaultError, TPageParam = unknown, TData = InfiniteData<TPage, TPageParam>>(
+	options: UseInfiniteQueryOptions<TPage, TError, TPageParam, TData>,
+): UseSuspenseInfiniteQueryResult<TPage, TError, TPageParam, TData> {
+	const { select } = options
 	const [observer, snapshot] = useObservedInfinite<TPage, TError, TPageParam>({
 		...options,
 		enabled: true,
@@ -72,19 +73,21 @@ export function useSuspenseInfiniteQuery<TPage, TError = DefaultError, TPagePara
 		placeholderData: undefined,
 	})
 	const hasData = snapshot.data !== undefined && !snapshot.isPlaceholderData
+	const data = useSelected(snapshot.data, select)
 	const result = useMemo(
 		() =>
 			hasData
 				? {
 						...snapshot,
+						data,
 						fetchNextPage: () => observer.fetchNextPage(),
 						fetchPreviousPage: () => observer.fetchPreviousPage(),
-						refetch: () => observer.refetch(),
+						refetch: () => observer.refetch().then((raw) => (select ? select(raw) : raw)),
 					}
 				: undefined,
-		[hasData, snapshot, observer],
+		[hasData, snapshot, data, observer, select],
 	)
-	if (result) return result as unknown as UseSuspenseInfiniteQueryResult<TPage, TError, TPageParam>
+	if (result) return result as unknown as UseSuspenseInfiniteQueryResult<TPage, TError, TPageParam, TData>
 	if (snapshot.status === "error" && !snapshot.isInvalidated) throw snapshot.error
 	throw observer.refetch().then(noop, noop)
 }

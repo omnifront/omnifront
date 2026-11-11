@@ -1,6 +1,6 @@
 # @omnifront/persist
 
-Persist the query cache. About 0.9 KB gzipped (IndexedDB adapter about 0.3 KB). See the [persistence guide](/guide/persistence).
+Persist the query cache. About 1.1 KB gzipped (IndexedDB adapter about 0.3 KB). See the [persistence guide](/guide/persistence).
 
 ### `persistQueryClient`
 
@@ -17,7 +17,7 @@ Persist the query cache. About 0.9 KB gzipped (IndexedDB adapter about 0.3 KB). 
 
 ### `PersistOptions`
 
-`storage` (required), `key`, `maxAge`, `buster`, `throttle`, `shouldDehydrate`, `serialize`, `deserialize`, `onError`. Defaults are in the [guide](/guide/persistence#options).
+`storage` (required), `key`, `maxAge`, `buster`, `throttle`, `shouldDehydrate`, `persistMutations`, `serialize`, `deserialize`, `onError`. Defaults are in the [guide](/guide/persistence#options).
 
 ### `PersistStorage`
 
@@ -25,7 +25,7 @@ Persist the query cache. About 0.9 KB gzipped (IndexedDB adapter about 0.3 KB). 
 
 ### `PersistedCache`
 
-What is stored: `{ version: 1, timestamp, buster, state }`, where `state` is a [`DehydratedState`](/api/query#dehydratedstate).
+What is stored: `{ version: 1, timestamp, buster, state, mutations? }`, where `state` is a [`DehydratedState`](/api/query#dehydratedstate) and `mutations` (only when there are some) the calls that were still waiting, as [`DehydratedMutation`](/api/query#dehydratedmutation)s.
 
 ## IndexedDB (`@omnifront/persist/indexeddb`)
 

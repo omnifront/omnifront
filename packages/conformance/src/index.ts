@@ -335,6 +335,30 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 			q.unmount()
 		})
 
+		it("select per query derives that query's data, keeps its identity while it did not change, and follows a new select", async () => {
+			const { client } = setup()
+			const list = vi.fn(() => Promise.resolve([1, 2, 3, 4]))
+			const evens = (data: number[]) => data.filter((n) => n % 2 === 0)
+			const make = (select: (data: number[]) => unknown) => [
+				{ queryKey: ["list"], queryFn: list, staleTime: Infinity, select },
+				one("other", "x"),
+			]
+			const q = h.mountQueries(client, make(evens) as never)
+			await settle()
+			expect(q.current().map((r) => r.data)).toEqual([[2, 4], "x"])
+			expect(client.getQueryData(["list"])).toEqual([1, 2, 3, 4])
+			const stable = q.current()[0]!.data
+			await h.act(() => client.setQueryData(["other"], "y"))
+			await settle()
+			expect(q.current().map((r) => r.data)).toEqual([[2, 4], "y"])
+			expect(q.current()[0]!.data).toBe(stable) // the other query changed, not this one
+			await h.act(() => q.update(make((data) => data.length) as never))
+			await settle()
+			expect(q.current()[0]!.data).toBe(4)
+			expect(list).toHaveBeenCalledTimes(1)
+			q.unmount()
+		})
+
 		it("supports dependent queries through enabled", async () => {
 			const { client } = setup()
 			const dependent = vi.fn(() => Promise.resolve("posts"))
@@ -417,6 +441,18 @@ export function defineConformanceSuite(adapterName: string, h: Harness): void {
 			await feed.fetchNextPage()
 			expect(feed.current().data?.pages).toEqual([[10, 11], [20, 21], [30, 31]])
 			expect(feed.current().hasNextPage).toBe(false)
+			feed.unmount()
+		})
+
+		it("select derives the data from the loaded pages and leaves the cache alone", async () => {
+			const { client } = setup()
+			const feed = h.mountInfiniteQuery(client, { ...pagesOf(), select: (data: { pages: number[][] }) => data.pages.flat() } as never)
+			await settle()
+			expect((feed.current() as { data?: unknown }).data).toEqual([10, 11])
+			await feed.fetchNextPage()
+			expect((feed.current() as { data?: unknown }).data).toEqual([10, 11, 20, 21])
+			expect((client.getQueryData(["feed"]) as { pages: number[][] }).pages).toEqual([[10, 11], [20, 21]])
+			expect(feed.current().hasNextPage).toBe(true)
 			feed.unmount()
 		})
 

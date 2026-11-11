@@ -19,7 +19,7 @@ export interface MutationState<TData = unknown, TError = DefaultError, TVariable
 	isPending: boolean
 	isSuccess: boolean
 	isError: boolean
-	/** Waiting for the network to come back before it is sent. */
+	/** Waiting for the network to come back before it is sent, or for its turn in a scope. */
 	isPaused: boolean
 	/** Failed attempts of the current run so far (while it is being retried). */
 	failureCount: number
@@ -39,6 +39,26 @@ export interface MutationOptions<TData, TError = DefaultError, TVariables = void
 	meta?: Record<string, unknown> | undefined
 	/** What to do without a network. Default `"online"`: wait for it (`isPaused`) and send when it is back. */
 	networkMode?: NetworkMode | undefined
+	/**
+	 * Mutations with the same scope id run one after another (and so restore in order). Needs
+	 * `enableOffline(client)` from `@omnifront/query/offline`; without it the id is ignored.
+	 */
+	scope?: { id: string } | undefined
+	/**
+	 * Extension point: runs the sending step (the network wait, the retries and `mutationFn`) for one
+	 * call, after `onMutate` and with its result. Return what `attempts()` returns. `pause(true)`
+	 * shows the call as waiting (`isPaused`) until `pause(false)`. A client's `defaultOptions.mutations`
+	 * can set it; `@omnifront/query/offline` uses it for `scope`.
+	 */
+	wrap?:
+		| ((
+				attempts: () => Promise<TData>,
+				mutation: Mutation<TData, TError, TVariables, TContext>,
+				variables: TVariables,
+				context: TContext | undefined,
+				pause: (isPaused: boolean) => void,
+		  ) => Promise<TData>)
+		| undefined
 	/**
 	 * Runs (and is awaited) before `mutationFn`. Return whatever you need later, typically a snapshot
 	 * to roll back to: it arrives as the last argument of the other callbacks.
@@ -130,27 +150,30 @@ export class Mutation<TData, TError = DefaultError, TVariables = void, TContext 
 	async mutateAsync(variables: TVariables, callbacks: MutateOptions<TData, TError, TVariables, TContext> = {}): Promise<TData> {
 		const run = ++this.runs
 		const { scheduler } = this
-		const { mutationFn, onMutate, onSuccess, onError, onSettled, retry, retryDelay, networkMode } = this.options
+		const { mutationFn, onMutate, onSuccess, onError, onSettled, retry, retryDelay, networkMode, wrap } = this.options
 		this.update(run, { ...idle, status: "pending", variables, submittedAt: scheduler.now() })
 		let context: TContext | undefined
 		let data: TData
 		try {
 			context = await onMutate?.(variables)
-			for (let failures = 0; ; ) {
-				// Only wait (and only yield) when the network is down; otherwise the function is called right away.
-				let go: (() => void) | undefined
-				if (whenOnline(networkMode, !failures, () => go?.(), (isPaused) => this.update(run, { isPaused }))) {
-					await new Promise<void>((resume) => (go = resume))
-				}
-				try {
-					data = await mutationFn(variables)
-					break
-				} catch (error) {
-					if (!shouldRetry(retry, ++failures, error as TError)) throw error
-					this.update(run, { failureCount: failures, failureReason: error as TError })
-					await new Promise<void>((r) => scheduler.setTimeout(r, getRetryDelay(retryDelay, failures, error as TError)))
+			const pause = (isPaused: boolean): void => this.update(run, { isPaused })
+			const attempts = async (): Promise<TData> => {
+				for (let failures = 0; ; ) {
+					// Only wait (and only yield) when the network is down; otherwise the function is called right away.
+					let go: (() => void) | undefined
+					if (whenOnline(networkMode, !failures, () => go?.(), pause)) {
+						await new Promise<void>((resume) => (go = resume))
+					}
+					try {
+						return await mutationFn(variables)
+					} catch (error) {
+						if (!shouldRetry(retry, ++failures, error as TError)) throw error
+						this.update(run, { failureCount: failures, failureReason: error as TError })
+						await new Promise<void>((r) => scheduler.setTimeout(r, getRetryDelay(retryDelay, failures, error as TError)))
+					}
 				}
 			}
+			data = await (wrap ? wrap(attempts, this, variables, context, pause) : attempts())
 			await onSuccess?.(data, variables, context as TContext)
 		} catch (error) {
 			try {

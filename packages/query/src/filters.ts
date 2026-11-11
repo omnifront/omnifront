@@ -59,14 +59,24 @@ function each(matched: Entry[], act: (query: Query<unknown>) => void): Promise<v
 	notifyManager.batch(() => matched.forEach(({ query }) => act(query)))
 	return Promise.all(matched.map(({ query }) => query.settled())).then(noop)
 }
-const invalidate = (matched: Entry[]): Promise<void> => each(matched, (query) => query.invalidate())
+const invalidate = (matched: Entry[], quiet?: boolean): Promise<void> => each(matched, (query) => query.invalidate(quiet))
+
+export interface InvalidateQueriesFilters extends QueryFilters {
+	/**
+	 * What to do with the queries on screen: `"active"` (default) refetches them now; `"none"` only marks
+	 * everything outdated, so it is refetched the next time it is mounted or the page is focused. Entries
+	 * nothing is watching are never refetched here (the cache keeps no query function for them), so
+	 * TanStack's `"inactive"` and `"all"` do not exist.
+	 */
+	refetchType?: "active" | "none" | undefined
+}
 
 /**
  * `client.invalidateQueries` with the full set of filters: mark the matches outdated. Observed ones
  * refetch right away, the rest when next observed. Resolves when those refetches finish.
  */
-export function invalidateQueries(client: QueryClient, filters: QueryFilters = {}): Promise<void> {
-	return invalidate(findQueries(client, filters))
+export function invalidateQueries(client: QueryClient, filters: InvalidateQueriesFilters = {}): Promise<void> {
+	return invalidate(findQueries(client, filters), filters.refetchType === "none")
 }
 
 /**

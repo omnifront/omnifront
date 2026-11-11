@@ -1,6 +1,6 @@
 # HTTP client
 
-`@omnifront/api` is a small `fetch`-based HTTP client, about 2.7 KB gzipped. It has no framework code and no dependency except `@omnifront/core`. It does what you usually reach for axios for, and it plugs into [queries](/guide/queries), [mutations](/guide/mutations) and the [store](/guide/store) without depending on them. Design: [ADR-0009](https://github.com/omnifront/omnifront/blob/main/docs/adr/0009-api-client.md).
+`@omnifront/api` is a small `fetch`-based HTTP client, about 2.8 KB gzipped. It has no framework code and no dependency except `@omnifront/core`. It does what you usually reach for axios for, and it plugs into [queries](/guide/queries), [mutations](/guide/mutations) and the [store](/guide/store) without depending on them. Design: [ADR-0009](https://github.com/omnifront/omnifront/blob/main/docs/adr/0009-api-client.md).
 
 ```ts
 import { createApi } from "@omnifront/api"

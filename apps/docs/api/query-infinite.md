@@ -1,6 +1,6 @@
 # @omnifront/query-infinite
 
-Infinite and paginated queries. About 1.3 KB gzipped (excluding core and query). See the [infinite queries guide](/guide/infinite-queries).
+Infinite and paginated queries. About 1.4 KB gzipped (excluding core and query). See the [infinite queries guide](/guide/infinite-queries).
 
 ### `InfiniteQueryObserver`
 

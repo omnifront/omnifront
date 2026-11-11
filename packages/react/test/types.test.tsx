@@ -1,6 +1,7 @@
 import { createStore } from "@omnifront/store"
 import { describe, expect, expectTypeOf, it } from "vitest"
 import { useMutation, useQuery, useStore, type UseMutationResult, type UseQueryResult } from "../src"
+import { useInfiniteQuery, type InfiniteData } from "../src/infinite"
 import { useQueries } from "../src/queries"
 
 // Never called: only type-checked.
@@ -49,6 +50,31 @@ function hooks() {
 		{ queryKey: ["n"], queryFn: async () => 1 },
 		{ queryKey: ["s"], queryFn: async () => "x" },
 	] as const
+	// select in a tuple: the result carries the selected type, whatever the query function returns.
+	const [count, label] = useQueries([
+		{ queryKey: ["c"], queryFn: async () => [1, 2, 3], select: (list: number[]) => list.length },
+		{ queryKey: ["l"], queryFn: async () => "x" },
+	])
+	expectTypeOf(count.data).toEqualTypeOf<number | undefined>()
+	expectTypeOf(label.data).toEqualTypeOf<string | undefined>()
+
+	const pages = useInfiniteQuery({
+		queryKey: ["p"],
+		queryFn: async ({ pageParam }: { pageParam: number }) => [pageParam],
+		initialPageParam: 0,
+		getNextPageParam: () => undefined,
+		select: (data) => data.pages.flat(),
+	})
+	expectTypeOf(pages.data).toEqualTypeOf<number[] | undefined>()
+	expectTypeOf(pages.refetch).returns.resolves.toEqualTypeOf<number[]>()
+	const plain = useInfiniteQuery({
+		queryKey: ["p"],
+		queryFn: async ({ pageParam }: { pageParam: number }) => [pageParam],
+		initialPageParam: 0,
+		getNextPageParam: () => undefined,
+	})
+	expectTypeOf(plain.data).toEqualTypeOf<InfiniteData<number[], number> | undefined>()
+
 	const [n, s] = useQueries([queries[0], queries[1]])
 	expectTypeOf(n.data).toEqualTypeOf<number | undefined>()
 	expectTypeOf(s.data).toEqualTypeOf<string | undefined>()

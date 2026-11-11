@@ -54,6 +54,22 @@ Re-exported from `@omnifront/query-infinite` ([options](/api/query-infinite#infi
 
 ## Several queries (`@omnifront/vue/queries`)
 
+### `UseInfiniteQueryOptions`
+
+`InfiniteQueryObserverOptions` plus `select: (data: InfiniteData) => derived`. `data` (and what `refetch` resolves with) is the derived value; the cache keeps the pages. It runs inside a `computed`, so refs it reads are tracked.
+
+### `PlainQuery`
+
+A query of `useQueries` without `select`: the data is what the query function resolves to.
+
+### `SelectedQuery`
+
+A query of `useQueries` with `select`: the data is what it returns (the query function's own type is not checked against it). Give every query of a list one, or none, so the list has one data type.
+
+### `UseQueriesOption`
+
+`PlainQuery | SelectedQuery`.
+
 ### `useQueries`
 
 `useQueries(queries)`; `queries` may be an array, a ref or a getter. Returns a `ComputedRef` of an array with one plain result per query (`results.value[0].data`), each with `refetch()`. Server-side it prefetches them all and fails fast. `useQueries(queries, { combine })` returns a `ComputedRef` of whatever `combine(results)` returns instead; see [Queries](/guide/queries#combining-the-results).

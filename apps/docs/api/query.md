@@ -1,6 +1,6 @@
 # @omnifront/query
 
-Query client, observers, mutations. About 2.4 KB gzipped (excluding `@omnifront/core`). Hydration helpers are in the subpath `@omnifront/query/hydration`.
+Query client, observers, mutations. About 4 KB gzipped for the main entry (3.98 KB of a 4 KB budget, excluding `@omnifront/core`); every opt-in entry has its own, smaller budget. Hydration helpers are in the subpath `@omnifront/query/hydration`.
 
 ## Client
 
@@ -30,7 +30,7 @@ Options type: `QueryClientOptions`. `defaultOptions` (`DefaultOptions`) is `{ qu
 
 ### `Query`
 
-One cache entry. It is a `Subscribable<QueryState>`. Methods: `fetch(fn, options?)` (`FetchOptions`: the retry options and `meta`), `setData(data, updatedAt?)`, `invalidate()`, `reset()`, `cancel()`, `settled()`, `updateGcTime(ms)`, `destroy()`. You rarely use it directly.
+One cache entry. It is a `Subscribable<QueryState>`. Methods: `fetch(fn, options?)` (`FetchOptions`: the retry options and `meta`), `setData(data, updatedAt?)`, `invalidate(quiet?)` (quiet: mark it without telling observers), `reset()`, `cancel()`, `settled()`, `updateGcTime(ms)`, `destroy()`. You rarely use it directly.
 
 ### `QueryObserver`
 
@@ -156,7 +156,9 @@ A `Subscribable<MutationState>` (type parameters: data, error, variables, contex
 
 ### `MutationOptions`
 
-`mutationFn(variables) => Promise<TData>` and the optional `onMutate(variables)` (returns the context), `onSuccess(data, variables, context)`, `onError(error, variables, context)`, `onSettled(data, error, variables, context)` callbacks (may return promises, which are awaited). Also `retry` / `retryDelay` (default: no retries), `networkMode`, `mutationKey` and `meta` (both for the filters of `useIsMutating` and `useMutationState`).
+`mutationFn(variables) => Promise<TData>` and the optional `onMutate(variables)` (returns the context), `onSuccess(data, variables, context)`, `onError(error, variables, context)`, `onSettled(data, error, variables, context)` callbacks (may return promises, which are awaited). Also `retry` / `retryDelay` (default: no retries), `networkMode`, `mutationKey` and `meta` (both for the filters of `useIsMutating` and `useMutationState`), `scope: { id }` (mutations of one scope run one after another; needs [`enableOffline`](/api/query#enableoffline)) and `wrap`.
+
+`wrap(attempts, mutation, variables, context, pause)` is an extension point: it runs the sending step (the network wait, the retries and `mutationFn`) of one call, after `onMutate`, and must return what `attempts()` returns. `pause(true)` shows the call as waiting (`isPaused`) until `pause(false)`. A client's `defaultOptions.mutations` can set it; [`enableOffline`](/api/query#enableoffline) uses it.
 
 ### `MutateOptions`
 
@@ -174,11 +176,15 @@ A `Subscribable<MutationState>` (type parameters: data, error, variables, contex
 
 ### `dehydrate`
 
-`dehydrate(client, { shouldDehydrate? })` returns a `DehydratedState`, plain JSON with the successful queries.
+`dehydrate(client, { shouldDehydrate?, serializeData? })` returns a `DehydratedState`, plain JSON with the successful queries. `serializeData(data)` turns each query's data into something JSON-safe (`superjson.serialize`, say).
 
 ### `hydrate`
 
-`hydrate(client, state)` loads it into a client, keeping the server's `dataUpdatedAt` and never overwriting newer data. Accepts `null`/`undefined`.
+`hydrate(client, state, { deserializeData? }?)` loads it into a client, keeping the server's `dataUpdatedAt` and never overwriting newer data. Accepts `null`/`undefined`. `deserializeData` is the reverse of `serializeData`.
+
+### `HydrateOptions`
+
+`{ deserializeData?(data) => unknown }`.
 
 ### `DehydratedState`
 
@@ -290,10 +296,14 @@ Test one entry of `client.getQueries()`.
 ### `invalidateQueries`
 
 ```ts
-invalidateQueries(client, filters?): Promise<void>
+invalidateQueries(client, filters?: InvalidateQueriesFilters): Promise<void>
 ```
 
-`client.invalidateQueries` with the full filters.
+`client.invalidateQueries` with the full filters, and `refetchType`.
+
+### `InvalidateQueriesFilters`
+
+`QueryFilters` plus `refetchType`: `"active"` (default) refetches the queries on screen now; `"none"` only marks everything outdated, quietly, so each is refetched the next time it is mounted or the page is focused. TanStack's `"inactive"` and `"all"` do not exist: the cache keeps no query function for entries nothing is watching.
 
 ### `refetchQueries`
 
@@ -358,6 +368,62 @@ The options object of `ensureQueryData`.
 ```ts
 isCancelledError(error): error is CancelledError
 ```
+
+## Offline (`@omnifront/query/offline`)
+
+Mutations that wait: run in order (scopes), survive a reload, and go out when the network is back. See [Mutations](/guide/mutations#sending-in-order-scopes) and [Persistence](/guide/persistence#mutations-that-are-waiting).
+
+### `enableOffline`
+
+```ts
+enableOffline(client): void
+```
+
+Switch on what needs the client's cooperation, once, when the client is created: mutations with the same `scope: { id }` run one after another in the order they were called (the `onMutate` of a later one still runs at once, so optimistic updates show immediately; it counts as paused until its turn), and the calls that have not been sent yet can be saved with `dehydrateMutations`. It installs `wrap` in the client's `defaultOptions.mutations`; a `wrap` set there already runs around it. Calling it twice changes nothing. `persistQueryClient` calls it for you.
+
+### `setMutationDefaults`
+
+```ts
+setMutationDefaults(client, mutationKey, options): void
+```
+
+What a restored mutation needs to run again: its `mutationFn` and callbacks, by `mutationKey` (matched exactly). Register these before the cache is restored. Share the object with the `useMutation` that starts it (`mutationOptions` is made for that).
+
+### `getMutationDefaults`
+
+`getMutationDefaults(client, mutationKey)` returns what `setMutationDefaults` stored, or `undefined`.
+
+### `dehydrateMutations`
+
+```ts
+dehydrateMutations(client): DehydratedMutation[]
+```
+
+The calls that have not been sent yet, because the network is down or they wait for their turn in a scope, and whose mutation has a `mutationKey`. One that is already running is left out: it may have reached the server, and sending it twice is worse than losing it. Every call counts, also several from one `useMutation`. Oldest first. `variables` and `context` must be JSON-safe.
+
+### `DehydratedMutation`
+
+`{ mutationKey, variables, context, scope?, meta?, submittedAt }`. `context` is what `onMutate` returned.
+
+### `hydrateMutations`
+
+```ts
+hydrateMutations(client, saved, create: (options) => Mutation): DehydratedMutation[]
+```
+
+Start the saved calls again, oldest first, without running `onMutate`: the saved `context` is given back instead, so a rollback still has what it needs. Each waits for the network (and its scope) like a new call and counts towards `useIsMutating` until it settles. `create` builds the mutation (the class lives in the main entry): `(options) => new Mutation(options, client)`. Returns the saved calls it could not restore for lack of defaults.
+
+### `CreateMutation`
+
+The type of `create` above.
+
+### `resumePausedMutations`
+
+```ts
+resumePausedMutations(client): Promise<void>
+```
+
+Resolves when every call that is waiting (for the network, or for its turn in a scope) has settled. They continue by themselves when the network is back; this only lets you wait for it, for example to show "synced".
 
 ## Events (`@omnifront/query/events`)
 

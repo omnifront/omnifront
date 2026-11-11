@@ -1,6 +1,6 @@
 # @omnifront/api
 
-A `fetch`-based HTTP client. About 2.7 KB gzipped (budget 3 KB, excluding `@omnifront/core`). See the [HTTP client guide](/guide/http-client). Entries: `@omnifront/api`, `/xhr`, `/auth`, `/testing`.
+A `fetch`-based HTTP client. About 2.8 KB gzipped (budget 3 KB, excluding `@omnifront/core`). See the [HTTP client guide](/guide/http-client). Entries: `@omnifront/api`, `/xhr`, `/auth`, `/serialize`, `/progress`, `/testing`.
 
 ## `@omnifront/api`
 
