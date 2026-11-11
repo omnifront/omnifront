@@ -125,6 +125,8 @@ export function dehydrateMutations(client: QueryClient): DehydratedMutation[] {
 }
 
 /** What `hydrateMutations` needs to build a mutation: the class lives in the main entry, not here. */
+/** What `hydrateMutations` needs back from `create`: a mutation that can be observed and sent. */
+export type { Tracked as TrackedMutation }
 export type CreateMutation = (options: Options) => Tracked & { mutate(variables: unknown): void }
 
 /**
