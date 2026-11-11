@@ -136,3 +136,14 @@ Architecture decisions are in [`docs/adr`](docs/adr). Every user-facing change n
 ## License
 
 [MIT](LICENSE).
+
+## Run everything locally
+
+```bash
+pnpm install && pnpm build   # once
+pnpm dev:all                 # docs + every example, each on its own port
+pnpm dev:all react vue docs  # or just a subset
+pnpm dev:all --list          # show the ports
+```
+
+Docs: 5173, React: 5174, Vue: 5175, Angular: 5176, Angular SSR: 5177, Next: 5178, Nuxt: 5179, Vue SSR: 5190.
