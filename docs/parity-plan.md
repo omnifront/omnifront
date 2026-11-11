@@ -362,12 +362,12 @@
 
 React: `@omnifront/react/errors` (`throwOnError`، `QueryErrorResetBoundary`)، `useSuspenseQueries`، `usePrefetchQuery`، شکل آبجکتی `useQueries`. همان شکل آبجکتی برای Vue و Angular. Next: استریم کوئری‌های pending.
 
-**وضعیت (۲۰۲۶-۱۱-۱۱):** تمام شده به جز استریم کوئری‌های pending در Next.
+**وضعیت (۲۰۲۶-۱۱-۱۱):** تمام شد.
 - `throwOnError` روی `useQuery` در ورودی اصلی React (حدود ۶۹ بایت؛ اصلی ۹۹۰ از ۱۰۰۰ بایت). فقط React: Vue و Angular جایی برای throw ندارند و در راهنمای مهاجرت معادلشان آمده.
 - `@omnifront/react/errors`: `QueryErrorResetBoundary` و `useQueryErrorResetBoundary` (۴۱۸ بایت). `reset` همه‌ی کوئری‌های خطادار client را بی‌صدا invalidate می‌کند؛ نیازی به ثبت کلید در boundary نیست.
 - `useSuspenseQueries` در `/queries` و `usePrefetchQuery` در `/suspense`؛ بودجه‌ی `/queries` از ۱KB به ۱.۳KB رفت (۹۹۸ بایت مصرف).
 - شکل `{ queries, combine }` برای `useQueries`، `useQueries` در Vue و `injectQueries` در Angular (شکل لیست‌اول هم می‌ماند).
-- نیامد: استریم pending queries (نیاز به تغییر `dehydrate`/`hydrate` در `/hydration` دارد، پس بودجه‌ی آن ورودی و ADR لازم است).
+- استریم کوئری‌های pending: `shouldDehydratePending` در `/hydration` (۵۱۵ بایت از ۱KB؛ ورودی اصلی `query` دست نخورد). `dehydrate` یک `promise` کنار هر کوئری در حال لود می‌گذارد و `hydrate` با `fetchQuery` آن را پر می‌کند. promise که از Server Component می‌رسد thenable ساده است و `then`اش چیزی برنمی‌گرداند، پس با `Promise.resolve` پیچیده می‌شود. در مرورگر واقعی با مثال Next (`/streaming`) بررسی شد: صفحه زودتر می‌رسد و هیچ درخواست `/api/todos` از مرورگر نمی‌رود.
 
 ### فاز ۶: بسته‌های جدا (هر کدام فقط با درخواست واقعی)
 

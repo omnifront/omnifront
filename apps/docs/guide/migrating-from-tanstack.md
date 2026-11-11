@@ -32,6 +32,7 @@ The shapes are deliberately close, so most code ports by renaming imports. This 
 | `networkMode`, `fetchStatus`, `isPaused` | the same: queries and mutations wait for the network by default |
 | `scope: { id }`, `resumePausedMutations`, persisting paused mutations (`persistQueryClient` + `setMutationDefaults`) | the same names. They live in `@omnifront/query/offline`: call `enableOffline(client)` once (TanStack needs no call; `persistQueryClient` makes it for you). Saved calls need `setMutationDefaults(client, key, options)`, as in TanStack, and a `mutationKey` |
 | `dehydrate` options `serializeData`, `hydrate` option `deserializeData` | the same |
+| `shouldDehydrateQuery: (q) => defaultShouldDehydrateQuery(q) \|\| q.state.status === "pending"` (streaming a query that is not finished) | `shouldDehydrate: shouldDehydratePending` (also from `@omnifront/next`). The default does not include pending queries, so JSON transports keep working |
 | `useQueries` / `useInfiniteQuery` with `select` | the same, in React, Vue and Angular |
 | `useQueries({ queries, combine })` | the same (the list-first form `useQueries(queries, { combine })` works too), in React, Vue and Angular |
 | `useSuspenseQueries({ queries, combine })`, `usePrefetchQuery(options)` | the same, from `@omnifront/react/queries` and `@omnifront/react/suspense` |

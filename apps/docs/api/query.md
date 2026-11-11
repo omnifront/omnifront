@@ -176,7 +176,11 @@ A `Subscribable<MutationState>` (type parameters: data, error, variables, contex
 
 ### `dehydrate`
 
-`dehydrate(client, { shouldDehydrate?, serializeData? })` returns a `DehydratedState`, plain JSON with the successful queries. `serializeData(data)` turns each query's data into something JSON-safe (`superjson.serialize`, say).
+`dehydrate(client, { shouldDehydrate?, serializeData? })` returns a `DehydratedState`, plain JSON with the successful queries. With `shouldDehydratePending` as `shouldDehydrate`, queries that are still loading are included too, each with a `promise` of its data (not JSON: only for transports that carry promises, such as props from a Server Component). `serializeData(data)` turns each query's data into something JSON-safe (`superjson.serialize`, say).
+
+### `shouldDehydratePending`
+
+A `shouldDehydrate` that takes the successful queries and the ones still loading. See [Streaming a query that is not finished](/guide/next#streaming-a-query-that-is-not-finished).
 
 ### `hydrate`
 
@@ -416,6 +420,10 @@ Start the saved calls again, oldest first, without running `onMutate`: the saved
 ### `CreateMutation`
 
 The type of `create` above.
+
+### `TrackedMutation`
+
+What `create` returns: a mutation that can be observed (`subscribe` / `getSnapshot`) and sent with `mutate(variables)`. A `Mutation` fits.
 
 ### `resumePausedMutations`
 

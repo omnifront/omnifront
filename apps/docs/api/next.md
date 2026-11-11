@@ -16,6 +16,10 @@ A new client with `gcTime: Infinity`, for `getServerSideProps`, route handlers o
 
 Re-exported from `@omnifront/query/hydration`. `DehydratedState`, `DehydrateOptions` and `HydrateOptions` are its types.
 
+### `shouldDehydratePending`
+
+Re-exported from `@omnifront/query/hydration`: `dehydrate(client, { shouldDehydrate: shouldDehydratePending })` also sends the queries that are still loading, as promises. See the [Next.js guide](/guide/next#streaming-a-query-that-is-not-finished).
+
 ### `hydrate`
 
 Re-exported from `@omnifront/query/hydration`.
