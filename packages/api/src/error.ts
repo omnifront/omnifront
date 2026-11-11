@@ -25,3 +25,8 @@ export class ApiError<T = unknown> extends Error {
 export function isApiError(error: unknown): error is ApiError {
 	return error instanceof ApiError
 }
+
+/** The request was aborted through its `signal` (axios's `isCancel`). A timeout is not a cancel. */
+export function isCancel(error: unknown): error is ApiError {
+	return isApiError(error) && error.code === "ABORT"
+}

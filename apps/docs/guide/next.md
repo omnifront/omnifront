@@ -62,6 +62,26 @@ export function Todos() {
 
 The page arrives with the list already in the HTML, and as long as the data is younger than `staleTime` the browser does not fetch it again.
 
+### Streaming a query that is not finished
+
+`await` in the page holds the whole response until the data is there. To send the page at once and let the data follow, start the fetch without awaiting it and dehydrate with `shouldDehydratePending`:
+
+```tsx
+import { dehydrate, getQueryClient, shouldDehydratePending } from "@omnifront/next"
+
+export default function Page() {
+	const client = getQueryClient()
+	client.fetchQuery(todosQuery.queryKey, listTodos).catch(() => {}) // not awaited
+	return (
+		<HydrationBoundary state={dehydrate(client, { shouldDehydrate: shouldDehydratePending })}>
+			<Todos />
+		</HydrationBoundary>
+	)
+}
+```
+
+The browser first shows the query as loading (the request is already under way on the server), then fills it in when the data arrives over the same response; it makes no request of its own. If the server fetch fails the query ends in the error state. This needs a transport that carries promises, which is what props from a Server Component are; in the Pages Router and Angular's transfer state the state must be JSON, so use the default there. `serializeData` / `deserializeData` apply to streamed data too.
+
 ## Pages Router
 
 ```tsx

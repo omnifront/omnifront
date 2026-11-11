@@ -24,6 +24,22 @@ describe("useQueries", () => {
 		unmount()
 	})
 
+	it("takes TanStack's { queries, combine } object too", async () => {
+		const client = newClient()
+		const queries = [
+			{ queryKey: ["a"], queryFn: () => Promise.resolve(1), staleTime: Infinity },
+			{ queryKey: ["b"], queryFn: () => Promise.resolve(2), staleTime: Infinity },
+		]
+		const { result, unmount } = mountComposable(
+			() => ({ plain: useQueries<number>({ queries }), joined: useQueries<number, number>({ queries, combine: (rs) => rs.reduce((sum, r) => sum + (r.data ?? 0), 0) }) }),
+			client,
+		)
+		await new Promise((r) => setTimeout(r, 0))
+		expect(result.plain.value.map((r) => r.data)).toEqual([1, 2])
+		expect(result.joined.value).toBe(3)
+		unmount()
+	})
+
 	it("fetches on the server before rendering, failing fast, and renders every result", async () => {
 		const client = newClient()
 		vi.stubGlobal("window", undefined)

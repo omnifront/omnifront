@@ -50,7 +50,7 @@ import { useMutation, useQueryClient } from "@omnifront/react"
 
 function AddTodo() {
 	const client = useQueryClient()
-	const add = useMutation<void, string>({
+	const add = useMutation<void, Error, string>({
 		mutationFn: (title) => fetch("/api/todos", { method: "POST", body: JSON.stringify({ title }) }).then(() => {}),
 		// Stays "pending" until the list has been refetched.
 		onSuccess: () => client.invalidateQueries({ queryKey: ["todos"] }),

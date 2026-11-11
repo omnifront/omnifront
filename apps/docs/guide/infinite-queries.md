@@ -50,6 +50,14 @@ Add `getPreviousPageParam(firstPage, allPages, firstPageParam, allPageParams)` a
 
 If you show one page at a time (page 1, 2, 3 buttons), you do not need this package: use a normal query keyed by the page with `placeholderData: keepPreviousData` (see [Queries](/guide/queries#pagination-without-flicker)).
 
+## Deriving data: `select`
+
+```ts
+const { data: items } = useInfiniteQuery({ ...feed, select: (data) => data.pages.flat() })
+```
+
+`data` is what `select` returns (and what `refetch` resolves with); the cache keeps `{ pages, pageParams }`. It works in `useInfiniteQuery`, `useSuspenseInfiniteQuery`, Vue's `useInfiniteQuery` and Angular's `injectInfiniteQuery`, and is memoized with the framework's own tool (keep it stable in React).
+
 ## Result
 
 All the [usual query fields](/guide/queries#what-the-result-tells-you), with `data` as `{ pages, pageParams }`, plus `hasNextPage`, `hasPreviousPage`, `isFetchingNextPage`, `isFetchingPreviousPage`, and `fetchNextPage`, `fetchPreviousPage`, `refetch` functions.

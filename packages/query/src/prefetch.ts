@@ -20,9 +20,5 @@ export interface PrefetchOptions<TData> extends RetryOptions {
  *   later retries on its own. Use `client.fetchQuery` when you need the error.
  */
 export function prefetchQuery<TData>(client: QueryClient, options: PrefetchOptions<TData>): Promise<void> {
-	const { dataUpdatedAt, isInvalidated } = client.getQuery<TData>(options.queryKey).getSnapshot()
-	if (dataUpdatedAt !== undefined && !isInvalidated && client.scheduler.now() - dataUpdatedAt < (options.staleTime ?? 0)) {
-		return Promise.resolve()
-	}
-	return client.fetchQuery(options.queryKey, options.queryFn, options).then(noop, noop)
+	return client.fetchQuery(options).then(noop, noop)
 }

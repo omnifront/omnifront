@@ -24,7 +24,7 @@ dehydrate(client, { shouldDehydrate: ({ queryKey }) => queryKey[0] !== "private"
 
 1. **A new client per request.** A shared server client leaks one user's data to the next. `getQueryClient()` (Next App Router) and `createServerQueryClient()` handle this.
 2. **`gcTime: Infinity` on the server.** The default 5-minute timers would keep the process alive.
-3. **Data must be JSON-safe.** No `Date`, `Map`, `Set` or class instances; convert them inside the `queryFn`.
+3. **Data must be JSON-safe.** No `Date`, `Map`, `Set` or class instances; convert them inside the `queryFn`, or pass `serializeData` to `dehydrate` and `deserializeData` to `hydrate` (`<HydrationBoundary options={{ deserializeData }}>` in React): `superjson.serialize` / `superjson.deserialize` fit.
 4. **Use the same query key on both sides.**
 
 ## Why there are no hydration mismatches

@@ -1,7 +1,7 @@
 import { createStore } from "@omnifront/store"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { createApi, isApiError } from "../src"
-import { refreshOnUnauthorized, withAuth } from "../src/auth"
+import { basicAuth, refreshOnUnauthorized, withAuth, withXsrf } from "../src/auth"
 import { createMockAdapter } from "../src/testing"
 
 describe("createMockAdapter", () => {
@@ -116,5 +116,59 @@ describe("refreshOnUnauthorized", () => {
 		const bad = createApi({ adapter: () => Promise.reject(new Error("x")) })
 		refreshOnUnauthorized(bad, { refresh: async () => {} })
 		await expect(bad.get("/a")).rejects.toMatchObject({ code: "NETWORK" })
+	})
+})
+
+describe("basicAuth", () => {
+	it("adds a Basic authorization header, UTF-8 safe, and can be removed", async () => {
+		const adapter = createMockAdapter(() => ({ data: {} }))
+		const api = createApi({ adapter })
+		const off = basicAuth(api, { username: "ali", password: "pä55" })
+		await api.get("/a")
+		off()
+		await api.get("/b")
+		basicAuth(api, { username: "only" })
+		await api.get("/c")
+		expect(adapter.calls[0]!.headers["authorization"]).toBe(`Basic ${Buffer.from("ali:pä55", "utf8").toString("base64")}`)
+		expect(adapter.calls[1]!.headers["authorization"]).toBeUndefined()
+		expect(adapter.calls[2]!.headers["authorization"]).toBe(`Basic ${Buffer.from("only:").toString("base64")}`)
+	})
+})
+
+describe("withXsrf", () => {
+	it("copies the cookie into the header when asked to send", async () => {
+		const adapter = createMockAdapter(() => ({ data: {} }))
+		const api = createApi({ adapter })
+		let cookie = "a=1; XSRF-TOKEN=tok%20en; b=2"
+		const off = withXsrf(api, { send: true, cookie: () => cookie })
+		await api.get("/a")
+		cookie = "a=1"
+		await api.get("/b")
+		off()
+		withXsrf(api, { send: (config) => !!config.url?.startsWith("/mine"), cookie: () => "csrf=x", cookieName: "csrf", headerName: "X-CSRF" })
+		await api.get("/mine/1")
+		await api.get("/other")
+		expect(adapter.calls[0]!.headers["x-xsrf-token"]).toBe("tok en")
+		expect(adapter.calls[1]!.headers["x-xsrf-token"]).toBeUndefined()
+		expect(adapter.calls[2]!.headers["x-csrf"]).toBe("x")
+		expect(adapter.calls[3]!.headers["x-csrf"]).toBeUndefined()
+	})
+
+	it("by default sends to the page's own origin only, reading document.cookie", async () => {
+		const adapter = createMockAdapter(() => ({ data: {} }))
+		const api = createApi({ adapter })
+		withXsrf(api)
+		await api.get("/server-side") // no location, no document: nothing is added
+		vi.stubGlobal("location", { href: "https://app.test/page", origin: "https://app.test" })
+		await api.get("/no-document")
+		vi.stubGlobal("document", { cookie: "XSRF-TOKEN=t" })
+		await api.get("/same")
+		await api.get("https://app.test/abs")
+		await api.get("https://evil.test/steal")
+		await api.get("//evil.test/steal")
+		await api.get("/x", { baseURL: "https://other.test" })
+		await api.get("https://evil.test/x", { baseURL: "https://app.test/api", allowAbsoluteUrls: false })
+		vi.unstubAllGlobals()
+		expect(adapter.calls.map((c) => c.headers["x-xsrf-token"])).toEqual([undefined, undefined, "t", "t", undefined, undefined, undefined, "t"])
 	})
 })

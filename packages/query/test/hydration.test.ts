@@ -1,6 +1,6 @@
 import { FakeScheduler } from "@omnifront/core/testing"
-import { describe, expect, it } from "vitest"
-import { dehydrate, hydrate } from "../src/hydration"
+import { describe, expect, it, vi } from "vitest"
+import { dehydrate, hydrate, shouldDehydratePending } from "../src/hydration"
 import { QueryClient } from "../src/query-client"
 import { QueryObserver } from "../src/query-observer"
 
@@ -125,5 +125,105 @@ describe("QueryObserver.getServerSnapshot", () => {
 		await client.fetchQuery(["k"], () => Promise.resolve("x"))
 		client.getQuery(["k"]).invalidate()
 		expect(make(client, Infinity).getServerSnapshot()).toMatchObject({ isStale: true })
+	})
+})
+
+describe("serializeData / deserializeData", () => {
+	const reviver = (data: unknown) => (data instanceof Map ? { __map: [...data] } : data)
+	const unrevive = (data: unknown) =>
+		typeof data === "object" && data !== null && "__map" in data ? new Map((data as { __map: [string, number][] }).__map) : data
+
+	it("turns data into JSON-safe form on the way out and back on the way in", () => {
+		const server = new QueryClient()
+		server.setQueryData(["map"], new Map([["a", 1]]))
+		server.setQueryData(["plain"], { n: 1 })
+		const state = dehydrate(server, { serializeData: reviver })
+		const wire = JSON.parse(JSON.stringify(state)) as typeof state
+		const browser = new QueryClient()
+		hydrate(browser, wire, { deserializeData: unrevive })
+		expect(browser.getQueryData(["map"])).toEqual(new Map([["a", 1]]))
+		expect(browser.getQueryData(["plain"])).toEqual({ n: 1 })
+		// Without them the data goes through as it is.
+		const raw = new QueryClient()
+		hydrate(raw, dehydrate(server))
+		expect(raw.getQueryData(["map"])).toBeInstanceOf(Map)
+	})
+})
+
+describe("pending queries", () => {
+	it("dehydrates a query that is still loading with a promise of its data, and the browser fills it in", async () => {
+		const server = newClient(1000)
+		let finish!: (value: string[]) => void
+		server.client.fetchQuery(["todos"], () => new Promise<string[]>((r) => (finish = r))).catch(() => {})
+		const state = dehydrate(server.client, { shouldDehydrate: shouldDehydratePending })
+		expect(state.queries).toHaveLength(1)
+		expect(state.queries[0]).toMatchObject({ queryKey: ["todos"], data: undefined })
+
+		const browser = newClient(2000)
+		hydrate(browser.client, state)
+		expect(browser.client.getQuery(["todos"]).getSnapshot()).toMatchObject({ status: "loading", isFetching: true })
+		finish(["a"])
+		await browser.client.getQuery(["todos"]).settled()
+		expect(browser.client.getQuery(["todos"]).getSnapshot()).toMatchObject({ status: "success", data: ["a"] })
+	})
+
+	it("a component that mounts meanwhile joins that request instead of starting its own", async () => {
+		const server = newClient()
+		let finish!: (value: number) => void
+		server.client.fetchQuery(["n"], () => new Promise<number>((r) => (finish = r))).catch(() => {})
+		const browser = newClient()
+		hydrate(browser.client, dehydrate(server.client, { shouldDehydrate: shouldDehydratePending }))
+		const own = vi.fn(() => Promise.resolve(99))
+		const observer = new QueryObserver(browser.client, { queryKey: ["n"], queryFn: own })
+		const off = observer.subscribe(() => {})
+		finish(7)
+		await browser.client.getQuery(["n"]).settled()
+		expect(own).not.toHaveBeenCalled()
+		expect(observer.getSnapshot().data).toBe(7)
+		off()
+	})
+
+	it("a failed server fetch becomes an error in the browser, without an unhandled rejection", async () => {
+		const server = newClient()
+		let fail!: (error: Error) => void
+		server.client.fetchQuery(["bad"], () => new Promise((_, reject) => (fail = reject)), { retry: false }).catch(() => {})
+		const state = dehydrate(server.client, { shouldDehydrate: shouldDehydratePending })
+		const browser = newClient()
+		hydrate(browser.client, state)
+		fail(new Error("down"))
+		await browser.client.getQuery(["bad"]).settled()
+		expect(browser.client.getQuery(["bad"]).getSnapshot()).toMatchObject({ status: "error" })
+	})
+
+	it("serializeData / deserializeData run on the streamed data too", async () => {
+		const server = newClient()
+		let finish!: (value: Date) => void
+		server.client.fetchQuery(["when"], () => new Promise<Date>((r) => (finish = r))).catch(() => {})
+		const state = dehydrate(server.client, { shouldDehydrate: shouldDehydratePending, serializeData: (d) => (d as Date).toISOString() })
+		const browser = newClient()
+		hydrate(browser.client, state, { deserializeData: (d) => new Date(d as string) })
+		finish(new Date("2026-01-01T00:00:00Z"))
+		await browser.client.getQuery(["when"]).settled()
+		expect(browser.client.getQuery(["when"]).getSnapshot().data).toEqual(new Date("2026-01-01T00:00:00Z"))
+	})
+
+	it("accepts a bare thenable, like the promises React streams from a Server Component", async () => {
+		const thenable = { then: (resolve: (value: string) => void) => void setTimeout(() => resolve("streamed"), 0) } as unknown as Promise<unknown>
+		const browser = newClient()
+		hydrate(browser.client, { queries: [{ queryKey: ["t"], data: undefined, dataUpdatedAt: 0, promise: thenable }] })
+		await browser.client.getQuery(["t"]).settled()
+		expect(browser.client.getQuery(["t"]).getSnapshot().data).toBe("streamed")
+	})
+
+	it("an entry that lost its promise on the way (JSON) is ignored, and loaded data is never replaced", async () => {
+		const server = newClient()
+		server.client.fetchQuery(["slow"], () => new Promise(() => {})).catch(() => {})
+		const browser = newClient()
+		hydrate(browser.client, wire(dehydrate(server.client, { shouldDehydrate: shouldDehydratePending })))
+		expect(browser.client.getQuery(["slow"]).getSnapshot().status).toBe("idle")
+
+		await browser.client.fetchQuery(["kept"], () => Promise.resolve("mine"))
+		hydrate(browser.client, { queries: [{ queryKey: ["kept"], data: undefined, dataUpdatedAt: 0, promise: Promise.resolve("theirs") }] })
+		expect(browser.client.getQuery(["kept"]).getSnapshot().data).toBe("mine")
 	})
 })

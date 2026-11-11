@@ -1,20 +1,23 @@
 # @omnifront/query
 
-Query client, observers, mutations. About 2.4 KB gzipped (excluding `@omnifront/core`). Hydration helpers are in the subpath `@omnifront/query/hydration`.
+Query client, observers, mutations. About 4 KB gzipped for the main entry (3.98 KB of a 4 KB budget, excluding `@omnifront/core`); every opt-in entry has its own, smaller budget. Hydration helpers are in the subpath `@omnifront/query/hydration`.
 
 ## Client
 
 ### `QueryClient`
 
 ```ts
-new QueryClient({ scheduler?, gcTime? })
+new QueryClient({ defaultOptions?, scheduler?, gcTime? })
 ```
 
-Options type: `QueryClientOptions`. `gcTime` is the default for new entries (5 minutes if omitted); `scheduler` replaces the real clock, mostly for tests; `structuralSharing` is an opt-in function (see below).
+Options type: `QueryClientOptions`. `defaultOptions` (`DefaultOptions`) is `{ queries }`: options every observer of this client gets unless it sets its own. `gcTime` is the default for new entries (5 minutes if omitted); `scheduler` replaces the real clock, mostly for tests; `structuralSharing` is an opt-in function (see below).
 
 | Method | |
 |---|---|
 | `fetchQuery(key, fn, retryOptions?)` | Fetch or join the in-flight request. Resolves with the data. No retries unless `retryOptions` is given. |
+| `fetchQuery({ queryKey, queryFn, staleTime?, retry?, retryDelay?, meta? })` | The same as one object (`FetchQueryOptions`). With `staleTime`, cached data younger than that is returned without fetching. |
+| `getDefaultOptions()` / `setDefaultOptions(defaults)` | Read or replace `defaultOptions`. Observers pick the new ones up when created or given new options. |
+| `removeQuery(key)` | Drop the entry. For entries nothing is watching; see `removeQueries`. |
 | `getQueryData(key)` / `getQueryState(key)` | Read the cache (`undefined` if no entry). |
 | `setQueryData(key, data or updater)` | Write the cache (new data, or a function from the old data); the entry becomes `success`. |
 | `invalidateQueries({ queryKey?, exact? })` | Mark entries outdated; active observers refetch. Resolves when those refetches finish. Filter type: `InvalidateFilter`. |
@@ -27,7 +30,7 @@ Options type: `QueryClientOptions`. `gcTime` is the default for new entries (5 m
 
 ### `Query`
 
-One cache entry. It is a `Subscribable<QueryState>`. Methods: `fetch(fn, retryOptions?)`, `setData(data, updatedAt?)`, `invalidate()`, `cancel()`, `settled()`, `updateGcTime(ms)`, `destroy()`. You rarely use it directly.
+One cache entry. It is a `Subscribable<QueryState>`. Methods: `fetch(fn, options?)` (`FetchOptions`: the retry options and `meta`), `setData(data, updatedAt?)`, `invalidate(quiet?)` (quiet: mark it without telling observers), `reset()`, `cancel()`, `settled()`, `updateGcTime(ms)`, `destroy()`. You rarely use it directly.
 
 ### `QueryObserver`
 
@@ -41,33 +44,77 @@ What the adapters use. It is a `Subscribable<QueryResult>`: the first subscripti
 |---|---|
 | `getSnapshot()` | The current `QueryResult` (same reference until something changes). Before anyone subscribes, an entry that will fetch on mount already reports `isFetching: true`. |
 | `getServerSnapshot()` | Clock-independent result for SSR and hydration. |
-| `refetch()` | Run the query function again (joins an in-flight request). Rejects on failure. |
+| `refetch({ cancelRefetch? })` | Run the query function again. Joins an in-flight request, or with `cancelRefetch: true` aborts it and starts over. Rejects on failure. |
 | `setOptions(options)` | Switch key / update options. Safe to call on every render. |
 | `inherit(observer)` | Adopt another observer's "previous data", for adapters that create a new observer per key (so `keepPreviousData` survives key changes). |
 
 ### `QueryObserverOptions`
 
-`queryKey`, `queryFn`, `staleTime`, `gcTime`, `enabled`, `retry`, `retryDelay`, `refetchOnWindowFocus`, `refetchOnReconnect`, `refetchInterval`, `initialData`, `placeholderData`. See the [options table](/guide/queries#options-reference).
+`queryKey`, `queryFn`, `staleTime`, `gcTime`, `enabled`, `retry`, `retryDelay`, `networkMode`, `refetchOnMount`, `refetchOnWindowFocus`, `refetchOnReconnect`, `refetchInterval`, `refetchIntervalInBackground`, `meta`, `initialData`, `initialDataUpdatedAt`, `placeholderData`. See the [options table](/guide/queries#options-reference).
+
+### `FromState`
+
+`FromState<T> = T | ((state: QueryState) => T)`: how `staleTime`, `enabled`, `refetchInterval` and the three `refetchOn…` options accept either a value or a function of the query's current state.
+
+### `RefetchWhen`
+
+`boolean | "always"`. `true` refetches stale data, `"always"` refetches fresh data too, `false` never.
+
+### `DefaultOptions`
+
+`{ queries?: Partial<QueryObserverOptions>, mutations?: Partial<MutationOptions> }` without the per-query fields (`queryKey`, `queryFn`, `initialData`, `initialDataUpdatedAt`, `placeholderData`).
+
+### `FetchQueryOptions`
+
+The object form of `fetchQuery`: `queryKey`, `queryFn`, `staleTime`, `retry`, `retryDelay`, `meta`.
+
+### `FetchOptions`
+
+`RetryOptions` plus `meta`: the second argument of `Query.fetch`.
 
 ### `QueryResult`
 
-A `QueryState` plus `isStale` and `isPlaceholderData`.
+A `QueryState` plus `isStale`, `isPlaceholderData`, `fetchStatus` (`"fetching"`, `"paused"` or `"idle"`) and the flags `isPending`, `isLoading`, `isRefetching`, `isSuccess`, `isError`, `isLoadingError`, `isRefetchError`.
 
 ### `QueryState`
 
-`status`, `data`, `error`, `isFetching`, `isInvalidated`, `failureCount`, `dataUpdatedAt`. `QueryStatus` is `"idle" | "loading" | "success" | "error"`.
+`status`, `data`, `error`, `isFetching`, `isPaused`, `isInvalidated`, `failureCount`, `failureReason`, `dataUpdatedAt`. On the cache entry `isFetching` stays true while a fetch waits for the network (`isPaused`); the observer's `QueryResult.isFetching` is false then. `QueryStatus` is `"idle" | "loading" | "success" | "error"`.
 
 ### `QueryFn`
 
-`(context: QueryFnContext) => Promise<TData>`; `QueryFnContext` is `{ signal: AbortSignal }`.
+`(context: QueryFnContext) => Promise<TData>`; `QueryFnContext` is `{ signal, queryKey, meta, client }`.
+
+### `SkipToken`
+
+The type of `skipToken`: accepted wherever an observer takes a `queryFn`.
 
 ### `QueryKey`
 
 `readonly unknown[]`.
 
+### `DataTag`
+
+`DataTag<TKey, TData>`: a query key that also carries the type of the data stored under it (a type only; the value is the plain key). `queryOptions` returns one, and `getQueryData`, `setQueryData` and `getQueryState` read the data type from it.
+
 ### `CancelledError`
 
 Thrown (rejects the promise) when a fetch is cancelled.
+
+### `DefaultError`
+
+The error type of queries and mutations that do not name their own: `Error`, unless `Register` says otherwise. Every type that carries an error takes it as its **second** type argument, as in TanStack Query: `QueryObserver<TData, TError>`, `QueryResult<TData, TError>`, `Mutation<TData, TError, TVariables, TContext>`. It is a type only; nothing checks what a query function really throws.
+
+### `Register`
+
+```ts
+declare module "@omnifront/query" {
+	interface Register {
+		defaultError: ApiError
+	}
+}
+```
+
+Augment it to change `DefaultError` for the whole app.
 
 ### `RetryOptions`
 
@@ -102,28 +149,46 @@ An `EnvironmentSignal`: whether the network is up (`online`/`offline` events). O
 ### `Mutation`
 
 ```ts
-new Mutation({ mutationFn, onSuccess?, onError?, onSettled? })   // MutationOptions
+new Mutation({ mutationFn, onSuccess?, onError?, onSettled? }, client?)   // MutationOptions
 ```
 
-A `Subscribable<MutationState>` (type parameters: data, variables, context). Members: `mutate(variables)` (fire and forget), `mutateAsync(variables)`, `reset()`, `setOptions(options)`. Details in [Mutations](/guide/mutations).
+A `Subscribable<MutationState>` (type parameters: data, error, variables, context). Members: `mutate(variables, callbacks?)` (fire and forget), `mutateAsync(variables, callbacks?)`, `reset()`, `setOptions(options)`, `options` (the options in effect). With a `client` it starts from that client's `defaultOptions.mutations` and uses its scheduler for retry delays; the adapters pass theirs. Details in [Mutations](/guide/mutations).
 
 ### `MutationOptions`
 
-`mutationFn(variables) => Promise<TData>` and the optional `onMutate(variables)` (returns the context), `onSuccess(data, variables, context)`, `onError(error, variables, context)`, `onSettled(data, error, variables, context)` callbacks (may return promises, which are awaited).
+`mutationFn(variables) => Promise<TData>` and the optional `onMutate(variables)` (returns the context), `onSuccess(data, variables, context)`, `onError(error, variables, context)`, `onSettled(data, error, variables, context)` callbacks (may return promises, which are awaited). Also `retry` / `retryDelay` (default: no retries), `networkMode`, `mutationKey` and `meta` (both for the filters of `useIsMutating` and `useMutationState`), `scope: { id }` (mutations of one scope run one after another; needs [`enableOffline`](/api/query#enableoffline)) and `wrap`.
+
+`wrap(attempts, mutation, variables, context, pause)` is an extension point: it runs the sending step (the network wait, the retries and `mutationFn`) of one call, after `onMutate`, and must return what `attempts()` returns. `pause(true)` shows the call as waiting (`isPaused`) until `pause(false)`. A client's `defaultOptions.mutations` can set it; [`enableOffline`](/api/query#enableoffline) uses it.
+
+### `MutateOptions`
+
+`{ onSuccess?, onError?, onSettled? }` for one `mutate` call. They run after the callbacks in the options, only for the latest call, and are not awaited.
+
+### `NetworkMode`
+
+`"online"` (default): wait for the network before fetching and before each retry; the query or mutation is paused meanwhile. `"always"`: never wait (for work that does not use the network). `"offlineFirst"`: try once regardless, then wait before retrying. An option of queries and mutations.
 
 ### `MutationState`
 
-`status`, `data`, `error`, `variables`. `MutationStatus` is `"idle" | "pending" | "success" | "error"`.
+`status`, `data`, `error`, `variables`, the flags `isIdle`, `isPending`, `isSuccess`, `isError`, `isPaused` (waiting for the network), and `failureCount`, `failureReason`, `submittedAt`. `MutationStatus` is `"idle" | "pending" | "success" | "error"`.
 
 ## Hydration (`@omnifront/query/hydration`)
 
 ### `dehydrate`
 
-`dehydrate(client, { shouldDehydrate? })` returns a `DehydratedState`, plain JSON with the successful queries.
+`dehydrate(client, { shouldDehydrate?, serializeData? })` returns a `DehydratedState`, plain JSON with the successful queries. With `shouldDehydratePending` as `shouldDehydrate`, queries that are still loading are included too, each with a `promise` of its data (not JSON: only for transports that carry promises, such as props from a Server Component). `serializeData(data)` turns each query's data into something JSON-safe (`superjson.serialize`, say).
+
+### `shouldDehydratePending`
+
+A `shouldDehydrate` that takes the successful queries and the ones still loading. See [Streaming a query that is not finished](/guide/next#streaming-a-query-that-is-not-finished).
 
 ### `hydrate`
 
-`hydrate(client, state)` loads it into a client, keeping the server's `dataUpdatedAt` and never overwriting newer data. Accepts `null`/`undefined`.
+`hydrate(client, state, { deserializeData? }?)` loads it into a client, keeping the server's `dataUpdatedAt` and never overwriting newer data. Accepts `null`/`undefined`. `deserializeData` is the reverse of `serializeData`.
+
+### `HydrateOptions`
+
+`{ deserializeData?(data) => unknown }`.
 
 ### `DehydratedState`
 
@@ -164,10 +229,30 @@ The number of queries fetching right now, first loads and background refetches a
 ### `createMutatingCount`
 
 ```ts
-createMutatingCount(client): Subscribable<number>
+createMutatingCount(client, filters?: MutationFilters): Subscribable<number>
 ```
 
-The number of **tracked** mutations that are `pending` (see `trackMutation`). There is no filter: mutations have no key.
+The number of **tracked** mutations that are `pending` (see `trackMutation`) and pass the filters.
+
+### `MutationFilters`
+
+`mutationKey` (prefix match), `exact`, `status` and `predicate: (mutation: MutationInfo) => boolean`.
+
+### `MutationInfo`
+
+`{ mutationKey, meta, state }`: what a `predicate` or `select` sees of a tracked mutation.
+
+### `createMutationState`
+
+```ts
+createMutationState(client, { filters?, select? }): Subscribable<TResult[]>
+```
+
+The state of every tracked mutation that passes the filters (`select` picks what to keep of each; default: the whole state). The array keeps its identity until a selected value changes. Only mutations that are mounted or still pending are tracked: unlike TanStack's mutation cache, a finished one disappears with the component that owned it.
+
+### `MutationStateOptions`
+
+The options object of `createMutationState`.
 
 ### `trackMutation`
 
@@ -176,3 +261,234 @@ trackMutation(client, mutation): () => void
 ```
 
 Make a `Mutation` count towards `createMutatingCount(client)`. The adapters' `useMutation` / `injectMutation` call it for you when a client is provided; call it yourself if you create `Mutation`s by hand. The returned function stops tracking, but a mutation that is still pending keeps counting until it settles.
+
+## Filters (`@omnifront/query/filters`)
+
+The `QueryClient` methods that work on many queries at once, as functions that take the client first. They are built on `client.getQueries()`, so they cost nothing unless imported.
+
+### `QueryFilters`
+
+| Field | |
+|---|---|
+| `queryKey` | Prefix match (objects as subsets). Omit for every query. |
+| `exact` | Match `queryKey` exactly. |
+| `type` | `"active"` (observed), `"inactive"` (unobserved) or `"all"` (default). |
+| `stale` | `true`: invalidated or without data. `false`: the rest. `staleTime` is per observer, so the cache cannot tell that data merely got old. |
+| `fetchStatus` | `"fetching"` or `"idle"`. |
+| `predicate` | `(query: QueryInfo) => boolean`, run last. |
+
+### `QueryInfo`
+
+`{ queryKey, state, observed }`: what a `predicate` sees of a cache entry.
+
+### `findQueries`
+
+```ts
+findQueries(client, filters?): Array<{ key: QueryKey; query: Query }>
+```
+
+Every cache entry that passes the filters.
+
+### `matchQuery`
+
+```ts
+matchQuery(entry, filters): boolean
+```
+
+Test one entry of `client.getQueries()`.
+
+### `invalidateQueries`
+
+```ts
+invalidateQueries(client, filters?: InvalidateQueriesFilters): Promise<void>
+```
+
+`client.invalidateQueries` with the full filters, and `refetchType`.
+
+### `InvalidateQueriesFilters`
+
+`QueryFilters` plus `refetchType`: `"active"` (default) refetches the queries on screen now; `"none"` only marks everything outdated, quietly, so each is refetched the next time it is mounted or the page is focused. TanStack's `"inactive"` and `"all"` do not exist: the cache keeps no query function for entries nothing is watching.
+
+### `refetchQueries`
+
+```ts
+refetchQueries(client, filters?): Promise<void>
+```
+
+Refetch the matching queries that are on screen (observed and enabled), fresh or not. Unobserved entries are left alone, because the cache keeps no query function for them. Never rejects.
+
+### `cancelQueries`
+
+```ts
+cancelQueries(client, filters?): void
+```
+
+Abort the in-flight fetch of every match.
+
+### `removeQueries`
+
+```ts
+removeQueries(client, filters?): void
+```
+
+Drop every match from the cache. Meant for entries nothing is watching (a logged-out user's data): a mounted component keeps showing its own copy, so use `resetQueries` for what is on screen.
+
+### `resetQueries`
+
+```ts
+resetQueries(client, filters?): Promise<void>
+```
+
+Put every match back to its empty state, cancelling fetches in flight. Queries on screen show their loading state and load again; resolves when they have. `initialData` is not restored.
+
+### `getQueriesData`
+
+```ts
+getQueriesData<TData>(client, filters?): Array<[QueryKey, TData | undefined]>
+```
+
+### `setQueriesData`
+
+```ts
+setQueriesData<TData>(client, filters, dataOrUpdater): Array<[QueryKey, TData | undefined]>
+```
+
+Update every match. An updater that returns `undefined` leaves that entry untouched.
+
+### `ensureQueryData`
+
+```ts
+ensureQueryData(client, { queryKey, queryFn, revalidateIfStale?, staleTime?, retry?, retryDelay? }): Promise<TData>
+```
+
+The cached data when there is some (however old), otherwise fetch it. Made for route loaders. With `revalidateIfStale`, stale data is also refetched in the background.
+
+### `EnsureQueryDataOptions`
+
+The options object of `ensureQueryData`.
+
+### `isCancelledError`
+
+```ts
+isCancelledError(error): error is CancelledError
+```
+
+## Offline (`@omnifront/query/offline`)
+
+Mutations that wait: run in order (scopes), survive a reload, and go out when the network is back. See [Mutations](/guide/mutations#sending-in-order-scopes) and [Persistence](/guide/persistence#mutations-that-are-waiting).
+
+### `enableOffline`
+
+```ts
+enableOffline(client): void
+```
+
+Switch on what needs the client's cooperation, once, when the client is created: mutations with the same `scope: { id }` run one after another in the order they were called (the `onMutate` of a later one still runs at once, so optimistic updates show immediately; it counts as paused until its turn), and the calls that have not been sent yet can be saved with `dehydrateMutations`. It installs `wrap` in the client's `defaultOptions.mutations`; a `wrap` set there already runs around it. Calling it twice changes nothing. `persistQueryClient` calls it for you.
+
+### `setMutationDefaults`
+
+```ts
+setMutationDefaults(client, mutationKey, options): void
+```
+
+What a restored mutation needs to run again: its `mutationFn` and callbacks, by `mutationKey` (matched exactly). Register these before the cache is restored. Share the object with the `useMutation` that starts it (`mutationOptions` is made for that).
+
+### `getMutationDefaults`
+
+`getMutationDefaults(client, mutationKey)` returns what `setMutationDefaults` stored, or `undefined`.
+
+### `dehydrateMutations`
+
+```ts
+dehydrateMutations(client): DehydratedMutation[]
+```
+
+The calls that have not been sent yet, because the network is down or they wait for their turn in a scope, and whose mutation has a `mutationKey`. One that is already running is left out: it may have reached the server, and sending it twice is worse than losing it. Every call counts, also several from one `useMutation`. Oldest first. `variables` and `context` must be JSON-safe.
+
+### `DehydratedMutation`
+
+`{ mutationKey, variables, context, scope?, meta?, submittedAt }`. `context` is what `onMutate` returned.
+
+### `hydrateMutations`
+
+```ts
+hydrateMutations(client, saved, create: (options) => Mutation): DehydratedMutation[]
+```
+
+Start the saved calls again, oldest first, without running `onMutate`: the saved `context` is given back instead, so a rollback still has what it needs. Each waits for the network (and its scope) like a new call and counts towards `useIsMutating` until it settles. `create` builds the mutation (the class lives in the main entry): `(options) => new Mutation(options, client)`. Returns the saved calls it could not restore for lack of defaults.
+
+### `CreateMutation`
+
+The type of `create` above.
+
+### `TrackedMutation`
+
+What `create` returns: a mutation that can be observed (`subscribe` / `getSnapshot`) and sent with `mutate(variables)`. A `Mutation` fits.
+
+### `resumePausedMutations`
+
+```ts
+resumePausedMutations(client): Promise<void>
+```
+
+Resolves when every call that is waiting (for the network, or for its turn in a scope) has settled. They continue by themselves when the network is back; this only lets you wait for it, for example to show "synced".
+
+## Events (`@omnifront/query/events`)
+
+Cache-wide callbacks, for one error toast or logger instead of an `onError` in every component (TanStack's `QueryCache` / `MutationCache` callbacks).
+
+### `onQueryEvents`
+
+```ts
+onQueryEvents(client, { onSuccess?, onError?, onSettled? }): () => void
+```
+
+Handlers run once per fetch, however many components show the query: `onSuccess(data, query)`, `onError(error, query)` after the retries, `onSettled(data, error, query)`. `query` is `{ queryKey, state }`. Cancelled fetches, `setQueryData` and hydration report nothing. Returns the function that stops listening.
+
+### `QueryEventHandlers`
+
+The handlers object of `onQueryEvents`.
+
+### `QueryEventInfo`
+
+`{ queryKey, state }`.
+
+### `onMutationEvents`
+
+```ts
+onMutationEvents(client, { onMutate?, onSuccess?, onError?, onSettled? }): () => void
+```
+
+The same for the mutations **tracked** for the client (see `trackMutation`; the adapters' mutation hooks track themselves): `onMutate(variables)`, `onSuccess(data, variables)`, `onError(error, variables)`, `onSettled(data, error, variables)`.
+
+### `MutationEventHandlers`
+
+The handlers object of `onMutationEvents`.
+
+## Options helpers (`@omnifront/query/options`)
+
+### `queryOptions`
+
+```ts
+const todos = queryOptions({ queryKey: ["todos"], queryFn: fetchTodos, staleTime: 5_000 })
+useQuery(todos)                          // or injectQuery(todos), prefetchQuery(client, todos)
+client.getQueryData(todos.queryKey)      // typed as Todo[] | undefined
+```
+
+Returns the same object. The key becomes a `DataTag`, so the cache methods know the data type without a generic.
+
+### `skipToken`
+
+```ts
+useQuery({ queryKey: ["user", id], queryFn: id ? () => fetchUser(id) : skipToken })
+```
+
+Use instead of a query function to say "nothing to fetch yet". The query stays `"idle"` until a real function arrives.
+
+### `mutationOptions`
+
+```ts
+mutationOptions({ mutationFn, onSuccess?, ... })
+```
+
+Returns the same object; it exists for type inference when a mutation is defined outside a component.

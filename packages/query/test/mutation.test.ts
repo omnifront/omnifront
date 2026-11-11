@@ -14,8 +14,8 @@ const deferred = <T>() => {
 describe("Mutation", () => {
 	it("starts idle, goes pending, then success", async () => {
 		const d = deferred<string>()
-		const m = new Mutation<string, number>({ mutationFn: () => d.promise })
-		expect(m.getSnapshot()).toEqual({ status: "idle", data: undefined, error: undefined, variables: undefined })
+		const m = new Mutation<string, Error, number>({ mutationFn: () => d.promise })
+		expect(m.getSnapshot()).toMatchObject({ status: "idle", data: undefined, error: undefined, variables: undefined })
 		const p = m.mutateAsync(5)
 		expect(m.getSnapshot()).toMatchObject({ status: "pending", variables: 5 })
 		d.resolve("ok")
@@ -26,7 +26,7 @@ describe("Mutation", () => {
 	it("calls onSuccess then onSettled, and waits for onSuccess before reporting success", async () => {
 		const log: string[] = []
 		const gate = deferred<void>()
-		const m = new Mutation<number, void>({
+		const m = new Mutation<number, Error, void>({
 			mutationFn: () => Promise.resolve(1),
 			onSuccess: async (data) => {
 				log.push(`success:${data}`)
@@ -48,7 +48,7 @@ describe("Mutation", () => {
 
 	it("on failure: error state, onError, onSettled, and the promise rejects", async () => {
 		const log: string[] = []
-		const m = new Mutation<number, string>({
+		const m = new Mutation<number, Error, string>({
 			mutationFn: () => Promise.reject(new Error("nope")),
 			onSuccess: () => void log.push("success"),
 			onError: (e, v) => void log.push(`error:${(e as Error).message}:${v}`),
@@ -61,7 +61,7 @@ describe("Mutation", () => {
 
 	it("a throwing onSuccess turns the mutation into an error", async () => {
 		const onError = vi.fn()
-		const m = new Mutation<number, void>({
+		const m = new Mutation<number, Error, void>({
 			mutationFn: () => Promise.resolve(1),
 			onSuccess: () => {
 				throw new Error("cb")
@@ -74,7 +74,7 @@ describe("Mutation", () => {
 	})
 
 	it("a throwing onError still ends in the error state", async () => {
-		const m = new Mutation<number, void>({
+		const m = new Mutation<number, Error, void>({
 			mutationFn: () => Promise.reject(new Error("a")),
 			onError: () => {
 				throw new Error("b")
@@ -85,7 +85,7 @@ describe("Mutation", () => {
 	})
 
 	it("a throwing onSettled rejects the call but keeps the success state", async () => {
-		const m = new Mutation<number, void>({
+		const m = new Mutation<number, Error, void>({
 			mutationFn: () => Promise.resolve(1),
 			onSettled: () => {
 				throw new Error("late")
@@ -96,7 +96,7 @@ describe("Mutation", () => {
 	})
 
 	it("mutate() swallows the rejection", async () => {
-		const m = new Mutation<number, void>({ mutationFn: () => Promise.reject(new Error("x")) })
+		const m = new Mutation<number, Error, void>({ mutationFn: () => Promise.reject(new Error("x")) })
 		m.mutate()
 		await new Promise((r) => setTimeout(r, 0))
 		expect(m.getSnapshot().status).toBe("error")
@@ -107,7 +107,7 @@ describe("Mutation", () => {
 		const second = deferred<string>()
 		const queue = [first, second]
 		const onSuccess = vi.fn()
-		const m = new Mutation<string, number>({ mutationFn: () => queue.shift()!.promise, onSuccess })
+		const m = new Mutation<string, Error, number>({ mutationFn: () => queue.shift()!.promise, onSuccess })
 		const p1 = m.mutateAsync(1)
 		const p2 = m.mutateAsync(2)
 		second.resolve("two")
@@ -120,7 +120,7 @@ describe("Mutation", () => {
 
 	it("reset() returns to idle and ignores the run in flight", async () => {
 		const d = deferred<number>()
-		const m = new Mutation<number, void>({ mutationFn: () => d.promise })
+		const m = new Mutation<number, Error, void>({ mutationFn: () => d.promise })
 		const p = m.mutateAsync()
 		m.reset()
 		d.resolve(1)
@@ -131,7 +131,7 @@ describe("Mutation", () => {
 	it("setOptions swaps callbacks for the next run; subscribers are notified; snapshot is stable", async () => {
 		const a = vi.fn()
 		const b = vi.fn()
-		const m = new Mutation<number, void>({ mutationFn: () => Promise.resolve(1), onSuccess: a })
+		const m = new Mutation<number, Error, void>({ mutationFn: () => Promise.resolve(1), onSuccess: a })
 		const l = vi.fn()
 		m.subscribe(l)
 		expect(m.getSnapshot()).toBe(m.getSnapshot())
@@ -146,7 +146,7 @@ describe("Mutation", () => {
 describe("Mutation onMutate / context", () => {
 	it("passes onMutate's result to every callback, after awaiting it and before mutationFn", async () => {
 		const log: string[] = []
-		const m = new Mutation<string, number, { snapshot: string }>({
+		const m = new Mutation<string, Error, number, { snapshot: string }>({
 			onMutate: async (n) => {
 				log.push(`mutate:${n}`)
 				return { snapshot: `s${n}` }
@@ -164,7 +164,7 @@ describe("Mutation onMutate / context", () => {
 
 	it("on failure, onError gets the context so it can roll back", async () => {
 		let rolledBack = ""
-		const m = new Mutation<void, void, string>({
+		const m = new Mutation<void, Error, void, string>({
 			onMutate: () => "previous",
 			mutationFn: () => Promise.reject(new Error("no")),
 			onError: (_e, _v, ctx) => void (rolledBack = ctx ?? "none"),
@@ -176,7 +176,7 @@ describe("Mutation onMutate / context", () => {
 	it("a throwing onMutate skips mutationFn, errors, and onError gets undefined context", async () => {
 		const fn = vi.fn(() => Promise.resolve(1))
 		let seen: unknown = "unset"
-		const m = new Mutation<number, void, string>({
+		const m = new Mutation<number, Error, void, string>({
 			onMutate: () => {
 				throw new Error("mutate failed")
 			},

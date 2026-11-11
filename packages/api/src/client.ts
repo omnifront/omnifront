@@ -5,6 +5,11 @@ import { applyTransforms, buildURL, encodeBody, mergeConfig, normalizeHeaders } 
 import type { ApiConfig, ApiRequest, ApiResponse, Method, Params, RawResponse, Headers } from "./types"
 
 type RequestHandler = (config: ApiConfig) => ApiConfig | Promise<ApiConfig>
+interface RequestHandlerOptions {
+	/** Skip the interceptor for requests where this returns false. */
+	runWhen?: ((config: ApiConfig) => boolean) | undefined
+}
+type RequestEntry = [RequestHandler, RequestHandlerOptions?]
 type ResponseHandler = (response: ApiResponse) => ApiResponse | Promise<ApiResponse>
 type ErrorHandler = (error: unknown) => ApiResponse | Promise<ApiResponse>
 
@@ -36,9 +41,11 @@ function defaultRetryOn(error: ApiError, method: Method): boolean {
 export interface Api {
 	readonly defaults: ApiConfig
 	readonly interceptors: {
-		request: Interceptors<[RequestHandler]>
+		request: Interceptors<RequestEntry>
 		response: Interceptors<[ResponseHandler?, ErrorHandler?]>
 	}
+	/** The full URL a request with this config would use (base URL and query string included); nothing is sent. */
+	getUri(config?: ApiConfig): string
 	request<T = unknown>(config: ApiConfig): Promise<ApiResponse<T>>
 	get<T = unknown>(url: string, config?: ApiConfig): Promise<ApiResponse<T>>
 	delete<T = unknown>(url: string, config?: ApiConfig): Promise<ApiResponse<T>>
@@ -111,6 +118,8 @@ async function attempt(config: ApiConfig): Promise<ApiResponse> {
 		onDownloadProgress: config.onDownloadProgress,
 		onUploadProgress: config.onUploadProgress,
 		fetch: config.fetch,
+		withCredentials: config.withCredentials,
+		fetchOptions: config.fetchOptions,
 	}
 
 	try {
@@ -119,7 +128,11 @@ async function attempt(config: ApiConfig): Promise<ApiResponse> {
 			raw = await (config.adapter ?? fetchAdapter)(request)
 		} catch (error) {
 			if (error instanceof ApiError) throw error
-			if (timedOut) throw new ApiError(`Timeout of ${config.timeout}ms exceeded`, "TIMEOUT", config, undefined, { cause: error })
+			if (timedOut) {
+				throw new ApiError(config.timeoutErrorMessage ?? `Timeout of ${config.timeout}ms exceeded`, "TIMEOUT", config, undefined, {
+					cause: error,
+				})
+			}
 			if (user?.aborted || (error as Error | undefined)?.name === "AbortError") {
 				throw new ApiError("Request aborted", "ABORT", config, undefined, { cause: error })
 			}
@@ -130,7 +143,7 @@ async function attempt(config: ApiConfig): Promise<ApiResponse> {
 		let parsed = raw.data
 		if (responseType === "json" && typeof parsed === "string") {
 			try {
-				parsed = parsed === "" ? undefined : JSON.parse(parsed)
+				parsed = parsed === "" ? undefined : JSON.parse(parsed, config.parseReviver)
 			} catch (error) {
 				// A non-JSON error body (an HTML 502 page, say) stays as text; a bad success body is a PARSE error.
 				if (ok) {
@@ -174,11 +187,11 @@ export function createApi(defaults: ApiConfig = {}): Api {
 
 function build(
 	defaults: ApiConfig,
-	requestHandlers: [RequestHandler][],
+	requestHandlers: RequestEntry[],
 	responseHandlers: [ResponseHandler?, ErrorHandler?][],
 ): Api {
 	const interceptors = {
-		request: new Interceptors<[RequestHandler]>(),
+		request: new Interceptors<RequestEntry>(),
 		response: new Interceptors<[ResponseHandler?, ErrorHandler?]>(),
 	}
 	interceptors.request.handlers.push(...requestHandlers)
@@ -186,7 +199,9 @@ function build(
 
 	const request = <T>(config: ApiConfig): Promise<ApiResponse<T>> => {
 		let chain: Promise<unknown> = Promise.resolve(mergeConfig(defaults, config))
-		for (const h of interceptors.request.handlers) if (h) chain = chain.then((c) => h[0](c as ApiConfig))
+		for (const h of interceptors.request.handlers) {
+			if (h) chain = chain.then((c) => (h[1]?.runWhen?.(c as ApiConfig) === false ? c : h[0](c as ApiConfig)))
+		}
 		chain = chain.then((c) => dispatch(c as ApiConfig))
 		for (const h of interceptors.response.handlers) if (h) chain = chain.then(h[0] as ((value: unknown) => unknown) | undefined, h[1])
 		return chain as Promise<ApiResponse<T>>
@@ -198,6 +213,7 @@ function build(
 	const api: Api = {
 		defaults,
 		interceptors,
+		getUri: (config) => buildURL(mergeConfig(defaults, config)),
 		request,
 		get: (url, config) => withUrl("GET", url, config),
 		delete: (url, config) => withUrl("DELETE", url, config),
@@ -209,7 +225,7 @@ function build(
 		extend: (config) =>
 			build(
 				mergeConfig(defaults, config),
-				interceptors.request.handlers.filter((h) => h) as [RequestHandler][],
+				interceptors.request.handlers.filter((h) => h) as RequestEntry[],
 				interceptors.response.handlers.filter((h) => h) as [ResponseHandler?, ErrorHandler?][],
 			),
 		queryKey,

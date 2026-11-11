@@ -1,6 +1,6 @@
 # Benchmarks
 
-Measured 2026-11-09 on an Apple-silicon Mac, Node 24.15, against `@tanstack/query-core` / `@tanstack/react-query` 5.107.1, `swr` 2.5.1, `axios` 1.21.0 and `ky` 2.2.0.
+Speed measured 2026-11-09 and bundle sizes re-measured 2026-11-11 (after the parity work of ADR-0013), on an Apple-silicon Mac, Node 24.15, against `@tanstack/query-core` / `@tanstack/react-query` 5.107.1, `swr` 2.5.1, `axios` 1.21.0 and `ky` 2.2.0.
 
 ```bash
 pnpm build
@@ -12,7 +12,7 @@ pnpm --filter @omnifront/benchmarks bench   # speed (varies by machine; compare 
 
 omnifront is **much smaller and does much less**. These numbers are not "omnifront beats TanStack Query"; they are "what you give up and gain by choosing a small core".
 
-Things TanStack Query has that omnifront does **not** (yet): `fetchStatus` flags, a `mutationKey` filter for `useIsMutating`, and the `select` option (use `derive`/`useStore` instead). Structural sharing exists but is opt-in, and the benchmarks run without it; `useIsFetching`, `useIsMutating` and `combine` exist. Part of the size and speed difference is simply that work not being done. Several of those are on the roadmap and will cost bytes.
+Things TanStack Query has that omnifront does **not** (yet): `useSuspenseQueries`, `throwOnError` and `QueryErrorResetBoundary`, `refetchType` `"inactive"` / `"all"`, a mutation cache you can look into, and a handful of rarely used fields (the full list is in [`docs/parity-plan.md`](https://github.com/omnifront/omnifront/blob/main/docs/parity-plan.md)). The mutation, network (`fetchStatus`, paused fetches), `select`, `defaultOptions`, scope and persisted-mutation features now exist, and that is where the extra bytes below come from: the query core grew from 3.15 KB to 4.04 KB. Structural sharing exists but is opt-in, and the benchmarks run without it; `useIsFetching`, `useIsMutating` and `combine` exist. Part of the size and speed difference is simply that work not being done. The speed table was measured before this growth and has not been re-run.
 
 ## Bundle size (minified + gzip, React excluded)
 
@@ -20,14 +20,14 @@ Each entry imports the features shown, bundled with esbuild (tree-shaking on). `
 
 | Scope | Library | min | min+gzip |
 |---|---|---:|---:|
-| Framework-agnostic core (client + observer + mutation) | `@omnifront/query` | 9.68 KB | **3.15 KB** |
+| Framework-agnostic core (client + observer + mutation) | `@omnifront/query` | 12.49 KB | **4.04 KB** |
 | | `@tanstack/query-core` | 32.11 KB | 9.31 KB |
-| React (provider + `useQuery` + `useMutation` + client) | `@omnifront/react` | 11.32 KB | **3.78 KB** |
+| React (provider + `useQuery` + `useMutation` + client) | `@omnifront/react` | 14.34 KB | **4.73 KB** |
 | | `@tanstack/react-query` | 34.63 KB | 10.27 KB |
 | | `swr` (`useSWR` + `useSWRMutation`) | 13.12 KB | 6.02 KB |
 | State store (reference) | `@omnifront/store` | 1.15 KB | 0.54 KB |
-| HTTP client (instance + get + post) | `@omnifront/api` | 5.79 KB | **2.58 KB** |
-| | `@omnifront/api` + `/xhr` adapter | 6.82 KB | 2.92 KB |
+| HTTP client (instance + get + post) | `@omnifront/api` | 6.03 KB | **2.69 KB** |
+| | `@omnifront/api` + `/xhr` adapter | 7.16 KB | 3.05 KB |
 | | `axios` | 57.18 KB | 21.73 KB |
 | | `ky` | 30.37 KB | 10.71 KB |
 

@@ -1,6 +1,6 @@
-import { addTodoMutation, matchesFilter, server, todoFilter, todosQuery } from "@omnifront/example-shared"
+import { addTodoMutation, matchesFilter, pendingTodos, server, setOffline, todoFilter, todosQuery } from "@omnifront/example-shared"
 import { useMutation, useQuery, useQueryClient, useStore } from "@omnifront/react"
-import { useIsFetching, useIsMutating } from "@omnifront/react/activity"
+import { useIsFetching, useIsMutating, useMutationState } from "@omnifront/react/activity"
 import { useState } from "react"
 
 const selectFilter = (s: { filter: string }) => s.filter
@@ -9,6 +9,7 @@ export function App() {
 	const client = useQueryClient()
 	const [title, setTitle] = useState("")
 	const [failing, setFailing] = useState(false)
+	const [offline, setOfflineState] = useState(false)
 
 	const todos = useQuery(todosQuery)
 	const add = useMutation(addTodoMutation(client))
@@ -17,6 +18,8 @@ export function App() {
 	// Cache-wide counters, the kind a global progress bar would use.
 	const fetchingAll = useIsFetching()
 	const mutatingAll = useIsMutating()
+	// What is being added right now (also from another component), shown before it is saved.
+	const adding = useMutationState(pendingTodos)
 
 	return (
 		<main style={{ fontFamily: "system-ui", maxWidth: 480, margin: "2rem auto" }}>
@@ -38,6 +41,11 @@ export function App() {
 				{visible?.map((t) => (
 					<li key={t}>{t}</li>
 				))}
+				{adding.map((t, i) => (
+					<li key={`adding-${i}`} data-testid="adding" style={{ opacity: 0.5 }}>
+						{t} {add.isPaused ? "(waiting for the network)" : "(saving…)"}
+					</li>
+				))}
 			</ul>
 
 			<form
@@ -49,7 +57,7 @@ export function App() {
 				}}
 			>
 				<input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="New todo" />{" "}
-				<button disabled={add.status === "pending"}>{add.status === "pending" ? "Saving…" : "Add"}</button>
+				<button disabled={add.isPending && !add.isPaused}>{add.isPending ? "Saving…" : "Add"}</button>
 			</form>
 			{add.status === "error" && <p style={{ color: "crimson" }}>Could not save: {String((add.error as Error).message)}</p>}
 
@@ -65,6 +73,17 @@ export function App() {
 						}}
 					/>{" "}
 					simulate server failure
+				</label>{" "}
+				<label>
+					<input
+						type="checkbox"
+						checked={offline}
+						onChange={(e) => {
+							setOffline(e.target.checked)
+							setOfflineState(e.target.checked)
+						}}
+					/>{" "}
+					simulate offline
 				</label>
 			</p>
 		</main>

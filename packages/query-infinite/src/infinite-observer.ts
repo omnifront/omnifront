@@ -1,6 +1,8 @@
 import { BaseSubscribable } from "@omnifront/core"
 import {
 	QueryObserver,
+	type DefaultError,
+	type FetchOptions,
 	type QueryClient,
 	type QueryFnContext,
 	type QueryObserverOptions,
@@ -18,8 +20,8 @@ export interface InfiniteQueryFnContext<TPageParam> extends QueryFnContext {
 	pageParam: TPageParam
 }
 
-export interface InfiniteQueryObserverOptions<TPage, TPageParam = unknown>
-	extends Omit<QueryObserverOptions<InfiniteData<TPage, TPageParam>>, "queryFn"> {
+export interface InfiniteQueryObserverOptions<TPage, TError = DefaultError, TPageParam = unknown>
+	extends Omit<QueryObserverOptions<InfiniteData<TPage, TPageParam>, TError>, "queryFn"> {
 	/** Load ONE page. */
 	queryFn: (context: InfiniteQueryFnContext<TPageParam>) => Promise<TPage>
 	/** The cursor of the first page. */
@@ -46,7 +48,7 @@ export interface InfiniteQueryObserverOptions<TPage, TPageParam = unknown>
 	maxPages?: number | undefined
 }
 
-export interface InfiniteQueryResult<TPage, TPageParam = unknown> extends QueryResult<InfiniteData<TPage, TPageParam>> {
+export interface InfiniteQueryResult<TPage, TError = DefaultError, TPageParam = unknown> extends QueryResult<InfiniteData<TPage, TPageParam>, TError> {
 	hasNextPage: boolean
 	hasPreviousPage: boolean
 	/** A `fetchNextPage` request is in flight (as opposed to a refetch of everything). */
@@ -54,10 +56,10 @@ export interface InfiniteQueryResult<TPage, TPageParam = unknown> extends QueryR
 	isFetchingPreviousPage: boolean
 }
 
-interface Slot<TPage, TPageParam> {
-	source?: QueryResult<InfiniteData<TPage, TPageParam>>
+interface Slot<TPage, TError, TPageParam> {
+	source?: QueryResult<InfiniteData<TPage, TPageParam>, TError>
 	direction?: "next" | "previous" | undefined
-	result?: InfiniteQueryResult<TPage, TPageParam>
+	result?: InfiniteQueryResult<TPage, TError, TPageParam>
 }
 
 const noop = (): void => {}
@@ -67,28 +69,28 @@ const noop = (): void => {}
  * holds `{ pages, pageParams }`, so staleness, retries, focus refetch, invalidation, hydration and
  * persistence all work unchanged. A refetch reloads every page loaded so far, in order.
  */
-export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubscribable<
-	InfiniteQueryResult<TPage, TPageParam>
+export class InfiniteQueryObserver<TPage, TError = DefaultError, TPageParam = unknown> extends BaseSubscribable<
+	InfiniteQueryResult<TPage, TError, TPageParam>
 > {
-	private readonly inner: QueryObserver<InfiniteData<TPage, TPageParam>>
+	private readonly inner: QueryObserver<InfiniteData<TPage, TPageParam>, TError>
 	private direction: "next" | "previous" | undefined
 	private stopInner: (() => void) | undefined
-	private readonly live: Slot<TPage, TPageParam> = {}
-	private readonly server: Slot<TPage, TPageParam> = {}
+	private readonly live: Slot<TPage, TError, TPageParam> = {}
+	private readonly server: Slot<TPage, TError, TPageParam> = {}
 
 	constructor(
 		private readonly client: QueryClient,
-		private options: InfiniteQueryObserverOptions<TPage, TPageParam>,
+		private options: InfiniteQueryObserverOptions<TPage, TError, TPageParam>,
 	) {
 		super()
 		this.inner = new QueryObserver(client, this.innerOptions())
 	}
 
-	getSnapshot(): InfiniteQueryResult<TPage, TPageParam> {
+	getSnapshot(): InfiniteQueryResult<TPage, TError, TPageParam> {
 		return this.view(this.live, this.inner.getSnapshot())
 	}
 
-	getServerSnapshot(): InfiniteQueryResult<TPage, TPageParam> {
+	getServerSnapshot(): InfiniteQueryResult<TPage, TError, TPageParam> {
 		return this.view(this.server, this.inner.getServerSnapshot())
 	}
 
@@ -107,13 +109,13 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 		return this.inner.refetch()
 	}
 
-	setOptions(options: InfiniteQueryObserverOptions<TPage, TPageParam>): void {
+	setOptions(options: InfiniteQueryObserverOptions<TPage, TError, TPageParam>): void {
 		this.options = options
 		this.inner.setOptions(this.innerOptions())
 	}
 
 	/** See `QueryObserver.inherit`. */
-	inherit(from: InfiniteQueryObserver<TPage, TPageParam>): void {
+	inherit(from: InfiniteQueryObserver<TPage, TError, TPageParam>): void {
 		this.inner.inherit(from.inner)
 	}
 
@@ -127,19 +129,19 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 	}
 
 	/** The options of the underlying observer: same key and behaviour, but the function loads all pages. */
-	private innerOptions(): QueryObserverOptions<InfiniteData<TPage, TPageParam>> {
+	private innerOptions(): QueryObserverOptions<InfiniteData<TPage, TPageParam>, TError> {
 		// Everything except the page-level functions describes the cache entry and is passed through.
-		const rest: Partial<InfiniteQueryObserverOptions<TPage, TPageParam>> = { ...this.options }
+		const rest: Partial<InfiniteQueryObserverOptions<TPage, TError, TPageParam>> = { ...this.options }
 		delete rest.queryFn
 		delete rest.initialPageParam
 		delete rest.getNextPageParam
 		delete rest.getPreviousPageParam
 		delete rest.maxPages
-		return { ...(rest as unknown as Omit<QueryObserverOptions<InfiniteData<TPage, TPageParam>>, "queryFn">), queryFn: this.loadAll }
+		return { ...(rest as unknown as Omit<QueryObserverOptions<InfiniteData<TPage, TPageParam>, TError>, "queryFn">), queryFn: this.loadAll }
 	}
 
 	private data(): InfiniteData<TPage, TPageParam> | undefined {
-		return this.client.getQuery<InfiniteData<TPage, TPageParam>>(this.options.queryKey).getSnapshot().data
+		return this.client.getQuery<InfiniteData<TPage, TPageParam>, TError>(this.options.queryKey).getSnapshot().data
 	}
 
 	private nextParam(data: InfiniteData<TPage, TPageParam>): TPageParam | undefined | null {
@@ -156,14 +158,14 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 	}
 
 	// Reload as many pages as we have (at least one), following the cursors from the first one.
-	private loadAll = async ({ signal }: QueryFnContext): Promise<InfiniteData<TPage, TPageParam>> => {
+	private loadAll = async (context: QueryFnContext): Promise<InfiniteData<TPage, TPageParam>> => {
 		const existing = this.data()
 		const count = Math.max(existing?.pages.length ?? 1, 1)
 		const pages: TPage[] = []
 		const pageParams: TPageParam[] = []
 		let param: TPageParam | undefined | null = existing?.pageParams[0] ?? this.options.initialPageParam
 		for (let i = 0; i < count && param != null; i++) {
-			pages.push(await this.options.queryFn({ signal, pageParam: param }))
+			pages.push(await this.options.queryFn({ ...context, pageParam: param }))
 			pageParams.push(param)
 			param = this.nextParam({ pages, pageParams })
 		}
@@ -184,13 +186,13 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 		if (!data) return this.inner.refetch().then(noop, noop) // nothing loaded yet: load the first page
 		const param = direction === "next" ? this.nextParam(data) : this.previousParam(data)
 		if (param == null) return
-		const query = this.client.getQuery<InfiniteData<TPage, TPageParam>>(this.options.queryKey)
+		const query = this.client.getQuery<InfiniteData<TPage, TPageParam>, TError>(this.options.queryKey)
 		this.direction = direction
 		this.notify()
 		try {
 			await query.fetch(
-				async ({ signal }) => {
-					const page = await this.options.queryFn({ signal, pageParam: param })
+				async (context) => {
+					const page = await this.options.queryFn({ ...context, pageParam: param })
 					const current = query.getSnapshot().data ?? data // it may have changed while we waited
 					const grown =
 						direction === "next"
@@ -198,7 +200,7 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 							: { pages: [page, ...current.pages], pageParams: [param, ...current.pageParams] }
 					return this.trim(grown, direction)
 				},
-				{ retry: this.options.retry ?? 3, retryDelay: this.options.retryDelay },
+				{ ...this.client.getDefaultOptions().queries, ...this.options, retry: this.options.retry ?? this.client.getDefaultOptions().queries?.retry ?? 3 } as FetchOptions<TError>,
 			)
 		} catch {
 			// The failure is in the query state; the old pages stay.
@@ -209,9 +211,9 @@ export class InfiniteQueryObserver<TPage, TPageParam = unknown> extends BaseSubs
 	}
 
 	private view(
-		slot: Slot<TPage, TPageParam>,
-		result: QueryResult<InfiniteData<TPage, TPageParam>>,
-	): InfiniteQueryResult<TPage, TPageParam> {
+		slot: Slot<TPage, TError, TPageParam>,
+		result: QueryResult<InfiniteData<TPage, TPageParam>, TError>,
+	): InfiniteQueryResult<TPage, TError, TPageParam> {
 		if (slot.result && slot.source === result && slot.direction === this.direction) return slot.result
 		slot.source = result
 		slot.direction = this.direction

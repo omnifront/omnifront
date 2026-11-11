@@ -38,10 +38,35 @@ An errored query stays in the cache, so remounting would throw the same error. T
 
 (`react-error-boundary` shown; any error boundary with a reset works.)
 
+`QueryErrorResetBoundary` (from `@omnifront/react/errors`) does that invalidation for you, TanStack style: it hands your boundary a `reset` that lets every failed query load again.
+
+```tsx
+<QueryErrorResetBoundary>
+	{({ reset }) => (
+		<ErrorBoundary onReset={reset} fallbackRender={({ resetErrorBoundary }) => <button onClick={resetErrorBoundary}>Try again</button>}>
+			<Page />
+		</ErrorBoundary>
+	)}
+</QueryErrorResetBoundary>
+```
+
+`reset` marks every failed query of the client as outdated (not only the ones under this boundary; a query nothing shows is not fetched until something mounts it). `useQueryErrorResetBoundary()` returns the same `{ reset }` for a boundary you wrote as a class or a hook.
+
+## Several queries at once, and no waterfalls
+
+`useSuspenseQueries` (from `@omnifront/react/queries`) takes `{ queries, combine? }`: the component suspends until all of them have data, loading them **in parallel**, and throws the first failure. Every `data` is defined.
+
+```tsx
+const [user, posts] = useSuspenseQueries({ queries: [userQuery(id), postsQuery(id)] })
+```
+
+A child that suspends only starts its request when it renders, after its parent finished. `usePrefetchQuery(options)` (from `@omnifront/react/suspense`) in the parent starts that request earlier, while the parent renders. It does nothing when the query is already in the cache.
+
 ## Differences from `useQuery`
 
 - `enabled` and `placeholderData` are ignored: a suspending query exists to have real data.
 - `staleTime` defaults to **1 second**, not 0. With 0, data that has just finished loading would count as stale and be refetched the moment the component mounts.
+- `throwOnError` is not needed: a suspending query always throws its failure.
 - `useQuery` options such as `retry`, `refetchInterval`, `initialData` all work.
 
 ## Server rendering

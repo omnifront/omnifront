@@ -8,7 +8,7 @@
 	{
 		"name": "@omnifront/query",
 		"path": "packages/query/dist/index.js",
-		"limit": "3.1 KB",
+		"limit": "4 KB",
 		"gzip": true,
 		"ignore": [
 			"@omnifront/core"
@@ -94,11 +94,12 @@
 	{
 		"name": "@omnifront/persist",
 		"path": "packages/persist/dist/index.js",
-		"limit": "1 KB",
+		"limit": "1.4 KB",
 		"gzip": true,
 		"ignore": [
 			"@omnifront/query",
-			"@omnifront/query/hydration"
+			"@omnifront/query/hydration",
+			"@omnifront/query/offline"
 		]
 	},
 	{
@@ -200,7 +201,7 @@
 	{
 		"name": "@omnifront/react/queries",
 		"path": "packages/react/dist/queries.js",
-		"limit": "1 KB",
+		"limit": "1.3 KB",
 		"gzip": true,
 		"ignore": [
 			"react",
@@ -278,7 +279,7 @@
 	{
 		"name": "@omnifront/query/activity",
 		"path": "packages/query/dist/activity.js",
-		"limit": "1 KB",
+		"limit": "1.3 KB",
 		"gzip": true,
 		"ignore": [
 			"@omnifront/core"
@@ -287,7 +288,7 @@
 	{
 		"name": "@omnifront/react/activity",
 		"path": "packages/react/dist/activity.js",
-		"limit": "0.6 KB",
+		"limit": "0.75 KB",
 		"gzip": true,
 		"ignore": [
 			"react",
@@ -317,6 +318,65 @@
 			"@angular/core",
 			"@omnifront/query",
 			"@omnifront/query/activity",
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/query/filters",
+		"path": "packages/query/dist/filters.js",
+		"limit": "1.2 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/query/events",
+		"path": "packages/query/dist/events.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/query/options",
+		"path": "packages/query/dist/options.js",
+		"limit": "1 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/api/serialize",
+		"path": "packages/api/dist/serialize.js",
+		"limit": "1 KB",
+		"gzip": true
+	},
+	{
+		"name": "@omnifront/api/progress",
+		"path": "packages/api/dist/progress.js",
+		"limit": "0.5 KB",
+		"gzip": true
+	},
+	{
+		"name": "@omnifront/query/offline",
+		"path": "packages/query/dist/offline.js",
+		"limit": "1.4 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/react/errors",
+		"path": "packages/react/dist/errors.js",
+		"limit": "0.5 KB",
+		"gzip": true,
+		"ignore": [
+			"react",
+			"@omnifront/query",
 			"@omnifront/core"
 		]
 	}

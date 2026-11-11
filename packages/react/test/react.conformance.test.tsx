@@ -8,7 +8,7 @@ import type { MutationOptions, QueryClient, QueryObserverOptions } from "@omnifr
 import { act, renderHook } from "@testing-library/react"
 import { createElement, type ReactNode } from "react"
 import { QueryProvider, useMutation, useQuery, useStore } from "../src"
-import { useIsFetching, useIsMutating } from "../src/activity"
+import { useIsFetching, useIsMutating, useMutationState } from "../src/activity"
 import { useInfiniteQuery } from "../src/infinite"
 import { useQueries } from "../src/queries"
 
@@ -33,9 +33,23 @@ const harness: Harness = {
 		}
 	},
 
+	mountSelectedQuery(client, options, select) {
+		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
+		const hook = renderHook((props: { select: typeof select }) => useQuery({ ...options, select: props.select }), {
+			wrapper,
+			initialProps: { select },
+		})
+		return {
+			current: () => hook.result.current,
+			setSelect: (next) => hook.rerender({ select: next }),
+			refetch: () => hook.result.current.refetch(),
+			unmount: () => hook.unmount(),
+		}
+	},
+
 	mountQueries(client, options) {
 		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
-		const hook = renderHook((props: typeof options) => useQueries<unknown[]>(props as never), { wrapper, initialProps: options })
+		const hook = renderHook((props: typeof options) => useQueries(props as never), { wrapper, initialProps: options })
 		return {
 			current: () => hook.result.current as never,
 			update: (next) => hook.rerender(next),
@@ -45,7 +59,7 @@ const harness: Harness = {
 
 	mountCombinedQueries(client, options, combine) {
 		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
-		const hook = renderHook((props: typeof options) => useQueries<unknown[], ReturnType<typeof combine>>(props as never, { combine: combine as never }), {
+		const hook = renderHook((props: typeof options) => (useQueries as (queries: never, options: { combine: never }) => ReturnType<typeof combine>)(props as never, { combine: combine as never }), {
 			wrapper,
 			initialProps: options,
 		})
@@ -86,8 +100,19 @@ const harness: Harness = {
 		}
 	},
 
+	mountMutationInsight(client, filters, select) {
+		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
+		// Inline objects on purpose: a filter written in a component is a new object on every render.
+		const hook = renderHook(() => ({ mutating: useIsMutating({ ...filters }), states: useMutationState({ filters: { ...filters }, select }) }), { wrapper })
+		return {
+			mutating: () => hook.result.current.mutating,
+			states: () => hook.result.current.states,
+			unmount: () => hook.unmount(),
+		}
+	},
+
 	mountMutation<TData, TVariables, TContext = unknown>(
-		options: MutationOptions<TData, TVariables, TContext>,
+		options: MutationOptions<TData, Error, TVariables, TContext>,
 		client?: QueryClient,
 	): MutationHandle<TData, TVariables> {
 		const wrapper = client
@@ -96,7 +121,7 @@ const harness: Harness = {
 		const hook = renderHook(() => useMutation(options), wrapper ? { wrapper } : {})
 		return {
 			current: () => hook.result.current,
-			mutate: (variables: TVariables) => void act(() => hook.result.current.mutate(variables)),
+			mutate: (variables: TVariables, callbacks) => void act(() => hook.result.current.mutate(variables, callbacks as never)),
 			async mutateAsync(variables: TVariables) {
 				let out!: Promise<TData>
 				await act(async () => {

@@ -1,5 +1,14 @@
 export type QueryKey = readonly unknown[]
 
+declare const dataTag: unique symbol
+/**
+ * A query key that remembers the type of the data stored under it (types only; nothing exists at
+ * runtime). `queryOptions` from `@omnifront/query/options` produces these.
+ */
+export type DataTag<TKey extends QueryKey, TData> = TKey & { readonly [dataTag]: TData }
+/** A key without a data type attached; a tagged key must go through the typed overload. */
+export type UntaggedKey<TKey extends QueryKey> = TKey extends { readonly [dataTag]: unknown } ? never : TKey
+
 function sortKeys(_: string, value: unknown): unknown {
 	if (value === null || typeof value !== "object" || Array.isArray(value)) return value
 	const src = value as Record<string, unknown>

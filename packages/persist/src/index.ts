@@ -1,5 +1,6 @@
-import { focusManager, hashKey, type QueryClient } from "@omnifront/query"
+import { focusManager, hashKey, Mutation, type QueryClient } from "@omnifront/query"
 import { dehydrate, hydrate, type DehydratedState, type DehydrateOptions } from "@omnifront/query/hydration"
+import { dehydrateMutations, enableOffline, hydrateMutations, type DehydratedMutation } from "@omnifront/query/offline"
 
 /** The part of `localStorage` / `sessionStorage` / async-storage / IndexedDB wrappers we need. */
 export interface PersistStorage {
@@ -15,6 +16,8 @@ export interface PersistedCache {
 	timestamp: number
 	buster: string
 	state: DehydratedState
+	/** Mutations that were waiting for the network (or their turn) when it was written. Only present when there are some. */
+	mutations?: DehydratedMutation[]
 }
 
 export interface PersistOptions {
@@ -27,6 +30,13 @@ export interface PersistOptions {
 	buster?: string
 	/** How often (ms) changes are looked for and written. Default 1000. */
 	throttle?: number
+	/**
+	 * Also keep the mutations that are waiting for the network, and send them after a reload.
+	 * Default `true`; it switches on `enableOffline(client)`. A saved mutation can only be sent again
+	 * if `setMutationDefaults(client, key, options)` (from `@omnifront/query/offline`) was called for
+	 * its `mutationKey` before the cache is restored; the others are reported to `onError` and dropped.
+	 */
+	persistMutations?: boolean
 	/** Which queries to persist. Default: the ones with successful data. */
 	shouldDehydrate?: DehydrateOptions["shouldDehydrate"]
 	serialize?: (cache: PersistedCache) => string
@@ -63,6 +73,7 @@ export function persistQueryClient(client: QueryClient, options: PersistOptions)
 		buster = "",
 		throttle = 1000,
 		shouldDehydrate,
+		persistMutations = true,
 		serialize = JSON.stringify,
 		deserialize = JSON.parse as (raw: string) => PersistedCache,
 		onError,
@@ -75,27 +86,43 @@ export function persistQueryClient(client: QueryClient, options: PersistOptions)
 	let stopFocus: (() => void) | undefined
 	let written: string | undefined // fingerprint of the last cache we wrote or loaded
 
+	if (persistMutations) enableOffline(client)
 	const snapshot = (): DehydratedState => dehydrate(client, shouldDehydrate ? { shouldDehydrate } : {})
+	const waiting = (): DehydratedMutation[] => (persistMutations ? dehydrateMutations(client) : [])
 	// Cheap change detection: no serialising unless something moved. Includes the data reference
 	// so two writes in the same millisecond are still told apart.
 	const seen = new WeakMap<object, number>()
 	let nextId = 1
-	const fingerprint = (state: DehydratedState): string =>
+	const fingerprint = (state: DehydratedState, mutations: DehydratedMutation[]): string =>
 		state.queries
 			.map((q) => {
 				const data = q.data
 				const id = typeof data === "object" && data !== null ? (seen.get(data) ?? (seen.set(data, nextId), nextId++)) : String(data)
 				return `${hashKey(q.queryKey)}@${q.dataUpdatedAt}#${id}`
 			})
+			.concat(mutations.map((m) => `m:${m.submittedAt}:${hashKey(m.mutationKey)}`))
 			.join("|")
 
 	async function save(): Promise<void> {
 		if (stopped) return
 		try {
 			const state = snapshot()
-			const print = fingerprint(state)
+			const mutations = waiting()
+			const print = fingerprint(state, mutations)
 			if (print === written) return
-			await storage.setItem(key, serialize({ version: 1, timestamp: scheduler.now(), buster, state }))
+			const write = (list: DehydratedMutation[]): Promise<void> | void =>
+				storage.setItem(
+					key,
+					serialize({ version: 1, timestamp: scheduler.now(), buster, state, ...(list.length ? { mutations: list } : {}) }),
+				)
+			try {
+				await write(mutations)
+			} catch (error) {
+				if (!mutations.length) throw error
+				// Variables that are not JSON-safe must not stop the queries from being saved.
+				report(error)
+				await write([])
+			}
 			written = print
 		} catch (error) {
 			report(error) // quota exceeded, private mode, unserialisable data: try again next tick
@@ -112,7 +139,11 @@ export function persistQueryClient(client: QueryClient, options: PersistOptions)
 				return false
 			}
 			hydrate(client, cache.state)
-			written = fingerprint(cache.state) // what is stored, not what else arrived meanwhile
+			if (persistMutations && cache.mutations?.length) {
+				const skipped = hydrateMutations(client, cache.mutations, (o) => new Mutation(o as never, client))
+				for (const m of skipped) report(new Error(`No mutation defaults for ${JSON.stringify(m.mutationKey)}: not restored`))
+			}
+			written = fingerprint(cache.state, cache.mutations ?? []) // what is stored, not what else arrived meanwhile
 			return true
 		} catch (error) {
 			report(error)

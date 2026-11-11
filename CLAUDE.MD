@@ -11,7 +11,7 @@ Goals, in priority order:
 2. Genuinely useful: teams running more than one framework (or migrating between them) should be able to share data-layer logic.
 3. Small, well-tested, well-documented, with real examples.
 
-Differentiation angle (pick this when making product decisions): **multi-framework teams and gradual migration** (for example, moving from Angular to React without rewriting data logic). Secondary angles: tiny bundle size (core under 3KB gzip) and one unified mental model for query + store.
+Differentiation angle (pick this when making product decisions): **multi-framework teams and gradual migration** (for example, moving from Angular to React without rewriting data logic). Secondary angles: small bundle size (core + query is about 5KB gzip, and every extra is an opt-in entry with its own budget) and one unified mental model for query + store.
 
 Non-goals for v1: forms/validation, Svelte/Solid/Qwik adapters, a custom GraphQL client, a full DevTools extension.
 
@@ -22,7 +22,7 @@ Non-goals for v1: forms/validation, Svelte/Solid/Qwik adapters, a custom GraphQL
 - **Build:** `tsup` per package (ESM + CJS + `.d.ts`). Angular package may later need `ng-packagr`; revisit in the Angular phase.
 - **Test:** Vitest. Type tests with `expect-type` or `tsd`. Adapter tests use a shared conformance suite (see section 6).
 - **Release:** Changesets.
-- **Size guard:** `size-limit` in CI. Budgets (gzip): `core` ≤ 1KB, `query` ≤ 3KB, `api` ≤ 3KB (ADR-0009), each adapter ≤ 1KB.
+- **Size guard:** `size-limit` in CI. Budgets (gzip): `core` ≤ 1KB, `query` ≤ 4KB (ADR-0013, with a per-feature byte ledger), `api` ≤ 3KB (ADR-0009), each adapter ≤ 1KB (Vue ≤ 1.1KB), plus a budget per opt-in entry (see `.size-limit.json`).
 - **Supported targets:** React ≥ 18, Vue ≥ 3.3, Angular ≥ 17, Next ≥ 14 (App Router and Pages Router).
 - **Package manager:** pnpm 9. Package scope: `@omnifront/*`.
 
@@ -39,12 +39,13 @@ omnifront/
 ├─ docs/adr/
 │   ├─ 0000-template.md
 │   ├─ 0001-subscribable-contract.md
-│   └─ 0002-monorepo-and-build.md
+│   ├─ 0002-monorepo-and-build.md
+│   └─ 0003 … 0013               # one per later decision; 0013 = where a feature goes, and parity with TanStack Query / axios
 ├─ packages/
 │   ├─ core/                   # Subscribable, notifyManager, Scheduler, utils
-│   ├─ query/                  # QueryClient, Query, QueryObserver, Mutation
+│   ├─ query/                  # QueryClient, Query, QueryObserver, Mutation; opt-in entries /hydration /structural /prefetch /activity /filters /events /options /offline
 │   ├─ store/                  # phase 4
-│   ├─ api/                    # fetch-based HTTP client (ADR-0009); entries ./xhr ./auth ./testing
+│   ├─ api/                    # fetch-based HTTP client (ADR-0009); entries ./xhr ./auth ./testing ./serialize ./progress
 │   ├─ query-infinite/ persist/ devtools/   # opt-in extras (ADR-0006, ADR-0007)
 │   ├─ react/                  # hooks
 │   ├─ vue/                    # composables
@@ -230,6 +231,12 @@ ADR template (`docs/adr/0000-template.md`):
 
 Rule: do not start a phase until the previous one meets its exit criteria.
 
+**Status (2026-11-11):** Phases 0 to 6 are done (core, query, store, api, query-infinite, persist, devtools, React/Vue/Angular/Next adapters with SSR, conformance suite, docs, benchmarks, examples). Nothing has been published to npm. **Phase 7 (launch) is on hold: do not publish to npm, make the repo public or post anything until the owner says so.**
+
+Current work, on branch `feat/parity-phases-1-2` (not pushed): closing the gap to TanStack Query and axios, following ADR-0013 and `docs/parity-plan.md`. Plan phases 0 to 4 are done: typed errors (`TError` is the second type argument), result flags, `select`, `defaultOptions`, `refetchOnMount`, network modes and paused fetches, mutation options, scopes and persisted waiting mutations (`@omnifront/query/offline`), the axios options in `api`, and the opt-in entries `/filters`, `/events`, `/options`, `/serialize`, `/progress`. Next is plan phase 5 (adapter-only items such as `throwOnError`, `useSuspenseQueries`, streamed pending queries); the leftovers and what was dropped are listed in the plan and in ADR-0013 section 9. The Devtools UI (ADR-0012) is separate work in progress.
+
+**Size budgets are nearly spent:** the main entry of `@omnifront/query` is at 3.975 KB of 4 KB (and `api` at 2.83 of 3 KB). The cap does not go up without an ADR; a new feature goes to an opt-in entry, an adapter or its own package (ADR-0013 section 1), or is paid for by removing something. `Mutation`'s `wrap` option is the extension point for behaviour that needs to sit around sending.
+
 **Phase 0: Prerequisites (weeks 1 to 2).** Study `query-core` in TanStack Query, plus Zustand/Nanostores (simple external stores), Pinia and NgRx SignalStore (what Vue/Angular users expect). Needed knowledge: advanced TypeScript (generics, conditional types, `infer`), reactivity patterns (pub-sub, signals, proxy), caching concepts (stale-while-revalidate, cache keys, GC), each framework's external-store sync mechanism.
 
 **Phase 1: Scaffold and ADRs (weeks 2 to 3).** Create the repo per section 3, CI, lint, size-limit, dependency-boundary check. Commit ADR-0001 and ADR-0002.
@@ -281,4 +288,6 @@ Rule: do not start a phase until the previous one meets its exit criteria.
 - Every new core behavior gets a test in core, and a conformance test if it affects adapters.
 - Never import a framework outside its adapter package.
 - Prefer small commits, one concern each; add a Changeset for every user-facing change.
+- Where a feature goes is decided by ADR-0013 (main entry only if it needs internals and nearly everyone needs it; otherwise an opt-in entry, an adapter or a separate package). Record every byte added to `@omnifront/query`'s main entry in that ADR's ledger.
+- A feature that changes an adapter's API is added to all three adapters and to the conformance suite in the same change.
 - When writing Vue or Angular adapters, briefly explain the framework-specific lifecycle choices in comments or PR descriptions.

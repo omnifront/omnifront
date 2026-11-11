@@ -1,4 +1,4 @@
-import type { QueryStatus } from "@omnifront/query"
+import type { DefaultError, QueryStatus } from "@omnifront/query"
 import {
 	InfiniteQueryObserver,
 	type InfiniteData,
@@ -22,12 +22,29 @@ import { useQueryClient } from "./plugin"
 
 export type { InfiniteData, InfiniteQueryObserverOptions, InfiniteQueryResult }
 
-export interface UseInfiniteQueryReturn<TPage, TPageParam = unknown> {
+export type UseInfiniteQueryOptions<TPage, TError = DefaultError, TPageParam = unknown, TData = InfiniteData<TPage, TPageParam>> =
+	InfiniteQueryObserverOptions<TPage, TError, TPageParam> & {
+		/**
+		 * Derive what the component needs from the loaded pages (`pages.flat()`, say). `data` (and what
+		 * `refetch` resolves with) is the derived value; the cache keeps the pages. It is a `computed`,
+		 * so refs it reads are tracked.
+		 */
+		select?: ((data: InfiniteData<TPage, TPageParam>) => TData) | undefined
+	}
+
+export interface UseInfiniteQueryReturn<TPage, TError = DefaultError, TPageParam = unknown, TData = InfiniteData<TPage, TPageParam>> {
 	status: ComputedRef<QueryStatus>
-	data: ComputedRef<InfiniteData<TPage, TPageParam> | undefined>
-	error: ComputedRef<unknown>
+	data: ComputedRef<TData | undefined>
+	error: ComputedRef<TError | undefined>
 	isFetching: ComputedRef<boolean>
 	isStale: ComputedRef<boolean>
+	isPending: ComputedRef<boolean>
+	isLoading: ComputedRef<boolean>
+	isRefetching: ComputedRef<boolean>
+	isSuccess: ComputedRef<boolean>
+	isError: ComputedRef<boolean>
+	isLoadingError: ComputedRef<boolean>
+	isRefetchError: ComputedRef<boolean>
 	hasNextPage: ComputedRef<boolean>
 	hasPreviousPage: ComputedRef<boolean>
 	isFetchingNextPage: ComputedRef<boolean>
@@ -35,21 +52,21 @@ export interface UseInfiniteQueryReturn<TPage, TPageParam = unknown> {
 	/** Load the next page. Never rejects; a failure shows up in `error`. */
 	fetchNextPage: () => Promise<void>
 	fetchPreviousPage: () => Promise<void>
-	refetch: () => Promise<InfiniteData<TPage, TPageParam>>
+	refetch: () => Promise<TData>
 }
 
 /** Same as `useQuery`, but the data is `{ pages, pageParams }` and you can load more. Options may be reactive. */
-export function useInfiniteQuery<TPage, TPageParam = unknown>(
-	options: MaybeRefOrGetter<InfiniteQueryObserverOptions<TPage, TPageParam>>,
-): UseInfiniteQueryReturn<TPage, TPageParam> {
+export function useInfiniteQuery<TPage, TError = DefaultError, TPageParam = unknown, TData = InfiniteData<TPage, TPageParam>>(
+	options: MaybeRefOrGetter<UseInfiniteQueryOptions<TPage, TError, TPageParam, TData>>,
+): UseInfiniteQueryReturn<TPage, TError, TPageParam, TData> {
 	// On the server a failing request must not hold the render open through retries (see useQuery).
-	const forServer = (o: InfiniteQueryObserverOptions<TPage, TPageParam>): InfiniteQueryObserverOptions<TPage, TPageParam> =>
+	const forServer = (o: InfiniteQueryObserverOptions<TPage, TError, TPageParam>): InfiniteQueryObserverOptions<TPage, TError, TPageParam> =>
 		typeof window === "undefined" ? { ...o, retry: o.retry ?? false } : o
 	const observer = new InfiniteQueryObserver(useQueryClient(), forServer(toValue(options)))
 	// Same SSR approach as useQuery: server snapshot for the first render, live after mount.
 	let live = !getCurrentInstance()
 	const read = () => (live ? observer.getSnapshot() : observer.getServerSnapshot())
-	const snapshot = shallowRef<InfiniteQueryResult<TPage, TPageParam>>(read())
+	const snapshot = shallowRef<InfiniteQueryResult<TPage, TError, TPageParam>>(read())
 	if (typeof window === "undefined") {
 		onServerPrefetch(async () => {
 			if (observer.getServerSnapshot().isFetching) await observer.refetch().catch(() => {})
@@ -75,19 +92,20 @@ export function useInfiniteQuery<TPage, TPageParam = unknown>(
 			snapshot.value = read()
 		},
 	)
-	const pick = <K extends keyof InfiniteQueryResult<TPage, TPageParam>>(key: K) => computed(() => snapshot.value[key])
+	// `select` runs inside a computed: Vue memoizes it and tracks whatever refs it reads.
+	const selected = (raw: InfiniteData<TPage, TPageParam> | undefined): TData | undefined => {
+		const { select } = toValue(options)
+		return select && raw !== undefined ? select(raw) : (raw as TData | undefined)
+	}
+	const fields: Record<string, ComputedRef<unknown>> = {}
+	for (const key of Object.keys(snapshot.value) as Array<keyof InfiniteQueryResult<TPage, TError, TPageParam>>) {
+		fields[key] = computed(() => snapshot.value[key])
+	}
 	return {
-		status: pick("status"),
-		data: pick("data"),
-		error: pick("error"),
-		isFetching: pick("isFetching"),
-		isStale: pick("isStale"),
-		hasNextPage: pick("hasNextPage"),
-		hasPreviousPage: pick("hasPreviousPage"),
-		isFetchingNextPage: pick("isFetchingNextPage"),
-		isFetchingPreviousPage: pick("isFetchingPreviousPage"),
+		...(fields as unknown as Omit<UseInfiniteQueryReturn<TPage, TError, TPageParam, TData>, "data" | "fetchNextPage" | "fetchPreviousPage" | "refetch">),
+		data: computed(() => selected(snapshot.value.data)),
 		fetchNextPage: () => observer.fetchNextPage(),
 		fetchPreviousPage: () => observer.fetchPreviousPage(),
-		refetch: () => observer.refetch(),
+		refetch: () => observer.refetch().then((raw) => selected(raw) as TData),
 	}
 }

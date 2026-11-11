@@ -1,5 +1,7 @@
 import { FakeScheduler } from "@omnifront/core/testing"
-import { focusManager, QueryClient, QueryObserver } from "@omnifront/query"
+import { focusManager, Mutation, onlineManager, QueryClient, QueryObserver } from "@omnifront/query"
+import { trackMutation } from "@omnifront/query/activity"
+import { setMutationDefaults } from "@omnifront/query/offline"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { persistQueryClient, type PersistedCache, type PersistStorage } from "../src"
 
@@ -307,5 +309,110 @@ describe("restoring", () => {
 		p.stop()
 		await p.restored
 		expect(scheduler.pendingTimers).toBe(0)
+	})
+})
+
+describe("waiting mutations", () => {
+	const tracked = <TVariables>(client: QueryClient, options: ConstructorParameters<typeof Mutation<string, Error, TVariables>>[0]) => {
+		const mutation = new Mutation<string, Error, TVariables>(options, client)
+		trackMutation(client, mutation)
+		return mutation
+	}
+	afterEach(() => onlineManager.set(true))
+
+	it("saves a mutation that waits for the network, and sends it after a reload with its saved context", async () => {
+		onlineManager.set(false)
+		const first = setup()
+		const storage = new MemoryStorage()
+		const keep = onlineManager.subscribe(() => {}) // keeps the signal from re-reading the real environment
+		const a = persist(first.client, { storage, throttle: 1000 })
+		await a.restored
+		const add = tracked<string>(first.client, {
+			mutationKey: ["add"],
+			mutationFn: () => Promise.resolve("never sent here"),
+			onMutate: (title) => ({ undo: `remove ${title}` }) as never,
+		})
+		add.mutate("milk")
+		await flush() // let it reach the network wait
+		first.scheduler.advance(1000)
+		await flush()
+		expect(stored(storage)?.mutations).toEqual([
+			{ mutationKey: ["add"], variables: "milk", context: { undo: "remove milk" }, submittedAt: 0 },
+		])
+		a.stop()
+
+		// A new page load: same storage, new client, the function registered before the cache is restored.
+		const second = setup()
+		const sent: string[] = []
+		const onSettled = vi.fn()
+		setMutationDefaults(second.client, ["add"], {
+			mutationFn: (title) => (sent.push(String(title)), Promise.resolve("saved")),
+			onSettled,
+		})
+		const b = persist(second.client, { storage })
+		expect(await b.restored).toBe(true)
+		expect(sent).toEqual([]) // still offline
+		onlineManager.set(true)
+		await flush()
+		expect(sent).toEqual(["milk"])
+		expect(onSettled).toHaveBeenCalledWith("saved", undefined, "milk", { undo: "remove milk" })
+		// Once it has been sent it is not saved again.
+		second.scheduler.advance(1000)
+		await flush()
+		expect(stored(storage)?.mutations).toBeUndefined()
+		keep()
+	})
+
+	it("reports a saved mutation it has no function for, and still restores the cache", async () => {
+		const storage = new MemoryStorage()
+		storage.data.set(
+			"omnifront-cache",
+			JSON.stringify({
+				version: 1,
+				timestamp: 0,
+				buster: "",
+				state: { queries: [{ queryKey: ["todos"], data: ["a"], dataUpdatedAt: 0 }] },
+				mutations: [{ mutationKey: ["lost"], variables: 1, context: null, submittedAt: 0 }],
+			}),
+		)
+		const { client } = setup()
+		const onError = vi.fn()
+		expect(await persist(client, { storage, onError }).restored).toBe(true)
+		expect(client.getQueryData(["todos"])).toEqual(["a"])
+		expect(onError).toHaveBeenCalledWith(new Error('No mutation defaults for ["lost"]: not restored'))
+	})
+
+	it("variables that cannot be written do not stop the queries from being saved", async () => {
+		onlineManager.set(false)
+		const { client, scheduler } = setup()
+		const keep = onlineManager.subscribe(() => {})
+		const storage = new MemoryStorage()
+		const onError = vi.fn()
+		await persist(client, { storage, onError }).restored
+		tracked<unknown>(client, { mutationKey: ["k"], mutationFn: () => Promise.resolve("x") }).mutate(10n) // BigInt: not JSON
+		client.setQueryData(["todos"], ["a"])
+		await flush()
+		scheduler.advance(1000)
+		await flush()
+		expect(onError).toHaveBeenCalledOnce()
+		expect(stored(storage)).toMatchObject({ state: { queries: [{ queryKey: ["todos"] }] } })
+		expect(stored(storage)?.mutations).toBeUndefined()
+		keep()
+	})
+
+	it("persistMutations: false leaves mutations alone", async () => {
+		onlineManager.set(false)
+		const { client, scheduler } = setup()
+		const keep = onlineManager.subscribe(() => {})
+		const storage = new MemoryStorage()
+		await persist(client, { storage, persistMutations: false }).restored
+		tracked<string>(client, { mutationKey: ["k"], mutationFn: () => Promise.resolve("x") }).mutate("a")
+		client.setQueryData(["todos"], ["a"])
+		await flush()
+		scheduler.advance(1000)
+		await flush()
+		expect(stored(storage)?.mutations).toBeUndefined()
+		expect(client.getDefaultOptions().mutations?.wrap).toBeUndefined() // enableOffline was not called
+		keep()
 	})
 })

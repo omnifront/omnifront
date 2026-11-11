@@ -1,7 +1,7 @@
 export { QueryProvider, useQueryClient } from "./provider"
 export type { QueryProviderProps } from "./provider"
 export { useQuery } from "./use-query"
-export type { UseQueryResult } from "./use-query"
+export type { UseQueryOptions, UseQueryResult } from "./use-query"
 export { useMutation } from "./use-mutation"
 export type { UseMutationResult } from "./use-mutation"
 export { useStore } from "./use-store"

@@ -1,11 +1,13 @@
-import type { QueryObserverOptions } from "@omnifront/query"
+import type { DefaultError } from "@omnifront/query"
+import { prefetchQuery, type PrefetchOptions } from "@omnifront/query/prefetch"
 import { useMemo } from "react"
-import type { UseInfiniteQueryResult } from "./infinite"
+import type { UseInfiniteQueryOptions, UseInfiniteQueryResult } from "./infinite"
 import { useObservedInfinite } from "./observed-infinite"
-import type { InfiniteData, InfiniteQueryObserverOptions } from "@omnifront/query-infinite"
-import { useObservedQuery, type UseQueryResult } from "./use-query"
+import type { InfiniteData } from "@omnifront/query-infinite"
+import { useQueryClient } from "./provider"
+import { useObservedQuery, useSelected, type UseQueryOptions, type UseQueryResult } from "./use-query"
 
-export interface UseSuspenseQueryResult<TData> extends Omit<UseQueryResult<TData>, "data" | "status"> {
+export interface UseSuspenseQueryResult<TData, TError = DefaultError> extends Omit<UseQueryResult<TData, TError>, "data" | "status"> {
 	/** Always there: the component does not render until it is. */
 	data: TData
 	/** `"success"`, or `"error"` when a background refetch failed and the old data is kept. */
@@ -25,8 +27,11 @@ const noop = (): void => {}
  * - To retry after an error, call `client.invalidateQueries({ queryKey })` from the error
  *   boundary's reset, then re-render: an invalidated failed query loads again instead of throwing.
  */
-export function useSuspenseQuery<TData>(options: QueryObserverOptions<TData>): UseSuspenseQueryResult<TData> {
-	const [observer, snapshot] = useObservedQuery<TData>({
+export function useSuspenseQuery<TQueryFnData, TError = DefaultError, TData = TQueryFnData>(
+	options: UseQueryOptions<TQueryFnData, TError, TData>,
+): UseSuspenseQueryResult<TData, TError> {
+	const { select } = options
+	const [observer, snapshot] = useObservedQuery<TQueryFnData, TError>({
 		...options,
 		enabled: true,
 		staleTime: options.staleTime ?? 1000,
@@ -34,12 +39,16 @@ export function useSuspenseQuery<TData>(options: QueryObserverOptions<TData>): U
 	})
 
 	const hasData = snapshot.data !== undefined && !snapshot.isPlaceholderData
+	const data = useSelected(snapshot.data, select)
 	// Declared before any throw so the hook order never changes between renders.
 	const result = useMemo(
-		() => (hasData ? { ...snapshot, data: snapshot.data as TData, refetch: () => observer.refetch() } : undefined),
-		[hasData, snapshot, observer],
+		() =>
+			hasData
+				? { ...snapshot, data, refetch: () => observer.refetch().then((raw) => (select ? select(raw) : raw)) }
+				: undefined,
+		[hasData, snapshot, data, observer, select],
 	)
-	if (result) return result as UseSuspenseQueryResult<TData>
+	if (result) return result as UseSuspenseQueryResult<TData, TError>
 
 	// A failed load (not invalidated since) goes to the error boundary.
 	if (snapshot.status === "error" && !snapshot.isInvalidated) throw snapshot.error
@@ -48,36 +57,50 @@ export function useSuspenseQuery<TData>(options: QueryObserverOptions<TData>): U
 	throw observer.refetch().then(noop, noop)
 }
 
-export interface UseSuspenseInfiniteQueryResult<TPage, TPageParam = unknown>
-	extends Omit<UseInfiniteQueryResult<TPage, TPageParam>, "data" | "status"> {
-	data: InfiniteData<TPage, TPageParam>
+export interface UseSuspenseInfiniteQueryResult<TPage, TError = DefaultError, TPageParam = unknown, TData = InfiniteData<TPage, TPageParam>>
+	extends Omit<UseInfiniteQueryResult<TPage, TError, TPageParam, TData>, "data" | "status"> {
+	data: TData
 	status: "success" | "error"
 }
 
 /** `useInfiniteQuery` for `<Suspense>` and error boundaries; same rules as {@link useSuspenseQuery}. */
-export function useSuspenseInfiniteQuery<TPage, TPageParam = unknown>(
-	options: InfiniteQueryObserverOptions<TPage, TPageParam>,
-): UseSuspenseInfiniteQueryResult<TPage, TPageParam> {
-	const [observer, snapshot] = useObservedInfinite<TPage, TPageParam>({
+export function useSuspenseInfiniteQuery<TPage, TError = DefaultError, TPageParam = unknown, TData = InfiniteData<TPage, TPageParam>>(
+	options: UseInfiniteQueryOptions<TPage, TError, TPageParam, TData>,
+): UseSuspenseInfiniteQueryResult<TPage, TError, TPageParam, TData> {
+	const { select } = options
+	const [observer, snapshot] = useObservedInfinite<TPage, TError, TPageParam>({
 		...options,
 		enabled: true,
 		staleTime: options.staleTime ?? 1000,
 		placeholderData: undefined,
 	})
 	const hasData = snapshot.data !== undefined && !snapshot.isPlaceholderData
+	const data = useSelected(snapshot.data, select)
 	const result = useMemo(
 		() =>
 			hasData
 				? {
 						...snapshot,
+						data,
 						fetchNextPage: () => observer.fetchNextPage(),
 						fetchPreviousPage: () => observer.fetchPreviousPage(),
-						refetch: () => observer.refetch(),
+						refetch: () => observer.refetch().then((raw) => (select ? select(raw) : raw)),
 					}
 				: undefined,
-		[hasData, snapshot, observer],
+		[hasData, snapshot, data, observer, select],
 	)
-	if (result) return result as unknown as UseSuspenseInfiniteQueryResult<TPage, TPageParam>
+	if (result) return result as unknown as UseSuspenseInfiniteQueryResult<TPage, TError, TPageParam, TData>
 	if (snapshot.status === "error" && !snapshot.isInvalidated) throw snapshot.error
 	throw observer.refetch().then(noop, noop)
+}
+
+/**
+ * Start loading a query while the component renders, so it is under way before the component that
+ * suspends on it (`useSuspenseQuery`, further down the tree) gets to run: this avoids the waterfall
+ * of one request waiting for the next. Does nothing when the query is already in the cache. It
+ * returns nothing and never suspends or throws.
+ */
+export function usePrefetchQuery<TData>(options: PrefetchOptions<TData>): void {
+	const client = useQueryClient()
+	if (client.getQuery(options.queryKey).getSnapshot().status === "idle") void prefetchQuery(client, options)
 }

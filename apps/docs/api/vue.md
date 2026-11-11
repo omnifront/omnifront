@@ -20,7 +20,11 @@ Returns the injected client; throws a helpful error if none is installed.
 
 ### `UseQueryReturn`
 
-One `ComputedRef` per field (`status`, `data`, `error`, `isFetching`, `isStale`, `isInvalidated`, `isPlaceholderData`, `failureCount`, `dataUpdatedAt`) and `refetch()`.
+One `ComputedRef` per field of [`QueryResult`](/api/query#queryresult) (`status`, `data`, `error`, `isFetching`, `isStale`, `isPending`, `isLoading`, `isRefetching`, `isSuccess`, `isError`, `isLoadingError`, `isRefetchError`, `failureCount`, `failureReason`, ...) and `refetch(options?)`.
+
+### `UseQueryOptions`
+
+`QueryObserverOptions & { select? }`. `select: (data) => derived` makes `data` the derived value; the cache keeps the original. It runs inside a `computed`, so refs it reads are tracked.
 
 ### `useMutation`
 
@@ -28,7 +32,7 @@ One `ComputedRef` per field (`status`, `data`, `error`, `isFetching`, `isStale`,
 
 ### `UseMutationReturn`
 
-`status`, `data`, `error`, `variables` as `ComputedRef`s, plus `mutate`, `mutateAsync`, `reset`.
+One `ComputedRef` per field of [`MutationState`](/api/query#mutationstate) (`status`, `data`, `error`, `variables`, `isIdle`, `isPending`, `isSuccess`, `isError`, `isPaused`, `failureCount`, `failureReason`, `submittedAt`), plus `mutate(variables, callbacks?)`, `mutateAsync(variables, callbacks?)` and `reset`.
 
 ### `useStore`
 
@@ -50,6 +54,22 @@ Re-exported from `@omnifront/query-infinite` ([options](/api/query-infinite#infi
 
 ## Several queries (`@omnifront/vue/queries`)
 
+### `UseInfiniteQueryOptions`
+
+`InfiniteQueryObserverOptions` plus `select: (data: InfiniteData) => derived`. `data` (and what `refetch` resolves with) is the derived value; the cache keeps the pages. It runs inside a `computed`, so refs it reads are tracked.
+
+### `PlainQuery`
+
+A query of `useQueries` without `select`: the data is what the query function resolves to.
+
+### `SelectedQuery`
+
+A query of `useQueries` with `select`: the data is what it returns (the query function's own type is not checked against it). Give every query of a list one, or none, so the list has one data type.
+
+### `UseQueriesOption`
+
+`PlainQuery | SelectedQuery`.
+
 ### `useQueries`
 
 `useQueries(queries)`; `queries` may be an array, a ref or a getter. Returns a `ComputedRef` of an array with one plain result per query (`results.value[0].data`), each with `refetch()`. Server-side it prefetches them all and fails fast. `useQueries(queries, { combine })` returns a `ComputedRef` of whatever `combine(results)` returns instead; see [Queries](/guide/queries#combining-the-results).
@@ -64,6 +84,10 @@ One query's result in that array: the [query result](/api/query#queryresult) fie
 
 `useIsFetching(filter?)` returns a `ComputedRef<number>` of the queries fetching right now (first loads and background refetches), for a global spinner. `filter` is `{ queryKey?, exact? }` like `invalidateQueries`, and may be a ref or getter. Stops with the scope; does not subscribe on the server. See [Queries](/guide/queries#a-global-loading-indicator).
 
+### `useMutationState`
+
+`useMutationState({ filters?, select? })` returns a `ComputedRef` of the state of the mutations under the plugin's client that pass the filters. `select` picks what to keep of each (default: the whole state). The options may be a ref or a getter.
+
 ### `useIsMutating`
 
-`useIsMutating()` returns a `ComputedRef<number>` of the pending mutations started with [`useMutation`](/api/vue#usemutation) while the plugin is installed. `useMutation` still works without the plugin; it just has no client to count towards.
+`useIsMutating(filters?)` (`filters`: [`MutationFilters`](/api/query#mutationfilters), plain, a ref or a getter) returns a `ComputedRef<number>` of the pending mutations started with [`useMutation`](/api/vue#usemutation) while the plugin is installed. `useMutation` still works without the plugin; it just has no client to count towards.

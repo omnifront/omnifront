@@ -47,7 +47,7 @@ describe("query types", () => {
 
 	it("infers Mutation data and variables from mutationFn", () => {
 		const m = new Mutation({ mutationFn: (n: number) => Promise.resolve(String(n)) })
-		expectTypeOf(m).toEqualTypeOf<Mutation<string, number>>()
+		expectTypeOf(m).toEqualTypeOf<Mutation<string, Error, number>>()
 		expectTypeOf(m.mutateAsync).parameter(0).toEqualTypeOf<number>()
 		expectTypeOf(m.mutateAsync).returns.resolves.toEqualTypeOf<string>()
 		expectTypeOf(m.getSnapshot().variables).toEqualTypeOf<number | undefined>()
@@ -58,7 +58,7 @@ describe("query types", () => {
 	it("a mutation without variables is called with no arguments", () => {
 		const m = new Mutation({ mutationFn: () => Promise.resolve(1) })
 		m.mutate()
-		expectTypeOf(m).toEqualTypeOf<Mutation<number, void>>()
+		expectTypeOf(m).toEqualTypeOf<Mutation<number, Error, void>>()
 	})
 
 	it("callbacks get typed data and variables", () => {
@@ -72,5 +72,38 @@ describe("query types", () => {
 				expectTypeOf(data).toEqualTypeOf<{ id: string } | undefined>()
 			},
 		})
+	})
+})
+
+describe("error types", () => {
+	it("defaults to Error and can be named per query and mutation", () => {
+		const plain = new QueryObserver(client, { queryKey: ["e"], queryFn: async () => 1 })
+		expectTypeOf(plain.getSnapshot().error).toEqualTypeOf<Error | undefined>()
+
+		class HttpError extends Error {
+			status = 500
+		}
+		const typed = new QueryObserver<number, HttpError>(client, {
+			queryKey: ["e"],
+			queryFn: async () => 1,
+			retry: (count, error) => {
+				expectTypeOf(error).toEqualTypeOf<HttpError>()
+				return count < 2 && error.status >= 500
+			},
+			retryDelay: (_count, error) => error.status,
+		})
+		expectTypeOf(typed.getSnapshot().error).toEqualTypeOf<HttpError | undefined>()
+		expectTypeOf(client.getQueryState<number, HttpError>(["e"])?.error).toEqualTypeOf<HttpError | undefined>()
+		void client.fetchQuery<number, HttpError>(["e2"], async () => 1, { retry: (_n, error) => error.status === 503 })
+
+		const mutation = new Mutation<string, HttpError, number>({
+			mutationFn: (n) => Promise.resolve(String(n)),
+			onError: (error) => expectTypeOf(error).toEqualTypeOf<HttpError>(),
+			onSettled: (_data, error) => expectTypeOf(error).toEqualTypeOf<HttpError | undefined>(),
+		})
+		expectTypeOf(mutation.getSnapshot().error).toEqualTypeOf<HttpError | undefined>()
+		expectTypeOf(new Mutation({ mutationFn: (n: number) => Promise.resolve(n) })).toEqualTypeOf<
+			Mutation<number, Error, number, unknown>
+		>()
 	})
 })

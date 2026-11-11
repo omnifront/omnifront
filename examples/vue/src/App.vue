@@ -1,12 +1,17 @@
 <script setup lang="ts">
-import { addTodoMutation, matchesFilter, server, todoFilter, todosQuery } from "@omnifront/example-shared"
+import { addTodoMutation, matchesFilter, pendingTodos, server, setOffline, todoFilter, todosQuery } from "@omnifront/example-shared"
 import { useMutation, useQuery, useQueryClient, useStore } from "@omnifront/vue"
+import { useMutationState } from "@omnifront/vue/activity"
 import { computed, ref, watch } from "vue"
 
 const client = useQueryClient()
 const title = ref("")
 const failing = ref(false)
 watch(failing, (value) => (server.failing = value))
+const offline = ref(false)
+watch(offline, setOffline)
+// What is being added right now, shown before it is saved.
+const adding = useMutationState(pendingTodos)
 
 // Refs come back, so they work directly in the template (no .value there).
 const { data: todos, status, error, isFetching, isStale, failureCount, refetch } = useQuery(todosQuery)
@@ -39,12 +44,15 @@ function submit() {
 		<p v-if="status === 'error'" style="color: crimson">{{ (error as Error).message }}</p>
 		<ul>
 			<li v-for="t in visible" :key="t">{{ t }}</li>
+			<li v-for="(t, i) in adding" :key="`adding-${i}`" style="opacity: 0.5">
+				{{ t }} {{ add.isPaused.value ? "(waiting for the network)" : "(saving…)" }}
+			</li>
 		</ul>
 
 		<form @submit.prevent="submit">
 			<input v-model="title" placeholder="New todo" />
-			<button :disabled="add.status.value === 'pending'">
-				{{ add.status.value === "pending" ? "Saving…" : "Add" }}
+			<button :disabled="add.isPending.value && !add.isPaused.value">
+				{{ add.isPending.value ? "Saving…" : "Add" }}
 			</button>
 		</form>
 		<p v-if="add.status.value === 'error'" style="color: crimson">
@@ -54,6 +62,7 @@ function submit() {
 		<p>
 			<button @click="refetch()">Refetch</button>
 			<label><input v-model="failing" type="checkbox" /> simulate server failure</label>
+			<label><input v-model="offline" type="checkbox" /> simulate offline</label>
 		</p>
 	</main>
 </template>

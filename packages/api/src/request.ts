@@ -23,7 +23,7 @@ export function serializeParams(params: Params): string {
 
 export function buildURL(config: ApiConfig): string {
 	let url = config.url ?? ""
-	if (config.baseURL && !ABSOLUTE.test(url)) url = `${config.baseURL.replace(/\/+$/, "")}/${url.replace(/^\/+/, "")}`
+	if (config.baseURL && (config.allowAbsoluteUrls === false || !ABSOLUTE.test(url))) url = `${config.baseURL.replace(/\/+$/, "")}/${url.replace(/^\/+/, "")}`
 	const query = config.params ? (config.paramsSerializer ?? serializeParams)(config.params) : ""
 	return query ? `${url}${url.includes("?") ? "&" : "?"}${query}` : url
 }
