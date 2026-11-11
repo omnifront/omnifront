@@ -362,6 +362,13 @@
 
 React: `@omnifront/react/errors` (`throwOnError`، `QueryErrorResetBoundary`)، `useSuspenseQueries`، `usePrefetchQuery`، شکل آبجکتی `useQueries`. همان شکل آبجکتی برای Vue و Angular. Next: استریم کوئری‌های pending.
 
+**وضعیت (۲۰۲۶-۱۱-۱۱):** تمام شده به جز استریم کوئری‌های pending در Next.
+- `throwOnError` روی `useQuery` در ورودی اصلی React (حدود ۶۹ بایت؛ اصلی ۹۹۰ از ۱۰۰۰ بایت). فقط React: Vue و Angular جایی برای throw ندارند و در راهنمای مهاجرت معادلشان آمده.
+- `@omnifront/react/errors`: `QueryErrorResetBoundary` و `useQueryErrorResetBoundary` (۴۱۸ بایت). `reset` همه‌ی کوئری‌های خطادار client را بی‌صدا invalidate می‌کند؛ نیازی به ثبت کلید در boundary نیست.
+- `useSuspenseQueries` در `/queries` و `usePrefetchQuery` در `/suspense`؛ بودجه‌ی `/queries` از ۱KB به ۱.۳KB رفت (۹۹۸ بایت مصرف).
+- شکل `{ queries, combine }` برای `useQueries`، `useQueries` در Vue و `injectQueries` در Angular (شکل لیست‌اول هم می‌ماند).
+- نیامد: استریم pending queries (نیاز به تغییر `dehydrate`/`hydrate` در `/hydration` دارد، پس بودجه‌ی آن ورودی و ADR لازم است).
+
 ### فاز ۶: بسته‌های جدا (هر کدام فقط با درخواست واقعی)
 
 `@omnifront/broadcast`، `@omnifront/query/stream`، `@omnifront/persist/query`، `@omnifront/eslint-plugin`، `@omnifront/api-node`.

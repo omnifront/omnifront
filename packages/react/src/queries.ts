@@ -1,7 +1,9 @@
 import { combine } from "@omnifront/core"
 import { hashKey, QueryObserver, type QueryObserverOptions } from "@omnifront/query"
+import { prefetchQuery } from "@omnifront/query/prefetch"
 import { useCallback, useEffect, useMemo, useRef, useSyncExternalStore } from "react"
 import { useQueryClient } from "./provider"
+import type { UseSuspenseQueryResult } from "./suspense"
 import type { UseQueryResult } from "./use-query"
 
 export type UseQueriesResults<T extends readonly unknown[]> = { [K in keyof T]: UseQueryResult<T[K]> }
@@ -62,12 +64,18 @@ export function useQueries<const Q extends readonly UseQueriesOption[], TCombine
 	queries: readonly [...Q],
 	options: { combine: (results: UseQueriesResultsOf<Q>) => TCombined },
 ): TCombined
+/** TanStack's shape: one object with `queries` (and `combine`). The same hook, only the arguments differ. */
+export function useQueries<const Q extends readonly UseQueriesOption[]>(options: { queries: readonly [...Q]; combine?: undefined }): UseQueriesResultsOf<Q>
+export function useQueries<const Q extends readonly UseQueriesOption[], TCombined>(options: {
+	queries: readonly [...Q]
+	combine: (results: UseQueriesResultsOf<Q>) => TCombined
+}): TCombined
 export function useQueries(
-	queries: readonly UseQueriesOption[],
-	options?: { combine?: (results: never) => unknown },
+	input: readonly UseQueriesOption[] | { queries: readonly UseQueriesOption[]; combine?: ((results: never) => unknown) | undefined },
+	second?: { combine?: (results: never) => unknown },
 ): unknown {
 	const client = useQueryClient()
-	const list = queries
+	const [list, options] = Array.isArray(input) ? [input as readonly UseQueriesOption[], second] : [(input as { queries: readonly UseQueriesOption[] }).queries, input as { combine?: (results: never) => unknown }]
 	// A new set of keys means new observers (and a new combined view); rendering never touches subscribed ones.
 	const identity = JSON.stringify(list.map((q) => hashKey(q.queryKey)))
 	const observers = useMemo(() => list.map((q) => new QueryObserver(client, q)), [client, identity])
@@ -97,4 +105,43 @@ export function useQueries(
 		})
 		return combineResults ? combineResults(results as never) : results
 	}, [snapshots, observers, combineResults, selectsVersion])
+}
+
+/** The results of a list of `useSuspenseQueries` options: `data` is always there. */
+export type UseSuspenseQueriesResultsOf<Q extends readonly unknown[]> = { [K in keyof Q]: UseSuspenseQueryResult<QueryData<Q[K]>> }
+
+/**
+ * `useQueries` for `<Suspense>` and error boundaries: the component suspends until every query has
+ * data (they load in parallel, not one after another), throws the first failure to the nearest error
+ * boundary, and once it renders every `data` is defined. Same rules as `useSuspenseQuery`: `enabled`
+ * and `placeholderData` are ignored, `staleTime` defaults to 1 second, and
+ * `QueryErrorResetBoundary` retries after an error.
+ *
+ *   const [user, posts] = useSuspenseQueries({ queries: [userQuery(id), postsQuery(id)] })
+ */
+export function useSuspenseQueries<const Q extends readonly UseQueriesOption[]>(options: {
+	queries: readonly [...Q]
+	combine?: undefined
+}): UseSuspenseQueriesResultsOf<Q>
+export function useSuspenseQueries<const Q extends readonly UseQueriesOption[], TCombined>(options: {
+	queries: readonly [...Q]
+	combine: (results: UseSuspenseQueriesResultsOf<Q>) => TCombined
+}): TCombined
+export function useSuspenseQueries(options: {
+	queries: readonly UseQueriesOption[]
+	combine?: ((results: never) => unknown) | undefined
+}): unknown {
+	const client = useQueryClient()
+	const list = options.queries.map((q) => ({ ...q, enabled: true, staleTime: q.staleTime ?? 1000, placeholderData: undefined }))
+	const results = useQueries(list) as ReadonlyArray<UseQueryResult<unknown>>
+	const { combine } = options
+	// Declared before any throw so the hook order never changes between renders.
+	const combined = useMemo(() => (combine ? combine(results as never) : results), [results, combine])
+
+	const failed = results.find((r) => r.status === "error" && !r.isInvalidated)
+	if (failed) throw failed.error
+	const waiting = list.filter((_, i) => results[i]?.data === undefined || results[i]?.isPlaceholderData)
+	// prefetchQuery joins a request already in flight, so every render of every component waiting on a key waits on the same one.
+	if (waiting.length) throw Promise.all(waiting.map((q) => prefetchQuery(client, q as never)))
+	return combined
 }

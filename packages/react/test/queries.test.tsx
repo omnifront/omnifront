@@ -27,4 +27,18 @@ describe("useQueries", () => {
 		await act(async () => void (await num.refetch()))
 		expect(result.current[0].data).toBe(2)
 	})
+
+	it("takes TanStack's { queries, combine } object too", async () => {
+		const client = new QueryClient({ scheduler: new FakeScheduler(), gcTime: Infinity })
+		const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryProvider, { client }, children)
+		const queries = [
+			{ queryKey: ["n"], queryFn: () => Promise.resolve(1), staleTime: Infinity },
+			{ queryKey: ["s"], queryFn: () => Promise.resolve("text"), staleTime: Infinity },
+		] as const
+		const combine = (results: Array<{ data: unknown }>) => results.map((r) => r.data)
+		const { result } = renderHook(() => ({ plain: useQueries({ queries }), joined: useQueries({ queries, combine }) }), { wrapper })
+		await act(async () => void (await new Promise((r) => setTimeout(r, 0))))
+		expect(result.current.plain.map((r) => r.data)).toEqual([1, "text"])
+		expect(result.current.joined).toEqual([1, "text"])
+	})
 })

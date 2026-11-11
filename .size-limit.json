@@ -201,7 +201,7 @@
 	{
 		"name": "@omnifront/react/queries",
 		"path": "packages/react/dist/queries.js",
-		"limit": "1 KB",
+		"limit": "1.3 KB",
 		"gzip": true,
 		"ignore": [
 			"react",
@@ -366,6 +366,17 @@
 		"limit": "1.4 KB",
 		"gzip": true,
 		"ignore": [
+			"@omnifront/core"
+		]
+	},
+	{
+		"name": "@omnifront/react/errors",
+		"path": "packages/react/dist/errors.js",
+		"limit": "0.5 KB",
+		"gzip": true,
+		"ignore": [
+			"react",
+			"@omnifront/query",
 			"@omnifront/core"
 		]
 	}

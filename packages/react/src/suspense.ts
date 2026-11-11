@@ -1,8 +1,10 @@
 import type { DefaultError } from "@omnifront/query"
+import { prefetchQuery, type PrefetchOptions } from "@omnifront/query/prefetch"
 import { useMemo } from "react"
 import type { UseInfiniteQueryOptions, UseInfiniteQueryResult } from "./infinite"
 import { useObservedInfinite } from "./observed-infinite"
 import type { InfiniteData } from "@omnifront/query-infinite"
+import { useQueryClient } from "./provider"
 import { useObservedQuery, useSelected, type UseQueryOptions, type UseQueryResult } from "./use-query"
 
 export interface UseSuspenseQueryResult<TData, TError = DefaultError> extends Omit<UseQueryResult<TData, TError>, "data" | "status"> {
@@ -90,4 +92,15 @@ export function useSuspenseInfiniteQuery<TPage, TError = DefaultError, TPagePara
 	if (result) return result as unknown as UseSuspenseInfiniteQueryResult<TPage, TError, TPageParam, TData>
 	if (snapshot.status === "error" && !snapshot.isInvalidated) throw snapshot.error
 	throw observer.refetch().then(noop, noop)
+}
+
+/**
+ * Start loading a query while the component renders, so it is under way before the component that
+ * suspends on it (`useSuspenseQuery`, further down the tree) gets to run: this avoids the waterfall
+ * of one request waiting for the next. Does nothing when the query is already in the cache. It
+ * returns nothing and never suspends or throws.
+ */
+export function usePrefetchQuery<TData>(options: PrefetchOptions<TData>): void {
+	const client = useQueryClient()
+	if (client.getQuery(options.queryKey).getSnapshot().status === "idle") void prefetchQuery(client, options)
 }

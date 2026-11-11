@@ -16,7 +16,7 @@ const pages = {
 	"query-infinite": ["query-infinite", ["index.d.ts"]],
 	store: ["store", ["index.d.ts"]],
 	api: ["api", ["index.d.ts", "xhr.d.ts", "auth.d.ts", "testing.d.ts", "serialize.d.ts", "progress.d.ts"]],
-	react: ["react", ["index.d.ts", "infinite.d.ts", "suspense.d.ts", "queries.d.ts", "activity.d.ts"]],
+	react: ["react", ["index.d.ts", "infinite.d.ts", "suspense.d.ts", "queries.d.ts", "activity.d.ts", "errors.d.ts"]],
 	vue: ["vue", ["index.d.ts", "infinite.d.ts", "queries.d.ts", "activity.d.ts"]],
 	angular: ["angular", ["index.d.ts", "infinite.d.ts", "ssr.d.ts", "queries.d.ts", "activity.d.ts"]],
 	next: ["next", ["index.d.ts", "client.d.ts"]],

@@ -4,6 +4,7 @@ import {
 	computed,
 	getCurrentInstance,
 	getCurrentScope,
+	isRef,
 	onMounted,
 	onScopeDispose,
 	onServerPrefetch,
@@ -44,11 +45,26 @@ export function useQueries<TData, TCombined>(
 	queries: MaybeRefOrGetter<readonly SelectedQuery<TData>[]>,
 	options: { combine: (results: QueriesResult<TData>[]) => TCombined },
 ): ComputedRef<TCombined>
+/** TanStack's shape: one object with `queries` (and `combine`). The same function, only the arguments differ. */
+export function useQueries<TData = unknown>(options: { queries: MaybeRefOrGetter<readonly PlainQuery<TData>[]>; combine?: undefined }): ComputedRef<QueriesResult<TData>[]>
+export function useQueries<TData = unknown>(options: { queries: MaybeRefOrGetter<readonly SelectedQuery<TData>[]>; combine?: undefined }): ComputedRef<QueriesResult<TData>[]>
+export function useQueries<TData, TCombined>(options: {
+	queries: MaybeRefOrGetter<readonly PlainQuery<TData>[]>
+	combine: (results: QueriesResult<TData>[]) => TCombined
+}): ComputedRef<TCombined>
+export function useQueries<TData, TCombined>(options: {
+	queries: MaybeRefOrGetter<readonly SelectedQuery<TData>[]>
+	combine: (results: QueriesResult<TData>[]) => TCombined
+}): ComputedRef<TCombined>
 export function useQueries<TData = unknown>(
-	queries: MaybeRefOrGetter<readonly UseQueriesOption<TData>[]>,
-	options?: { combine?: (results: QueriesResult<TData>[]) => unknown },
+	input: MaybeRefOrGetter<readonly UseQueriesOption<TData>[]> | { queries: MaybeRefOrGetter<readonly UseQueriesOption<TData>[]>; combine?: ((results: QueriesResult<TData>[]) => unknown) | undefined },
+	second?: { combine?: (results: QueriesResult<TData>[]) => unknown },
 ): ComputedRef<unknown> {
 	const client = useQueryClient()
+	// An array, a ref or a getter is the list itself; a plain object is the `{ queries, combine }` shape.
+	const object = typeof input === "object" && !Array.isArray(input) && !isRef(input)
+	const queries = object ? (input as { queries: MaybeRefOrGetter<readonly UseQueriesOption<TData>[]> }).queries : (input as MaybeRefOrGetter<readonly UseQueriesOption<TData>[]>)
+	const options = object ? (input as { combine?: (results: QueriesResult<TData>[]) => unknown }) : second
 	type Options = QueryObserverOptions<TData>
 	const serverOptions = (list: readonly UseQueriesOption<TData>[]): Options[] =>
 		(typeof window === "undefined" ? list.map((q) => ({ ...q, retry: q.retry ?? false })) : list) as Options[]

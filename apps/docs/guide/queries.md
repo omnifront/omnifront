@@ -141,7 +141,7 @@ const { loading, data } = useQueries(
 )
 ```
 
-`combine` runs again only when some result changed, and its return value keeps its identity until then, so it is safe to feed into memoized children or effects. Keep the function itself stable (define it outside the component, or memoize it): a new function means it runs again. In Vue and Angular the same second argument gives you a `ref` / `Signal` of the combined value (`useQueries(queries, { combine })`, `injectQueries(queries, { combine })`). Unlike TanStack Query, the list goes first and `combine` second, not `{ queries, combine }` in one object.
+`combine` runs again only when some result changed, and its return value keeps its identity until then, so it is safe to feed into memoized children or effects. Keep the function itself stable (define it outside the component, or memoize it): a new function means it runs again. In Vue and Angular the same second argument gives you a `ref` / `Signal` of the combined value (`useQueries(queries, { combine })`, `injectQueries(queries, { combine })`). Both shapes work: `useQueries(queries, { combine })` or TanStack's `useQueries({ queries, combine })` (`injectQueries` and the Vue `useQueries` too).
 
 ## Stable references: structural sharing
 

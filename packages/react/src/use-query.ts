@@ -14,6 +14,13 @@ export type UseQueryOptions<TQueryFnData, TError = DefaultError, TData = TQueryF
 	 * stable function (defined outside the component, or with `useCallback`) to keep it memoized.
 	 */
 	select?: ((data: TQueryFnData) => TData) | undefined
+	/**
+	 * Throw the error during render, so the nearest error boundary shows it, instead of returning it:
+	 * `true` for every error, or a function that says which. Only a settled failure throws (not one
+	 * that is being retried or refetched). `QueryErrorResetBoundary` (`@omnifront/react/errors`)
+	 * lets the boundary's retry button load the query again.
+	 */
+	throwOnError?: boolean | ((error: TError) => boolean) | undefined
 }
 
 /** `select(data)`, memoized on both. React's own memo does the job: nothing about it lives in the cache. */
@@ -65,7 +72,7 @@ export function useQuery<TQueryFnData, TError = DefaultError, TData = TQueryFnDa
 	useEffect(() => {
 		select.current = options.select
 	})
-	return useMemo(
+	const result = useMemo(
 		() =>
 			({
 				...snapshot,
@@ -74,4 +81,8 @@ export function useQuery<TQueryFnData, TError = DefaultError, TData = TQueryFnDa
 			}) as UseQueryResult<TData, TError>,
 		[snapshot, data, observer],
 	)
+	const { throwOnError: t } = options
+	// A reset (invalidated) failure is let through: the query is about to load again.
+	if (t && snapshot.status === "error" && !snapshot.isFetching && !snapshot.isInvalidated && (t === true || t(snapshot.error as TError))) throw snapshot.error
+	return result
 }

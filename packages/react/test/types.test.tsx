@@ -2,7 +2,7 @@ import { createStore } from "@omnifront/store"
 import { describe, expect, expectTypeOf, it } from "vitest"
 import { useMutation, useQuery, useStore, type UseMutationResult, type UseQueryResult } from "../src"
 import { useInfiniteQuery, type InfiniteData } from "../src/infinite"
-import { useQueries } from "../src/queries"
+import { useQueries, useSuspenseQueries } from "../src/queries"
 
 // Never called: only type-checked.
 function hooks() {
@@ -87,6 +87,16 @@ function hooks() {
 		},
 	})
 	expectTypeOf(summary).toEqualTypeOf<{ loading: boolean; label: string }>()
+	const [on, os] = useQueries({ queries: [queries[0], queries[1]] })
+	expectTypeOf(on.data).toEqualTypeOf<number | undefined>()
+	expectTypeOf(os.data).toEqualTypeOf<string | undefined>()
+
+	// Suspense: every data is defined, with its own type.
+	const [sn, ss] = useSuspenseQueries({ queries: [queries[0], queries[1]] })
+	expectTypeOf(sn.data).toEqualTypeOf<number>()
+	expectTypeOf(ss.data).toEqualTypeOf<string>()
+	// throwOnError sees the query's error type.
+	useQuery<number, RangeError>({ queryKey: ["e"], queryFn: async () => 1, throwOnError: (error) => error.name === "RangeError" })
 }
 
 describe("react types", () => {

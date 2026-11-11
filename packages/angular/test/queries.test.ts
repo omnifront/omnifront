@@ -19,4 +19,22 @@ describe("injectQueries", () => {
 		expect(result()[0]?.data).toBe(2)
 		unmount()
 	})
+
+	it("takes TanStack's { queries, combine } object too", async () => {
+		const client = new QueryClient({ scheduler: new FakeScheduler(), gcTime: Infinity })
+		const queries = [
+			{ queryKey: ["a"], queryFn: () => Promise.resolve(1), staleTime: Infinity },
+			{ queryKey: ["b"], queryFn: () => Promise.resolve(2), staleTime: Infinity },
+		]
+		const plain = mountInjectable(() => injectQueries<number>({ queries }), [provideOmnifront(client)])
+		const joined = mountInjectable(
+			() => injectQueries<number, number>({ queries: () => queries, combine: (rs) => rs.reduce((sum, r) => sum + (r.data ?? 0), 0) }),
+			[provideOmnifront(client)],
+		)
+		await new Promise((r) => setTimeout(r, 0))
+		expect(plain.result().map((r) => r.data)).toEqual([1, 2])
+		expect(joined.result()).toBe(3)
+		plain.unmount()
+		joined.unmount()
+	})
 })

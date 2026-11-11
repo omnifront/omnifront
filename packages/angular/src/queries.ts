@@ -35,14 +35,38 @@ export function injectQueries<TData, TCombined>(
 	queries: readonly SelectedQuery<TData>[] | (() => readonly SelectedQuery<TData>[]),
 	options: { combine: (results: QueriesResult<TData>[]) => TCombined },
 ): Signal<TCombined>
+/** TanStack's shape: one object with `queries` (and `combine`). The same function, only the arguments differ. */
+export function injectQueries<TData = unknown>(options: {
+	queries: readonly PlainQuery<TData>[] | (() => readonly PlainQuery<TData>[])
+	combine?: undefined
+}): Signal<QueriesResult<TData>[]>
+export function injectQueries<TData = unknown>(options: {
+	queries: readonly SelectedQuery<TData>[] | (() => readonly SelectedQuery<TData>[])
+	combine?: undefined
+}): Signal<QueriesResult<TData>[]>
+export function injectQueries<TData, TCombined>(options: {
+	queries: readonly PlainQuery<TData>[] | (() => readonly PlainQuery<TData>[])
+	combine: (results: QueriesResult<TData>[]) => TCombined
+}): Signal<TCombined>
+export function injectQueries<TData, TCombined>(options: {
+	queries: readonly SelectedQuery<TData>[] | (() => readonly SelectedQuery<TData>[])
+	combine: (results: QueriesResult<TData>[]) => TCombined
+}): Signal<TCombined>
 export function injectQueries<TData = unknown>(
-	queries: readonly InjectQueriesOption<TData>[] | (() => readonly InjectQueriesOption<TData>[]),
-	options?: { combine?: (results: QueriesResult<TData>[]) => unknown },
+	input:
+		| readonly InjectQueriesOption<TData>[]
+		| (() => readonly InjectQueriesOption<TData>[])
+		| { queries: readonly InjectQueriesOption<TData>[] | (() => readonly InjectQueriesOption<TData>[]); combine?: ((results: QueriesResult<TData>[]) => unknown) | undefined },
+	second?: { combine?: (results: QueriesResult<TData>[]) => unknown },
 ): Signal<unknown> {
+	// An array or a function is the list itself; a plain object is the `{ queries, combine }` shape.
+	const object = typeof input === "object" && !Array.isArray(input)
+	const queries = object ? (input as { queries: readonly InjectQueriesOption<TData>[] | (() => readonly InjectQueriesOption<TData>[]) }).queries : input
+	const options = object ? (input as { combine?: (results: QueriesResult<TData>[]) => unknown }) : second
 	type Options = QueryObserverOptions<TData>
 	const client = injectQueryClient()
 	const read = (): readonly InjectQueriesOption<TData>[] => {
-		const list = typeof queries === "function" ? queries() : queries
+		const list = (typeof queries === "function" ? queries() : queries) as readonly InjectQueriesOption<TData>[]
 		return (typeof window === "undefined" ? list.map((q) => ({ ...q, retry: q.retry ?? false })) : list) as InjectQueriesOption<TData>[]
 	}
 	const keysOf = (list: readonly InjectQueriesOption<TData>[]) => JSON.stringify(list.map((q) => hashKey(q.queryKey)))

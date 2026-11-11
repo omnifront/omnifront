@@ -1,6 +1,6 @@
 # @omnifront/react
 
-React 18+. About 0.9 KB gzipped. See the [React guide](/guide/react).
+React 18+. About 1 KB gzipped. See the [React guide](/guide/react).
 
 ### `QueryProvider`
 
@@ -66,11 +66,25 @@ Re-exported from `@omnifront/query-infinite` ([options](/api/query-infinite#infi
 
 Like `UseQueryResult` but `data` is always defined and `status` is `"success" | "error"`.
 
+### `usePrefetchQuery`
+
+`usePrefetchQuery({ queryKey, queryFn, staleTime? })`: starts the request while the component renders, unless the query is already in the cache. Put it above a child that suspends so the two requests do not queue. It returns nothing. See the [Suspense guide](/guide/suspense#several-queries-at-once-and-no-waterfalls).
+
 ## Several queries (`@omnifront/react/queries`)
 
 ### `useQueries`
 
 `useQueries([options, ...])` runs several queries at once and returns an array of [`UseQueryResult`](/api/react#usequeryresult)s in the same order. With a tuple each result keeps its own data type. Any query may have a `select`, which should be stable (defined outside the component). A changed set of keys creates new observers. `useQueries(queries, { combine })` returns whatever `combine(results)` returns instead of the array; see [Queries](/guide/queries#combining-the-results). See [Queries](/guide/queries#several-queries-at-once).
+
+`useQueries({ queries, combine })` is the same hook with TanStack's single-object shape.
+
+### `useSuspenseQueries`
+
+`useSuspenseQueries({ queries, combine? })`: `useQueries` for Suspense and error boundaries. Suspends until every query has data (they load in parallel), throws the first failure, and every `data` is defined. `enabled` and `placeholderData` are ignored and `staleTime` defaults to 1 second, as in `useSuspenseQuery`. Results are typed by [`UseSuspenseQueriesResultsOf`](/api/react#usesuspensequeriesresultsof).
+
+### `UseSuspenseQueriesResultsOf`
+
+`UseSuspenseQueriesResultsOf<Q>`: the results of a list `Q` of options, each a `UseSuspenseQueryResult` of its `QueryData`.
 
 ### `UseQueriesOption`
 
@@ -95,6 +109,22 @@ The mapped result type of `useQueries`: one `UseQueryResult` per query.
 ### `UseSuspenseInfiniteQueryResult`
 
 Like `UseInfiniteQueryResult` with `data` always defined and `status` `"success" | "error"`.
+
+## Errors (`@omnifront/react/errors`)
+
+`useQuery` takes `throwOnError: true | (error) => boolean`: a failure that has settled (not one being retried or refetched) is thrown during render, so the nearest error boundary shows it. This is the main entry; the retry helpers below are opt-in.
+
+### `QueryErrorResetBoundary`
+
+`<QueryErrorResetBoundary>{({ reset }) => ...}</QueryErrorResetBoundary>`: gives its children (a node, or a function of `{ reset }`) a `reset` to call from your error boundary's retry. It renders nothing of its own.
+
+### `useQueryErrorResetBoundary`
+
+`useQueryErrorResetBoundary()` returns `{ reset }` for the nearest client. `reset()` marks every failed query outdated, so the query loads again the next time it renders or mounts instead of rethrowing the old error.
+
+### `QueryErrorReset`
+
+The `{ reset }` type.
 
 ## Activity (`@omnifront/react/activity`)
 
