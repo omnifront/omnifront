@@ -1,0 +1,57 @@
+{
+	"name": "@omnifront/ui-angular",
+	"version": "0.0.0",
+	"description": "Angular components for the omnifront UI kit: Material-style Button, TextField, Dialog, Menu and Tabs.",
+	"license": "MIT",
+	"keywords": [
+		"omnifront",
+		"ui",
+		"angular",
+		"material",
+		"components"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
+		"directory": "packages/ui-angular"
+	},
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/ui-angular#readme",
+	"bugs": {
+		"url": "https://github.com/omnifront/omnifront/issues"
+	},
+	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
+	"scripts": {
+		"build": "ng-packagr -p ng-package.json -c tsconfig.lib.json",
+		"test": "vitest run --coverage",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@omnifront/core": "workspace:*",
+		"@omnifront/store": "workspace:*",
+		"@omnifront/ui": "workspace:*",
+		"tslib": "^2.9.1"
+	},
+	"peerDependencies": {
+		"@angular/common": ">=17",
+		"@angular/core": ">=17",
+		"@angular/forms": ">=17"
+	},
+	"devDependencies": {
+		"@angular/common": "^22.2.5",
+		"@angular/compiler": "^22.2.5",
+		"@angular/compiler-cli": "^22.2.5",
+		"@angular/core": ">=17",
+		"@angular/forms": "^22.2.5",
+		"@angular/platform-browser": "^22.2.5",
+		"@angular/platform-server": "^22.2.5",
+		"@omnifront/conformance": "workspace:*",
+		"@testing-library/dom": "^10.4.2",
+		"jsdom": "^31.0.0",
+		"ng-packagr": "^22.2.6",
+		"rxjs": "^7.8.2",
+		"typescript": "~6.0.3"
+	}
+}

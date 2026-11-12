@@ -1,3 +1,5 @@
+export { defineUiConformanceSuite } from "./ui"
+export type { UiHandle, UiHarness } from "./ui"
 import { createApi } from "@omnifront/api"
 import { createMockAdapter } from "@omnifront/api/testing"
 import { notifyManager, shallowEqual, type Subscribable } from "@omnifront/core"

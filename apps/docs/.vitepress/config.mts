@@ -55,6 +55,7 @@ export default defineConfig({
 						{ text: "Suspense (React)", link: "/guide/suspense" },
 						{ text: "Persistence", link: "/guide/persistence" },
 						{ text: "Devtools", link: "/guide/devtools" },
+						{ text: "UI components", link: "/guide/ui" },
 						{ text: "Testing", link: "/guide/testing" },
 					],
 				},

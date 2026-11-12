@@ -1,0 +1,176 @@
+# UI components
+
+::: info Pre-release
+Not on npm yet. Wave 0 of the UI kit (ADR-0014) has Button, TextField, Dialog, Menu and Tabs. More components arrive in later waves.
+:::
+
+A Material-style component library for React, Vue and Angular. Behaviour, accessibility and look are written once, in `@omnifront/ui`; each framework package only renders it. The result: the same DOM, the same keyboard behaviour and the same theme in all three, and a conformance suite that runs the same scenarios against each.
+
+|  | Package | Peer |
+|---|---|---|
+| Core (theme, behaviour, CSS) | `@omnifront/ui` | none |
+| React | `@omnifront/ui-react` | React 18+ |
+| Vue | `@omnifront/ui-vue` | Vue 3.3+ |
+| Angular | `@omnifront/ui-angular` | Angular 17+ (`@angular/forms`) |
+
+## Set up
+
+Import the CSS once, anywhere in your app. It holds the default Material theme (light and dark) and every component's styles, inside CSS layers so your own CSS always wins.
+
+```ts
+import "@omnifront/ui/styles.css"
+```
+
+::: code-group
+```tsx [React]
+import { Button, ThemeProvider, createTheme } from "@omnifront/ui-react"
+
+const theme = createTheme({ palette: { primary: { main: "#7C3AED" } } })
+
+export const App = () => (
+	<ThemeProvider theme={theme} colorScheme="system">
+		<Button variant="contained">Save</Button>
+	</ThemeProvider>
+)
+```
+```vue [Vue]
+<script setup lang="ts">
+import { Button, ThemeProvider, createTheme } from "@omnifront/ui-vue"
+const theme = createTheme({ palette: { primary: { main: "#7C3AED" } } })
+</script>
+
+<template>
+	<ThemeProvider :theme="theme" color-scheme="system">
+		<Button variant="contained">Save</Button>
+	</ThemeProvider>
+</template>
+```
+```ts [Angular]
+import { Component } from "@angular/core"
+import { OmniButton, OmniThemeProvider, createTheme } from "@omnifront/ui-angular"
+
+@Component({
+	selector: "app-root",
+	standalone: true,
+	imports: [OmniThemeProvider, OmniButton],
+	template: `
+		<omni-theme-provider [theme]="theme" colorScheme="system">
+			<button omni-button variant="contained">Save</button>
+		</omni-theme-provider>
+	`,
+})
+export class AppComponent {
+	theme = createTheme({ palette: { primary: { main: "#7C3AED" } } })
+}
+```
+:::
+
+## Theme
+
+`createTheme` takes the same shape as MUI's: pass only what you change. It covers `palette`, `typography`, `spacing`, `breakpoints`, `shape`, `shadows`, `transitions`, `zIndex`, `direction` and `components` (default props per component, keyed `OmniButton`, `OmniTextField`, `OmniDialog`, `OmniMenu`, `OmniTabs`).
+
+```ts
+const theme = createTheme({
+	palette: { primary: { main: "#7C3AED" } }, // light, dark and contrast text are derived
+	colorSchemes: { dark: { background: { default: "#0B1020" } } }, // tune one scheme only
+	shape: { borderRadius: 8 },
+	components: { OmniButton: { defaultProps: { variant: "contained" } } },
+})
+theme.spacing(2) // "16px"
+theme.breakpoints.up("md") // "@media (min-width:900px)"
+```
+
+A theme is turned into **CSS variables** (`--omni-palette-primary-main`, `--omni-spacing`, ...), not into runtime styles. That is what makes it work in React Server Components, in Vue and in Angular with no extra setup, and it makes RTL free (everything is written with logical properties).
+
+### Dark mode
+
+Both schemes are always built. `colorScheme` on the provider is `light`, `dark` or `system` (follow the OS, in plain CSS, with no flash). The user's choice is a normal omnifront store, so every framework reads it the same way:
+
+```ts
+import { createColorSchemeStore } from "@omnifront/ui"
+
+export const colorScheme = createColorSchemeStore({
+	storageKey: "scheme",
+	target: () => document.documentElement, // also sets data-omni-color-scheme on <html>
+})
+// React: const mode = useStore(colorScheme, (s) => s.mode)   Vue: useStore(...)   Angular: injectStore(...)
+// call colorScheme.restore() after mount (it applies the saved choice, hydration-safe)
+```
+
+To avoid a flash before the first paint, put `colorSchemeScript({ storageKey: "scheme" })` in an inline `<script>` in `<head>`.
+
+### A custom theme for the whole page
+
+A `ThemeProvider` scopes its variables to its own wrapper. For page-level use (so `<body>` is themed too), put the CSS on `:root` instead:
+
+```ts
+import { themeToCss } from "@omnifront/ui"
+document.head.append(Object.assign(document.createElement("style"), { textContent: themeToCss(theme) }))
+```
+
+## Components
+
+Names follow MUI. Where a framework has a native idiom, the API uses it: `onClose` in React, `@close` and `v-model` in Vue, `(closed)` and `[(open)]` in Angular.
+
+::: code-group
+```tsx [React]
+<Dialog open={open} onClose={(event, reason) => setOpen(false)}>
+	<DialogTitle>Delete project?</DialogTitle>
+	<DialogContent>
+		<DialogContentText>This cannot be undone.</DialogContentText>
+	</DialogContent>
+	<DialogActions>
+		<Button onClick={() => setOpen(false)}>Cancel</Button>
+	</DialogActions>
+</Dialog>
+```
+```vue [Vue]
+<Dialog v-model:open="open">
+	<DialogTitle>Delete project?</DialogTitle>
+	<DialogContent>
+		<DialogContentText>This cannot be undone.</DialogContentText>
+	</DialogContent>
+	<DialogActions>
+		<Button @click="open = false">Cancel</Button>
+	</DialogActions>
+</Dialog>
+```
+```html [Angular]
+<omni-dialog [(open)]="open">
+	<h2 omniDialogTitle>Delete project?</h2>
+	<div omniDialogContent><p omniDialogContentText>This cannot be undone.</p></div>
+	<div omniDialogActions><button omni-button (click)="open = false">Cancel</button></div>
+</omni-dialog>
+```
+:::
+
+| Component | Notes |
+|---|---|
+| **Button** | `variant` (`text` / `outlined` / `contained`), `color`, `size`, `fullWidth`, `disableElevation`, `loading` (spinner, ignores clicks), start and end icons, `href` makes it a link, touch ripple. |
+| **TextField** | `outlined` / `filled` / `standard`, floating label, `helperText`, `error`, `required`, adornments, `multiline`. Angular: works with `ngModel` and reactive forms. Vue: `v-model`. |
+| **Dialog** | Focus moves in and is trapped, Escape and a click outside ask to close (`reason`: `escapeKeyDown`, `backdropClick`), the page behind stops scrolling and is hidden from screen readers, focus returns to the opener. `maxWidth`, `fullWidth`, `fullScreen`, exit animation. |
+| **Menu** | Hangs from `anchorEl`, flips when there is no room. Arrow keys, Home, End and typing move focus; Enter or Space choose; Escape, Tab and a click outside close. |
+| **Tabs** | `TabContext` + `TabList` + `Tab` + `TabPanel` (MUI Lab's shape). Roving tabindex, arrow keys, optional `selectionFollowsFocus`, sliding indicator. |
+
+## Differences from MUI
+
+- **No `styled()` and no `sx`.** Style with CSS variables, a `class`, `slotProps` (React), or the `data-*` attributes each component sets (`data-variant`, `data-disabled`, `data-state`, ...). Everything is in `@layer omnifront`, so ordinary CSS overrides it.
+- **`theme.components` supports `defaultProps`** only for now (no `styleOverrides`, no custom `variants`).
+- **Menu opens below its anchor** (MUI's default overlaps it). Use `placement` to change it.
+- **TextField adornments** are `startAdornment` / `endAdornment` (React, Vue slots), not `InputProps`.
+- Not in wave 0 yet: `keepMounted` on Dialog and Menu, scroll buttons on Tabs, layout components (`Box`, `Stack`, `Grid`) and the rest of the component list.
+
+## Server-side rendering
+
+Components render to HTML on the server in all three frameworks. Overlays (Dialog, Menu) render into a portal in the browser, so they produce no server HTML; everything else hydrates as it was rendered, including a floated label for a field that starts with a value.
+
+## Under the hood
+
+Each interactive component is a *machine* from `@omnifront/ui`: a `Subscribable` (the same contract as the query observer and the store) with `connect()` for the attributes and handlers of each element and `attach()` for focus, scroll lock and positioning. You can use them without the component packages:
+
+```ts
+import { createDialog } from "@omnifront/ui"
+
+const dialog = createDialog({ id: "d1", onOpenChange: (open, reason) => console.log(open, reason) })
+dialog.subscribe(() => render(dialog.getSnapshot(), dialog.connect()))
+```
