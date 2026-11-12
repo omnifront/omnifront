@@ -1,5 +1,9 @@
 import {
 	Button,
+	Checkbox,
+	FormGroup,
+	Radio,
+	RadioGroup,
 	Dialog,
 	DialogActions,
 	DialogContent,
@@ -110,6 +114,30 @@ export function App() {
 						<Select label="Standard" variant="standard" options={fruit} />
 						<Select label="Error" error options={fruit} helperText="Required" />
 						<Select label="Disabled" disabled options={fruit} defaultValue="a" />
+					</div>
+				</section>
+
+				<section style={{ display: "grid", gap: 16 }}>
+					<h2 style={heading}>Checkbox and Radio</h2>
+					<FormGroup label="Notifications" helperText="Choose any" row>
+						<Checkbox label="Accept terms" />
+						<Checkbox label="Subscribe" defaultChecked />
+						<Checkbox label="Some" indeterminate />
+						<Checkbox label="Secondary" color="secondary" defaultChecked />
+						<Checkbox label="Small" size="small" defaultChecked />
+						<Checkbox label="Disabled" disabled />
+						<Checkbox label="Disabled on" disabled defaultChecked />
+					</FormGroup>
+					<div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "flex-start" }}>
+						<RadioGroup label="Fruit" helperText="Pick one" defaultValue="c">
+							<Radio value="a" label="Apple" />
+							<Radio value="b" label="Banana" disabled />
+							<Radio value="c" label="Cherry" />
+						</RadioGroup>
+						<RadioGroup label="Plan" error helperText="Required" row>
+							<Radio value="free" label="Free" />
+							<Radio value="pro" label="Pro" color="secondary" />
+						</RadioGroup>
 					</div>
 				</section>
 

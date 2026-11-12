@@ -1,6 +1,10 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, signal } from "@angular/core"
 import {
 	OmniButton,
+	OmniCheckbox,
+	OmniFormGroup,
+	OmniRadio,
+	OmniRadioGroup,
 	OmniDialog,
 	OmniDialogActions,
 	OmniDialogContent,
@@ -49,6 +53,10 @@ const standard = createTheme()
 		OmniMenuItem,
 		OmniMenuDivider,
 		OmniSelect,
+		OmniCheckbox,
+		OmniFormGroup,
+		OmniRadio,
+		OmniRadioGroup,
 		OmniTabContext,
 		OmniTabList,
 		OmniTab,
@@ -104,6 +112,30 @@ const standard = createTheme()
 						<omni-select label="Standard" variant="standard" [options]="fruit" />
 						<omni-select label="Error" error [options]="fruit" helperText="Required" />
 						<omni-select label="Disabled" disabled [options]="fruit" defaultValue="a" />
+					</div>
+				</section>
+
+				<section style="display: grid; gap: 16px">
+					<h2 style="font: var(--omni-typography-h6-font); margin: 0">Checkbox and Radio</h2>
+					<omni-form-group label="Notifications" helperText="Choose any" row>
+						<omni-checkbox>Accept terms</omni-checkbox>
+						<omni-checkbox defaultChecked>Subscribe</omni-checkbox>
+						<omni-checkbox indeterminate>Some</omni-checkbox>
+						<omni-checkbox color="secondary" defaultChecked>Secondary</omni-checkbox>
+						<omni-checkbox size="small" defaultChecked>Small</omni-checkbox>
+						<omni-checkbox disabled>Disabled</omni-checkbox>
+						<omni-checkbox disabled defaultChecked>Disabled on</omni-checkbox>
+					</omni-form-group>
+					<div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start">
+						<omni-radio-group label="Fruit" helperText="Pick one" defaultValue="c">
+							<omni-radio value="a">Apple</omni-radio>
+							<omni-radio value="b" disabled>Banana</omni-radio>
+							<omni-radio value="c">Cherry</omni-radio>
+						</omni-radio-group>
+						<omni-radio-group label="Plan" error helperText="Required" row>
+							<omni-radio value="free">Free</omni-radio>
+							<omni-radio value="pro" color="secondary">Pro</omni-radio>
+						</omni-radio-group>
 					</div>
 				</section>
 

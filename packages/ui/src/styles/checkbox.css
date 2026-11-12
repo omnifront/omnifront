@@ -1,0 +1,125 @@
+/* Checkbox and Radio share this file: the same control, a different box. The real <input> sits on top, invisible, so it keeps the browser's keyboard, focus and form behaviour. */
+@layer omnifront {
+	.omni-checkbox,
+	.omni-radio {
+		--_main: var(--omni-palette-primary-main);
+		--_contrast: var(--omni-palette-primary-contrast-text);
+		--_box: 18px;
+		display: inline-flex;
+		align-items: center;
+		vertical-align: middle;
+		margin-inline: -11px 16px;
+		cursor: pointer;
+		color: var(--omni-palette-text-primary);
+		font: var(--omni-typography-body1-font);
+		letter-spacing: var(--omni-typography-body1-letter-spacing);
+		-webkit-tap-highlight-color: transparent;
+	}
+	.omni-radio { --_box: 20px; }
+	:is(.omni-checkbox, .omni-radio)[data-size="small"] { --_box: 14px; }
+	.omni-radio[data-size="small"] { --_box: 16px; }
+	:is(.omni-checkbox, .omni-radio)[data-color="secondary"] { --_main: var(--omni-palette-secondary-main); --_contrast: var(--omni-palette-secondary-contrast-text); }
+	:is(.omni-checkbox, .omni-radio)[data-color="success"] { --_main: var(--omni-palette-success-main); --_contrast: var(--omni-palette-success-contrast-text); }
+	:is(.omni-checkbox, .omni-radio)[data-color="info"] { --_main: var(--omni-palette-info-main); --_contrast: var(--omni-palette-info-contrast-text); }
+	:is(.omni-checkbox, .omni-radio)[data-color="warning"] { --_main: var(--omni-palette-warning-main); --_contrast: var(--omni-palette-warning-contrast-text); }
+	:is(.omni-checkbox, .omni-radio)[data-color="error"],
+	:is(.omni-checkbox, .omni-radio)[data-error] { --_main: var(--omni-palette-error-main); --_contrast: var(--omni-palette-error-contrast-text); }
+
+	.omni-checkbox__control,
+	.omni-radio__control {
+		position: relative;
+		display: inline-flex;
+		flex: 0 0 auto;
+		padding: 9px;
+		border-radius: 50%;
+		color: var(--omni-palette-action-active);
+		transition: background-color var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
+	}
+	:is(.omni-checkbox, .omni-radio):hover .omni-checkbox__control,
+	:is(.omni-checkbox, .omni-radio):hover .omni-radio__control { background-color: color-mix(in srgb, var(--_main) 4%, transparent); }
+	:is(.omni-checkbox__control, .omni-radio__control):has(:focus-visible) { background-color: color-mix(in srgb, var(--_main) 12%, transparent); }
+
+	.omni-checkbox__input,
+	.omni-radio__input {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		inline-size: 100%;
+		block-size: 100%;
+		margin: 0;
+		opacity: 0;
+		cursor: inherit;
+	}
+
+	.omni-checkbox__box,
+	.omni-radio__box {
+		position: relative;
+		box-sizing: border-box;
+		inline-size: var(--_box);
+		block-size: var(--_box);
+		border: 2px solid currentColor;
+		transition: background-color var(--omni-duration-shortest) var(--omni-easing-ease-in-out), border-color var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
+	}
+	.omni-checkbox__box { border-radius: 2px; }
+	.omni-radio__box { border-radius: 50%; }
+	.omni-checkbox__box::after,
+	.omni-radio__box::after { content: ""; position: absolute; }
+
+	/* checkbox: a tick, or a dash while indeterminate */
+	.omni-checkbox__box::after {
+		inset-inline-start: calc(var(--_box) * 0.22);
+		inset-block-start: calc(var(--_box) * 0.02);
+		inline-size: calc(var(--_box) * 0.28);
+		block-size: calc(var(--_box) * 0.56);
+		border: solid var(--_contrast);
+		border-width: 0 2px 2px 0;
+		transform: rotate(45deg) scale(0);
+		transition: transform var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
+	}
+	.omni-checkbox__input:checked + .omni-checkbox__box { background-color: var(--_main); border-color: var(--_main); }
+	.omni-checkbox__input:checked + .omni-checkbox__box::after { transform: rotate(45deg) scale(1); }
+	.omni-checkbox__input:indeterminate + .omni-checkbox__box { background-color: var(--_main); border-color: var(--_main); }
+	.omni-checkbox__input:indeterminate + .omni-checkbox__box::after {
+		inset-inline-start: calc(var(--_box) * 0.11);
+		inset-block-start: calc(var(--_box) * 0.33);
+		inline-size: calc(var(--_box) * 0.56);
+		block-size: 0;
+		border-width: 0 0 2px;
+		transform: none;
+	}
+
+	/* radio: a dot */
+	.omni-radio__box::after {
+		inset: 3px;
+		border-radius: 50%;
+		background-color: var(--_main);
+		transform: scale(0);
+		transition: transform var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
+	}
+	.omni-radio__input:checked + .omni-radio__box { border-color: var(--_main); }
+	.omni-radio__input:checked + .omni-radio__box::after { transform: scale(1); }
+
+	/* a checked control takes the colour; the halo too */
+	:is(.omni-checkbox__control, .omni-radio__control):has(:checked, :indeterminate) { color: var(--_main); }
+
+	.omni-checkbox__label,
+	.omni-radio__label { user-select: none; }
+	/* Angular always renders the label wrapper; an empty one takes no space */
+	.omni-checkbox__label:empty,
+	.omni-radio__label:empty { display: none; }
+
+	/* label placement */
+	:is(.omni-checkbox, .omni-radio)[data-label-placement="start"] { flex-direction: row-reverse; margin-inline: 16px -11px; }
+	:is(.omni-checkbox, .omni-radio)[data-label-placement="top"] { flex-direction: column-reverse; margin-inline: 16px; }
+	:is(.omni-checkbox, .omni-radio)[data-label-placement="bottom"] { flex-direction: column; margin-inline: 16px; }
+
+	/* disabled */
+	:is(.omni-checkbox, .omni-radio)[data-disabled] { cursor: default; color: var(--omni-palette-text-disabled); }
+	:is(.omni-checkbox, .omni-radio)[data-disabled] :is(.omni-checkbox__control, .omni-radio__control) { color: var(--omni-palette-action-disabled); background-color: transparent; }
+	.omni-checkbox[data-disabled] .omni-checkbox__input:is(:checked, :indeterminate) + .omni-checkbox__box { background-color: var(--omni-palette-action-disabled); border-color: var(--omni-palette-action-disabled); }
+	.omni-radio[data-disabled] .omni-radio__input:checked + .omni-radio__box::after { background-color: var(--omni-palette-action-disabled); }
+
+	@media (prefers-reduced-motion: reduce) {
+		:is(.omni-checkbox, .omni-radio) * { transition: none !important; }
+	}
+}

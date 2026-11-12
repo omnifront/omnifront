@@ -28,6 +28,30 @@ Props: `variant`, `color`, `size`, `fullWidth`, `disableElevation`, `loading`, `
 
 Props: `modelValue` (`v-model`; leave it out for an uncontrolled field) / `defaultValue`, `label`, `helperText`, `error`, `disabled`, `required`, `readOnly`, `variant`, `size`, `color`, `fullWidth`, `multiline`, `rows`, `id`, `type`, `placeholder`. Slots: `startAdornment`, `endAdornment`. Events: `update:modelValue`, `focus`, `blur`.
 
+### `Checkbox`
+
+```vue
+<Checkbox v-model="accepted" label="Accept terms" />
+```
+
+A real `<input type="checkbox">` inside a clickable `<label>`. Props: `modelValue` (`v-model`; leave it out for an uncontrolled checkbox) / `defaultChecked`, `indeterminate`, `label` (or the default slot), `labelPlacement`, `disabled`, `required`, `error`, `color`, `size`, `name`, `value`, `id`. Events: `update:modelValue`, `change(event, checked)`. `aria-*` attributes go to the input; the rest go to the label.
+
+### `RadioGroup`
+
+```vue
+<RadioGroup v-model="fruit" label="Fruit"><Radio value="a" label="Apple" /></RadioGroup>
+```
+
+A `<fieldset role="radiogroup">` with a `<legend>`. Props: `label`, `helperText`, `modelValue` (`v-model`) / `defaultValue`, `name`, `error`, `disabled`, `required`, `row`, `id`. Events: `update:modelValue`, `change(event, value)`. A parent that does not accept a change gets every radio put back.
+
+### `Radio`
+
+One radio. Props: `value`, `label` (or the default slot), `labelPlacement`, `disabled`, `color`, `size`, `id`; outside a `RadioGroup` also `checked` and `name`. Event: `change`.
+
+### `FormGroup`
+
+A labelled group of related controls (a `<fieldset>` with a `<legend>`), for example several checkboxes. Props: `label`, `helperText`, `error`, `disabled`, `row`, `id`.
+
 ### `Select`
 
 ```vue

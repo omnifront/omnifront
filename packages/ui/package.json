@@ -55,7 +55,9 @@
 		"./dialog.css": "./dist/dialog.css",
 		"./menu.css": "./dist/menu.css",
 		"./tabs.css": "./dist/tabs.css",
-		"./select.css": "./dist/select.css"
+		"./select.css": "./dist/select.css",
+		"./checkbox.css": "./dist/checkbox.css",
+		"./form-group.css": "./dist/form-group.css"
 	},
 	"files": [
 		"dist"

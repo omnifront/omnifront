@@ -6,6 +6,8 @@ export { OmniDialog, OmniDialogTitle, OmniDialogContent, OmniDialogContentText, 
 export type { DialogCloseEvent, DialogCloseReason } from "./dialog"
 export { OmniMenu, OmniMenuItem, OmniMenuDivider, OMNI_MENU } from "./menu"
 export type { MenuCloseEvent, MenuCloseReason } from "./menu"
+export { OmniCheckbox } from "./checkbox"
+export { OmniRadio, OmniRadioGroup, OmniFormGroup, OMNI_RADIO_GROUP } from "./radio"
 export { OmniSelect } from "./select"
 export type { SelectCloseEvent, SelectCloseReason } from "./select"
 export type { SelectOption } from "@omnifront/ui"

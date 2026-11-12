@@ -20,6 +20,11 @@ export class PartBinding {
 		const next = new Set<string>()
 		const nextClasses = new Set<string>()
 		for (const [name, value] of Object.entries(part?.attrs ?? {})) {
+			// `checked` is a property: the attribute only sets the default, and cannot uncheck.
+			if (name === "checked") {
+				;(this.element as HTMLInputElement).checked = value === true
+				continue
+			}
 			if (value === undefined || value === false) continue
 			if (name === "class") {
 				for (const c of String(value).split(/\s+/).filter(Boolean)) {

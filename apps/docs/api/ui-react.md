@@ -28,6 +28,32 @@ Props (`ButtonProps` also takes every native `<button>` prop): `variant` (`text`
 
 Props (`TextFieldProps`): `label`, `value` / `defaultValue` / `onChange`, `helperText`, `error`, `disabled`, `required`, `readOnly`, `variant` (`outlined` / `filled` / `standard`), `size`, `color`, `fullWidth`, `multiline`, `rows`, `startAdornment`, `endAdornment`, `slotProps.input`, `inputRef`, `id`, plus native input props.
 
+### `Checkbox`
+
+```tsx
+<Checkbox label="Accept terms" checked={accepted} onChange={(event, checked) => setAccepted(checked)} />
+```
+
+A real `<input type="checkbox">` (Space, focus, forms and screen readers work natively) inside a clickable `<label>`. Props (`CheckboxProps`): `checked` / `defaultChecked` / `onChange(event, checked)`, `indeterminate` (a click then makes it checked), `label`, `labelPlacement` (`end`, `start`, `top`, `bottom`), `disabled`, `required`, `error`, `color` (including `error`), `size`, `name`, `value`, `id`, `className`, `slotProps.input` (for example `aria-label` when there is no `label`). The ref is forwarded to the `<label>`.
+
+### `RadioGroup`
+
+```tsx
+<RadioGroup label="Fruit" value={fruit} onChange={(event, value) => setFruit(value)}>
+	<Radio value="a" label="Apple" />
+</RadioGroup>
+```
+
+A `<fieldset role="radiogroup">` with a `<legend>`: one value chosen at a time. The radios are native with a shared `name`, so the arrow keys move the choice and Tab leaves the group. Props (`RadioGroupProps`): `label`, `helperText`, `value` / `defaultValue` / `onChange(event, value)`, `name`, `error`, `disabled`, `required`, `row`, `id`, `className`.
+
+### `Radio`
+
+One radio. Props (`RadioProps`): `value`, `label`, `labelPlacement`, `disabled`, `color`, `size`, `id`, `className`, `slotProps.input`. Outside a `RadioGroup` it is a plain radio controlled with `checked`, `onChange` and `name`.
+
+### `FormGroup`
+
+A labelled group of related controls (a `<fieldset>` with a `<legend>`), for example several checkboxes. Props (`FormGroupProps`): `label`, `helperText`, `error`, `disabled`, `row`, `id`, `className`.
+
 ### `Select`
 
 ```tsx

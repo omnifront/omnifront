@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import {
 	Button,
+	Checkbox,
+	FormGroup,
+	Radio,
+	RadioGroup,
 	Dialog,
 	DialogActions,
 	DialogContent,
@@ -106,6 +110,30 @@ onMounted(() => {
 					<Select label="Standard" variant="standard" :options="fruit" />
 					<Select label="Error" error :options="fruit" helper-text="Required" />
 					<Select label="Disabled" disabled :options="fruit" default-value="a" />
+				</div>
+			</section>
+
+			<section style="display: grid; gap: 16px">
+				<h2 style="font: var(--omni-typography-h6-font); margin: 0">Checkbox and Radio</h2>
+				<FormGroup label="Notifications" helper-text="Choose any" row>
+					<Checkbox label="Accept terms" />
+					<Checkbox label="Subscribe" default-checked />
+					<Checkbox label="Some" indeterminate />
+					<Checkbox label="Secondary" color="secondary" default-checked />
+					<Checkbox label="Small" size="small" default-checked />
+					<Checkbox label="Disabled" disabled />
+					<Checkbox label="Disabled on" disabled default-checked />
+				</FormGroup>
+				<div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: flex-start">
+					<RadioGroup label="Fruit" helper-text="Pick one" default-value="c">
+						<Radio value="a" label="Apple" />
+						<Radio value="b" label="Banana" disabled />
+						<Radio value="c" label="Cherry" />
+					</RadioGroup>
+					<RadioGroup label="Plan" error helper-text="Required" row>
+						<Radio value="free" label="Free" />
+						<Radio value="pro" label="Pro" color="secondary" />
+					</RadioGroup>
 				</div>
 			</section>
 

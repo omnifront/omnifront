@@ -169,6 +169,17 @@ ui-angular  → ui, angular (+ peer: @angular/core, @angular/common)
 - **ظاهر:** عرض پیش‌فرض ۲۱۰px (یک TextField عرضش را از `<input>` می‌گیرد، یک select چنین چیزی ندارد). آزمون مرورگر همین را نشان داد: بدون آن select‌ها به اندازه‌ی متن جمع می‌شدند و برچسب «Standard» بریده می‌شد.
 - **انجام‌نشده برای Select:** چندانتخابی (`multiple`)، گروه‌بندی گزینه‌ها، گزینه‌ی سفارشی و جست‌وجوی داخل لیست. بقیه‌ی قلم‌های موج ۱ (Checkbox، Radio، Switch، Slider، Rating و ...) هنوز شروع نشده‌اند.
 
+## موج ۱: Checkbox و Radio (2026-11-12)
+
+- **کنترل بومی:** `Checkbox` و `Radio` یک `<input type="checkbox">` و `<input type="radio">` واقعی‌اند که روی یک جعبه‌ی کشیده‌شده‌ی CSS قرار می‌گیرند (خود input نامرئی ولی روی همه‌ی ناحیه است). پس Space، فوکوس، فرم، `required` و فناوری کمکی همان رفتار مرورگرند و تکرار نمی‌شوند. حالت `:checked`، `:indeterminate` و `:focus-visible` را CSS می‌خواند؛ تیک و نقطه با CSS کشیده می‌شوند و SVG لازم نیست.
+- **ماشین‌ها کوچک‌اند:** `createCheckbox` فقط می‌گوید چه چیزی تیک خورده (کنترل‌شده یا نه) و به شنونده چه بگوید. `createRadioGroup` مقدار انتخاب‌شده و `name` مشترک را نگه می‌دارد و برای هر radio یک `Part` می‌دهد. `formGroupParts` تابع است نه ماشین (حالتی ندارد)، مثل `buttonPart`. جابه‌جایی با فلش بین radioها کار مرورگر است (همان `name`)، پس در jsdom تست نمی‌شود و در Playwright با کلید واقعی تست می‌شود.
+- **`indeterminate`** صفت HTML ندارد و مرورگر با کلیک آن را پاک می‌کند؛ هر آداپتر بعد از هر تغییر `input.indeterminate` را روی DOM می‌گذارد. در Angular، `PartBinding` برای `checked` از property استفاده می‌کند (صفت فقط مقدار پیش‌فرض را می‌دهد و نمی‌تواند uncheck کند).
+- **`FormGroup`** (fieldset با legend) همان قالب `RadioGroup` است، برای گروه‌بندی چند Checkbox.
+- **تفاوت با MUI:** Checkbox خودش `label` دارد (در MUI باید با `FormControlLabel` پیچیده شود)؛ `onChange(event, checked)` و `onChange(event, value)` به‌جای رویداد با `target.checked`. حالت خطا رنگ جعبه را قرمز می‌کند (در MUI فقط برچسب و متن راهنما).
+- **دام‌های فریم‌ورک (دوباره):** در Vue، prop ی که ممکن است `undefined` معنی «کنترل‌نشده» بدهد (`modelValue` بولی) با boolean casting به `false` تبدیل می‌شد و `withDefaults` لازم شد. در React، فرزندانی که از بیرون به `RadioGroup` داده می‌شوند با تغییر state دوباره رندر نمی‌شدند تا state هم داخل مقدار context گذاشته شد.
+- **بودجه (ثبت، بدون سقف سخت):** `ui` ۹.۵KB، `styles.css` ۶.۲KB، `ui-react` ۵.۲KB، `ui-vue` ۶.۶KB، `ui-angular` ۹.۵KB (gzip)؛ سقف‌های `.size-limit.json` به‌همین اندازه به‌علاوه‌ی حاشیه رفتند.
+- **انجام‌نشده:** `Switch`، `Slider`، `Rating`، گروه چک‌باکس با «انتخاب همه» (الگوی indeterminate)، و `Radio` / `Checkbox` با آیکون سفارشی.
+
 ## معیار بازبینی
 
 - اگر موج ۰ نشان داد یک ماشین نمی‌تواند در هر سه فریم‌ورک با قرارداد `Subscribable` و `connect` وصل شود (به‌خصوص Dialog یا Menu در Angular)، این ADR و در صورت لزوم ADR-0001 دوباره باز می‌شوند.

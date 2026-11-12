@@ -1,5 +1,6 @@
 import { defineUiConformanceSuite, type UiHarness } from "@omnifront/conformance"
 import { defineComponent, h, nextTick, ref, type VNodeChild } from "vue"
+import { Checkbox, Radio, RadioGroup } from "../src"
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Select, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
 import { mount, slot } from "./mount"
 
@@ -50,6 +51,37 @@ const MenuView = defineComponent({
 	},
 })
 
+const CheckboxView = defineComponent({
+	props: { log: { type: Function, required: true }, indeterminate: Boolean, disabled: Boolean, error: Boolean },
+	setup(props) {
+		const checked = ref(false)
+		const log = props.log as Log
+		return () =>
+			h(Checkbox, {
+				label: "Accept terms",
+				modelValue: checked.value,
+				indeterminate: props.indeterminate,
+				disabled: props.disabled,
+				error: props.error,
+				"onUpdate:modelValue": (c: boolean) => { log(`change:${c}`); checked.value = c },
+			})
+	},
+})
+
+const RadioGroupView = defineComponent({
+	props: { log: { type: Function, required: true }, disabled: Boolean, error: Boolean },
+	setup(props) {
+		const value = ref("")
+		const log = props.log as Log
+		return () =>
+			h(
+				RadioGroup,
+				{ label: "Fruit", helperText: "Pick one", modelValue: value.value, disabled: props.disabled, error: props.error, "onUpdate:modelValue": (v: string) => { log(`change:${v}`); value.value = v } },
+				slot(h(Radio, { value: "a", label: "Apple" }), h(Radio, { value: "b", label: "Banana", disabled: true }), h(Radio, { value: "c", label: "Cherry" })),
+			)
+	},
+})
+
 const fruit = [
 	{ value: "a", label: "Apple" },
 	{ value: "b", label: "Banana", disabled: true },
@@ -97,6 +129,8 @@ const harness: UiHarness = {
 		mountWith(props, (p) => h(TextField, { label: "Email", helperText: "We never share it", error: p.error, disabled: p.disabled, "onUpdate:modelValue": (v: string) => log(`change:${v}`) })),
 	dialog: (_props, log) => mountWith({}, () => h(DialogView, { log })),
 	menu: (_props, log) => mountWith({}, () => h(MenuView, { log })),
+	checkbox: (props, log) => mountWith(props, (p) => h(CheckboxView, { log, indeterminate: p.indeterminate ?? false, disabled: p.disabled ?? false, error: p.error ?? false })),
+	radioGroup: (props, log) => mountWith(props, (p) => h(RadioGroupView, { log, disabled: p.disabled ?? false, error: p.error ?? false })),
 	select: (props, log) => mountWith(props, (p) => h(SelectView, { log, error: p.error ?? false, disabled: p.disabled ?? false })),
 	tabs: (props, log) => mountWith(props, (p) => h(TabsView, { log, selectionFollowsFocus: p.selectionFollowsFocus ?? false })),
 	settle: async () => {

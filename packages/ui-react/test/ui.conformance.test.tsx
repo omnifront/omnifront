@@ -1,6 +1,7 @@
 import { act, render } from "@testing-library/react"
 import { useState, type ReactNode } from "react"
 import { defineUiConformanceSuite, type UiHarness } from "@omnifront/conformance"
+import { Checkbox, Radio, RadioGroup } from "../src"
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Select, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
 
 type Log = (event: string) => void
@@ -45,6 +46,22 @@ function MenuView({ log }: { log: Log }) {
 				<MenuItem onClick={() => log("select:logout")}>Logout</MenuItem>
 			</Menu>
 		</>
+	)
+}
+
+function CheckboxView({ indeterminate, disabled, error, log }: { indeterminate: boolean | undefined; disabled: boolean | undefined; error: boolean | undefined; log: Log }) {
+	const [checked, setChecked] = useState(false)
+	return <Checkbox label="Accept terms" checked={checked} indeterminate={indeterminate} disabled={disabled} error={error} onChange={(_e, c) => { log(`change:${c}`); setChecked(c) }} />
+}
+
+function RadioGroupView({ disabled, error, log }: { disabled: boolean | undefined; error: boolean | undefined; log: Log }) {
+	const [value, setValue] = useState("")
+	return (
+		<RadioGroup label="Fruit" helperText="Pick one" value={value} disabled={disabled} error={error} onChange={(_e, v) => { log(`change:${v}`); setValue(v) }}>
+			<Radio value="a" label="Apple" />
+			<Radio value="b" label="Banana" disabled />
+			<Radio value="c" label="Cherry" />
+		</RadioGroup>
 	)
 }
 
@@ -99,6 +116,8 @@ const harness: UiHarness = {
 		)),
 	dialog: (_props, log) => mountWith({}, () => <DialogView log={log} />),
 	menu: (_props, log) => mountWith({}, () => <MenuView log={log} />),
+	checkbox: (props, log) => mountWith(props, (p) => <CheckboxView indeterminate={p.indeterminate} disabled={p.disabled} error={p.error} log={log} />),
+	radioGroup: (props, log) => mountWith(props, (p) => <RadioGroupView disabled={p.disabled} error={p.error} log={log} />),
 	select: (props, log) => mountWith(props, (p) => <SelectView error={p.error} disabled={p.disabled} log={log} />),
 	tabs: (props, log) => mountWith(props, (p) => <TabsView selectionFollowsFocus={p.selectionFollowsFocus} log={log} />),
 	settle: async () => void (await act(async () => { await new Promise((r) => setTimeout(r, 0)) })),

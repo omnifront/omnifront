@@ -9,7 +9,10 @@ import {
 	OmniDialogContentText,
 	OmniDialogTitle,
 	OmniMenu,
+	OmniCheckbox,
 	OmniMenuItem,
+	OmniRadio,
+	OmniRadioGroup,
 	OmniSelect,
 	OmniTab,
 	OmniTabContext,
@@ -84,6 +87,36 @@ class DialogView {
 })
 class MenuView {
 	anchor = signal<HTMLElement | null>(null)
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+}
+
+@Component({
+	standalone: true,
+	imports: [OmniCheckbox],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `<omni-checkbox [checked]="checked()" [indeterminate]="!!p().indeterminate" [disabled]="!!p().disabled" [error]="!!p().error" (checkedChange)="log('change:' + $event); checked.set($event)">Accept terms</omni-checkbox>`,
+})
+class CheckboxView {
+	checked = signal(false)
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+}
+
+@Component({
+	standalone: true,
+	imports: [OmniRadioGroup, OmniRadio],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `
+		<omni-radio-group label="Fruit" helperText="Pick one" [value]="value()" [disabled]="!!p().disabled" [error]="!!p().error" (valueChange)="log('change:' + $event); value.set($event)">
+			<omni-radio value="a">Apple</omni-radio>
+			<omni-radio value="b" disabled>Banana</omni-radio>
+			<omni-radio value="c">Cherry</omni-radio>
+		</omni-radio-group>
+	`,
+})
+class RadioGroupView {
+	value = signal("")
 	p = signal<Record<string, unknown>>({})
 	log: Log = () => {}
 }
@@ -170,6 +203,8 @@ const harness: UiHarness = {
 	textField: (props, log) => mountView(FieldView, props, log),
 	dialog: (_props, log) => mountView(DialogView, {}, log),
 	menu: (_props, log) => mountView(MenuView, {}, log),
+	checkbox: (props, log) => mountView(CheckboxView, props, log),
+	radioGroup: (props, log) => mountView(RadioGroupView, props, log),
 	select: (props, log) => mountView(SelectView, props, log),
 	tabs: (props, log) => mountView(TabsView, props, log),
 	settle: async () => {

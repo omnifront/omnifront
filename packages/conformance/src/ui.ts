@@ -31,6 +31,17 @@ export interface UiHarness {
 	 */
 	menu(props: Record<string, never>, log: (event: string) => void): UiHandle
 	/**
+	 * A Checkbox labelled "Accept terms", checked state held by the host (starts unchecked). Logs
+	 * `change:<true|false>`.
+	 */
+	checkbox(props: { indeterminate?: boolean; disabled?: boolean; error?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A RadioGroup labelled "Fruit" with helper text "Pick one" and radios "Apple" (value a),
+	 * "Banana" (value b, disabled) and "Cherry" (value c); the chosen value is held by the host
+	 * (starts empty). Logs `change:<value>`.
+	 */
+	radioGroup(props: { disabled?: boolean; error?: boolean }, log: (event: string) => void): UiHandle
+	/**
 	 * A Select labelled "Fruit" with options "Apple", "Banana" (disabled) and "Cherry", helper text
 	 * "Pick one", chosen value held by the host (starts empty). Logs `change:<value>`, and
 	 * `close:<reason>` when the list closes.
@@ -196,6 +207,90 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				await h.settle()
 				expect($(".omni-text-field").dataset["variant"]).toBe("outlined")
 				expect($(".omni-text-field__legend span").textContent).toBe("Email")
+			})
+		})
+
+		describe("Checkbox", () => {
+			const checkbox = (): HTMLInputElement => $<HTMLInputElement>('input[type="checkbox"]')
+
+			it("is a native checkbox, named by its label, whose label is clickable", async () => {
+				mount(h.checkbox({}, log))
+				await h.settle()
+				expect(checkbox().checked).toBe(false)
+				expect(checkbox().closest("label")?.textContent?.trim()).toBe("Accept terms")
+				expect(checkbox().closest("label")?.dataset).toMatchObject({ size: "medium", color: "primary" })
+				byText(".omni-checkbox__label", "Accept terms").click() // the text, not the input
+				await h.settle()
+				expect(events).toEqual(["change:true"])
+				expect(checkbox().checked).toBe(true)
+				checkbox().click()
+				await h.settle()
+				expect(events).toEqual(["change:true", "change:false"])
+				expect(checkbox().checked).toBe(false)
+			})
+
+			it("indeterminate is set on the input, and a click makes it checked", async () => {
+				const handle = mount(h.checkbox({ indeterminate: true }, log))
+				await h.settle()
+				expect(checkbox().indeterminate).toBe(true)
+				checkbox().click()
+				await h.settle()
+				expect(events).toEqual(["change:true"])
+				await handle.set({ indeterminate: false })
+				await h.settle()
+				expect(checkbox().indeterminate).toBe(false)
+			})
+
+			it("disabled is really disabled; error is exposed", async () => {
+				const handle = mount(h.checkbox({ disabled: true }, log))
+				await h.settle()
+				expect(checkbox().disabled).toBe(true)
+				expect(checkbox().closest("label")?.hasAttribute("data-disabled")).toBe(true)
+				await handle.set({ disabled: false, error: true })
+				await h.settle()
+				expect(checkbox().getAttribute("aria-invalid")).toBe("true")
+				expect(checkbox().closest("label")?.hasAttribute("data-error")).toBe(true)
+			})
+		})
+
+		describe("RadioGroup", () => {
+			const radios = (): HTMLInputElement[] => $$<HTMLInputElement>('input[type="radio"]')
+			const radio = (value: string): HTMLInputElement => radios().find((r) => r.value === value) as HTMLInputElement
+
+			it("is a radiogroup named by its legend, with native radios sharing one name, linked to the helper text", async () => {
+				mount(h.radioGroup({}, log))
+				await h.settle()
+				const group = $('[role="radiogroup"]')
+				expect(group.tagName).toBe("FIELDSET")
+				expect(document.getElementById(group.getAttribute("aria-labelledby") as string)?.textContent).toBe("Fruit")
+				expect(document.getElementById(group.getAttribute("aria-describedby") as string)?.textContent).toBe("Pick one")
+				expect(radios().map((r) => r.value)).toEqual(["a", "b", "c"])
+				expect(new Set(radios().map((r) => r.name)).size).toBe(1)
+				expect(radios().map((r) => r.checked)).toEqual([false, false, false])
+				expect(radio("b").disabled).toBe(true)
+			})
+
+			it("choosing checks exactly one and reports it; the choice can be moved; a disabled radio stays disabled", async () => {
+				mount(h.radioGroup({}, log))
+				await h.settle()
+				byText(".omni-radio__label", "Apple").click()
+				await h.settle()
+				expect(radios().map((r) => r.checked)).toEqual([true, false, false])
+				radio("c").click()
+				await h.settle()
+				expect(radios().map((r) => r.checked)).toEqual([false, false, true])
+				expect(events).toEqual(["change:a", "change:c"])
+			})
+
+			it("a disabled group disables every radio; error is exposed", async () => {
+				const handle = mount(h.radioGroup({ disabled: true }, log))
+				await h.settle()
+				expect(radios().every((r) => r.disabled)).toBe(true)
+				expect($("fieldset").hasAttribute("data-disabled")).toBe(true)
+				await handle.set({ disabled: false, error: true })
+				await h.settle()
+				expect(radio("a").getAttribute("aria-invalid")).toBe("true")
+				expect($("fieldset").hasAttribute("data-error")).toBe(true)
 			})
 		})
 
@@ -474,6 +569,21 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				byText("button", "Open").click()
 				await h.settle()
 				await expectAccessible("open dialog")
+			})
+
+			it("a checkbox in each state, and a radio group in each state", async () => {
+				const checkbox = mount(h.checkbox({}, log))
+				const group = mount(h.radioGroup({}, log))
+				await h.settle()
+				await expectAccessible("checkbox and radio group")
+				await checkbox.set({ indeterminate: true })
+				await group.set({ error: true })
+				await h.settle()
+				await expectAccessible("indeterminate checkbox, radio group in error")
+				await checkbox.set({ disabled: true })
+				await group.set({ disabled: true })
+				await h.settle()
+				await expectAccessible("disabled checkbox and radio group")
 			})
 
 			it("a closed select, an open select, and a select in error", async () => {

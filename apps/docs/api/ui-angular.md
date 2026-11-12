@@ -32,6 +32,30 @@ The injectable that `omni-theme-provider` provides: signals `theme`, `id` and `s
 
 `<omni-text-field>`. Inputs: `label`, `helperText`, `error`, `disabled`, `required`, `readOnly`, `variant`, `size`, `color`, `fullWidth`, `multiline`, `rows`, `type`, `placeholder`, `name`, `id`, `value`, `defaultValue`. Output: `valueChange`. Works with `ngModel` and reactive forms. Projection: `[omniStartAdornment]`, `[omniEndAdornment]`.
 
+### `OmniCheckbox`
+
+```html
+<omni-checkbox [(checked)]="accepted">Accept terms</omni-checkbox>
+```
+
+A real `<input type="checkbox">` inside a clickable `<label>`; the label is the content. Inputs: `checked`, `defaultChecked`, `indeterminate`, `labelPlacement`, `disabled`, `required`, `error`, `color`, `size`, `name`, `value`, `id`, `aria-label` (for a checkbox with no visible label). Output: `checkedChange`. Works with `ngModel` and reactive forms.
+
+### `OmniRadioGroup`
+
+```html
+<omni-radio-group label="Fruit" [(value)]="fruit"><omni-radio value="a">Apple</omni-radio></omni-radio-group>
+```
+
+A `<fieldset role="radiogroup">` with a `<legend>`. Inputs: `label`, `helperText`, `value`, `defaultValue`, `name`, `error`, `disabled`, `required`, `row`, `id`. Output: `valueChange`. Works with `ngModel` and reactive forms. `OMNI_RADIO_GROUP` is the token a radio injects.
+
+### `OmniRadio`
+
+One radio inside an `omni-radio-group`; the label is the content. Inputs: `value`, `disabled`, `labelPlacement`, `color`, `size`, `id`, `aria-label`.
+
+### `OmniFormGroup`
+
+A labelled group of related controls (a `<fieldset>` with a `<legend>`), for example several checkboxes. Inputs: `label`, `helperText`, `error`, `disabled`, `row`, `id`.
+
 ### `OmniSelect`
 
 ```html

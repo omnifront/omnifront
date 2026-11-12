@@ -94,6 +94,18 @@ The base class: `subscribe`, `getSnapshot`, `getServerSnapshot`, `setProps(props
 
 `mergeParts(...parts): Part`: combine parts for one element (a select's trigger is both a field control and a combobox). Later attributes win; handlers for the same event all run, in order.
 
+### `createCheckbox`
+
+`createCheckbox(props): Checkbox` (`Checkbox` is the class): the state of a checkbox. The control is a real `<input type="checkbox">`, so the keyboard, focus, forms and assistive technology are the browser's own; the machine decides what is checked and what to tell the listener. Props (`CheckboxProps`): `id`, `checked` / `defaultChecked` / `onCheckedChange(checked, event)`, `indeterminate`, `disabled`, `required`, `error`. State (`CheckboxState`): `id`, `checked`, `indeterminate`, `disabled`. `connect()` returns `input` (the input's attributes and `change` handler); `change(checked)` is what the handler calls. `indeterminate` has no HTML attribute: set `input.indeterminate = state.indeterminate` after every render.
+
+### `createRadioGroup`
+
+`createRadioGroup(props): RadioGroup` (`RadioGroup` is the class): a group of radios, one value chosen at a time. Each radio is a real `<input type="radio">` with the group's `name`, so arrow keys moving the choice and Tab leaving the group are the browser's own. Props (`RadioGroupProps`): `id`, `name` (defaults to `id`), `value` / `defaultValue` / `onValueChange(value, event)`, `disabled`, `required`, `error`, `hasLabel`, `hasHelper`, `row`. State (`RadioGroupState`): `id`, `name`, `value`, `disabled`. `connect()` returns the group's `group`, `label`, `items` and `helper` parts (see `formGroupParts`); `radio(value, options)` (`RadioOptions`: `disabled`) returns one radio's input part; `choose(value)` is what its `change` handler calls.
+
+### `formGroupParts`
+
+`formGroupParts(options: FormGroupOptions): { group, label, items, helper }`: attributes for a `<fieldset>` with a `<legend>` label and helper text (a group of related controls). `FormGroupOptions`: `id`, `role` (`group` or `radiogroup`), `hasLabel`, `hasHelper`, `error`, `disabled`, `row`. No state of its own, so it is a function, not a machine.
+
 ### `createField`
 
 `createField(props): Field` (`Field` is the class): the state of a text field. Props (`FieldProps`): `id`, `disabled`, `error`, `required`, `readOnly`, `filled`, `defaultFilled`, `alwaysShrink`, `hasHelper`. State (`FieldState`): `focused`, `filled`, `shrink`, and the flags. `connect()` returns `root`, `label`, `input`, `helper` and `fieldset`, and `trigger`: the state for a control that is not an `<input>` (a select's combobox).

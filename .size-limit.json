@@ -383,7 +383,7 @@
 	{
 		"name": "@omnifront/ui",
 		"path": "packages/ui/dist/index.js",
-		"limit": "10 KB",
+		"limit": "11 KB",
 		"gzip": true,
 		"ignore": [
 			"@omnifront/core",
@@ -399,13 +399,13 @@
 	{
 		"name": "@omnifront/ui/styles.css",
 		"path": "packages/ui/dist/styles.css",
-		"limit": "6.5 KB",
+		"limit": "7.5 KB",
 		"gzip": true
 	},
 	{
 		"name": "@omnifront/ui-react",
 		"path": "packages/ui-react/dist/index.js",
-		"limit": "4.5 KB",
+		"limit": "6 KB",
 		"gzip": true,
 		"ignore": [
 			"react",
@@ -419,7 +419,7 @@
 	{
 		"name": "@omnifront/ui-vue",
 		"path": "packages/ui-vue/dist/index.js",
-		"limit": "5.5 KB",
+		"limit": "7.5 KB",
 		"gzip": true,
 		"ignore": [
 			"vue",
@@ -432,7 +432,7 @@
 	{
 		"name": "@omnifront/ui-angular",
 		"path": "packages/ui-angular/dist/fesm2022/omnifront-ui-angular.mjs",
-		"limit": "9 KB",
+		"limit": "10.5 KB",
 		"gzip": true,
 		"ignore": [
 			"@angular/core",
