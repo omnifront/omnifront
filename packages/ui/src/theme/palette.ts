@@ -80,7 +80,8 @@ const colorNames = ["primary", "secondary", "error", "warning", "info", "success
 
 export function createPalette(options: PaletteOptions = {}): Palette {
 	const mode: PaletteMode = options.mode ?? "light"
-	const contrastThreshold = options.contrastThreshold ?? 3
+	// WCAG AA for normal text is 4.5:1. MUI uses 3, which puts white text on colours like #f44336 (3.7:1).
+	const contrastThreshold = options.contrastThreshold ?? 4.5
 	const tonalOffset = options.tonalOffset ?? 0.2
 	const scheme = mode === "dark" ? darkScheme : lightScheme
 

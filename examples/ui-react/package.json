@@ -9,8 +9,6 @@
 		"typecheck": "tsc --noEmit"
 	},
 	"dependencies": {
-		"@omnifront/store": "workspace:*",
-		"@omnifront/react": "workspace:*",
 		"@omnifront/ui": "workspace:*",
 		"@omnifront/ui-react": "workspace:*"
 	},

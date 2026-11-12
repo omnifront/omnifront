@@ -18,6 +18,8 @@ const raw = withDefaults(
 		placement?: Placement | undefined
 		/** Move focus to the first item on open. Default true. */
 		autoFocus?: boolean | undefined
+		/** Keep the menu in the page (hidden) while closed. */
+		keepMounted?: boolean | undefined
 	}>(),
 	{ autoFocus: true },
 )
@@ -62,8 +64,9 @@ const labelled = computed(() => (attrs["aria-label"] ? undefined : props.value.a
 <template>
 	<Portal>
 		<ul
-			v-if="state.mounted"
+			v-if="state.mounted || props.keepMounted"
 			ref="list"
+			:hidden="state.mounted ? undefined : true"
 			v-bind="mergeProps(toVueProps(parts.content), attrs, { 'aria-labelledby': labelled })"
 			class="omni-menu"
 		>

@@ -24,6 +24,11 @@ export interface ThemeProviderProps {
 	theme: Theme
 	/** `light`, `dark`, or `system` (follow the OS). Inherited from an outer provider, else `system`. */
 	colorScheme?: ColorSchemeMode | undefined
+	/**
+	 * Put the theme on `:root` and the colour scheme on `<html>`, so the whole page (`<body>` included)
+	 * is themed, instead of only this provider's subtree. Use it once, near the root.
+	 */
+	global?: boolean | undefined
 	children?: ReactNode | undefined
 }
 
@@ -32,18 +37,30 @@ export interface ThemeProviderProps {
  * scoped to this provider) and one `display: contents` wrapper that carries the scope and the
  * colour scheme. Overlays rendered in portals copy both, so they are themed too.
  */
-export function ThemeProvider({ theme, colorScheme, children }: ThemeProviderProps): ReactNode {
+export function ThemeProvider({ theme, colorScheme, global, children }: ThemeProviderProps): ReactNode {
 	const parent = useContext(ThemeContext)
 	const id = useId()
 	const scheme = colorScheme ?? parent.scheme ?? "system"
-	const css = useMemo(() => themeToCss(theme, { selector: `[${THEME_ATTRIBUTE}="${id}"]` }), [theme, id])
-	const value = useMemo(() => ({ theme, id, scheme }), [theme, id, scheme])
+	const css = useMemo(() => themeToCss(theme, global ? {} : { selector: `[${THEME_ATTRIBUTE}="${id}"]` }), [theme, id, global])
+	// A global theme has no scope id: overlays in portals just inherit from :root.
+	const value = useMemo(() => ({ theme, id: global ? undefined : id, scheme }), [theme, id, scheme, global])
+	useEffect(() => {
+		if (!global) return undefined
+		const html = document.documentElement
+		const before = html.getAttribute(COLOR_SCHEME_ATTRIBUTE)
+		html.setAttribute(COLOR_SCHEME_ATTRIBUTE, scheme)
+		return () => (before === null ? html.removeAttribute(COLOR_SCHEME_ATTRIBUTE) : html.setAttribute(COLOR_SCHEME_ATTRIBUTE, before))
+	}, [global, scheme])
 	return (
 		<ThemeContext.Provider value={value}>
 			<style dangerouslySetInnerHTML={{ __html: css }} />
-			<div {...{ [THEME_ATTRIBUTE]: id, [COLOR_SCHEME_ATTRIBUTE]: scheme }} style={{ display: "contents" }}>
-				{children}
-			</div>
+			{global ? (
+				children
+			) : (
+				<div {...{ [THEME_ATTRIBUTE]: id, [COLOR_SCHEME_ATTRIBUTE]: scheme }} style={{ display: "contents" }}>
+					{children}
+				</div>
+			)}
 		</ThemeContext.Provider>
 	)
 }

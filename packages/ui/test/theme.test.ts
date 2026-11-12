@@ -90,3 +90,24 @@ describe("themeToCss", () => {
 		expect(themeToCss(createTheme())).toMatch(/^:root\{/)
 	})
 })
+
+describe("contrast", () => {
+	it("generated label colours reach WCAG AA (4.5:1) on their own colour", () => {
+		for (const mode of ["light", "dark"] as const) {
+			const palette = createTheme({ palette: { mode } }).palette
+			for (const name of ["primary", "secondary", "error", "warning", "info", "success"] as const) {
+				const color = palette[name]
+				expect(getContrastRatio(color.main, color.contrastText), `${mode} ${name}`).toBeGreaterThanOrEqual(4.5)
+			}
+		}
+	})
+
+	it("white stays white where it already passes, dark text appears where it would not", () => {
+		const light = createTheme().palette
+		expect(light.primary.contrastText).toBe("#fff")
+		expect(light.warning.contrastText).toBe("rgba(0, 0, 0, 0.87)")
+		expect(createTheme({ palette: { mode: "dark" } }).palette.error.contrastText).toBe("rgba(0, 0, 0, 0.87)")
+		// MUI's own threshold can still be asked for
+		expect(createTheme({ palette: { contrastThreshold: 3 } }).palette.warning.contrastText).toBe("#fff")
+	})
+})

@@ -1,3 +1,4 @@
+import axe from "axe-core"
 import { afterEach, describe, expect, it } from "vitest"
 
 /**
@@ -48,6 +49,17 @@ function type(input: HTMLInputElement, value: string): void {
 	// The native setter, so frameworks that track the value (React) still see a change.
 	Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, value)
 	input.dispatchEvent(new Event("input", { bubbles: true }))
+}
+
+/**
+ * Run axe-core on the page and fail with a readable list of violations. Colour contrast is off:
+ * it needs real layout and paint, which the DOM emulation used in these tests does not have. The
+ * `region` rule is off too: it is about whole pages having landmarks, not about components.
+ */
+async function expectAccessible(label: string): Promise<void> {
+	const result = await axe.run(document.body, { rules: { "color-contrast": { enabled: false }, region: { enabled: false } } })
+	const summary = result.violations.map((v) => `${v.id}: ${v.help} (${v.nodes.map((n) => n.target.join(" ")).join(", ")})`)
+	expect(summary, `axe violations for ${label}`).toEqual([])
 }
 
 export function defineUiConformanceSuite(adapterName: string, h: UiHarness): void {
@@ -311,6 +323,54 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 					expect(events[events.length - 1]).toBe(`close:${reason}`)
 					await wait()
 				}
+			})
+		})
+
+		describe("Accessibility (axe)", () => {
+			it("button, link button and loading button", async () => {
+				mount(h.button({ variant: "contained" }, log))
+				mount(h.button({ href: "/docs" }, log))
+				mount(h.button({ loading: true }, log))
+				await h.settle()
+				await expectAccessible("buttons")
+			})
+
+			it("text field, in its error and disabled states", async () => {
+				const handle = mount(h.textField({}, log))
+				await h.settle()
+				await expectAccessible("text field")
+				await handle.set({ error: true })
+				await h.settle()
+				await expectAccessible("text field in error")
+				await handle.set({ disabled: true })
+				await h.settle()
+				await expectAccessible("disabled text field")
+			})
+
+			it("an open dialog", async () => {
+				mount(h.dialog({}, log))
+				await h.settle()
+				byText("button", "Open").click()
+				await h.settle()
+				await expectAccessible("open dialog")
+			})
+
+			it("an open menu", async () => {
+				mount(h.menu({}, log))
+				await h.settle()
+				byText("button", "Menu").click()
+				await h.settle()
+				await new Promise((r) => setTimeout(r, 50))
+				await expectAccessible("open menu")
+			})
+
+			it("tabs, with the first and another tab selected", async () => {
+				mount(h.tabs({}, log))
+				await h.settle()
+				await expectAccessible("tabs")
+				byText('[role="tab"]', "Three").click()
+				await h.settle()
+				await expectAccessible("tabs after selecting")
 			})
 		})
 

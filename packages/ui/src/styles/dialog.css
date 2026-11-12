@@ -10,6 +10,7 @@
 		font: var(--omni-typography-body1-font);
 		letter-spacing: var(--omni-typography-body1-letter-spacing);
 	}
+	.omni-dialog[hidden] { display: none; }
 	.omni-dialog__backdrop {
 		position: fixed;
 		inset: 0;

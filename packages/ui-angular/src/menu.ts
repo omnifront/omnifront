@@ -53,8 +53,8 @@ export const OMNI_MENU = new InjectionToken<OmniMenu>("OMNI_MENU")
 	providers: [{ provide: OMNI_MENU, useExisting: forwardRef(() => OmniMenu) }],
 	host: { style: "display: contents" },
 	template: `
-		@if (clientReady() && state().mounted) {
-			<ul #list class="omni-menu" [omniPart]="content()" [attr.aria-label]="label ?? null"><ng-content /></ul>
+		@if (clientReady() && (state().mounted || keepMounted)) {
+			<ul #list class="omni-menu" [omniPart]="content()" [attr.aria-label]="label ?? null" [attr.hidden]="state().mounted ? null : ''"><ng-content /></ul>
 		}
 	`,
 })
@@ -66,6 +66,8 @@ export class OmniMenu implements OnInit, OnChanges {
 	@Input() placement: Placement | undefined
 	/** Move focus to the first item on open. Default true. */
 	@Input({ transform: booleanAttribute }) autoFocus = true
+	/** Keep the menu in the page (hidden) while closed. */
+	@Input({ transform: booleanAttribute }) keepMounted = false
 	/** `aria-label`; without it the menu is labelled by the anchor's `id`. */
 	@Input() label: string | undefined
 	@Output() openChange = new EventEmitter<boolean>()
@@ -136,7 +138,7 @@ export class OmniMenu implements OnInit, OnChanges {
 	private syncDom(): void {
 		const { mounted, open } = this.machine.getSnapshot()
 		if (this.browser && this.clientReady()) {
-			if (mounted) this.portal.enter()
+			if (mounted || this.keepMounted) this.portal.enter()
 			else this.portal.leave()
 		}
 		const want = open && this.list !== undefined

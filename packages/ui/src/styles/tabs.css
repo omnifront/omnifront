@@ -71,7 +71,10 @@
 	}
 	.omni-tab:hover { color: var(--_accent); background-color: color-mix(in srgb, var(--_accent) 4%, transparent); }
 	.omni-tab[data-selected] { color: var(--_accent); }
-	.omni-tab:focus-visible { background-color: color-mix(in srgb, var(--_accent) 12%, transparent); }
+	.omni-tab:focus-visible {
+		background-color: color-mix(in srgb, var(--_accent) 12%, transparent);
+		color: color-mix(in srgb, var(--_accent), var(--omni-palette-text-primary) 30%);
+	}
 	.omni-tab[data-disabled] { color: var(--omni-palette-text-disabled); pointer-events: none; cursor: default; }
 	.omni-tabs[data-orientation="vertical"] .omni-tab { max-inline-size: none; }
 

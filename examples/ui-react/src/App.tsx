@@ -1,4 +1,3 @@
-import { useStore } from "@omnifront/react"
 import {
 	Button,
 	Dialog,
@@ -15,37 +14,42 @@ import {
 	TabPanel,
 	TextField,
 	ThemeProvider,
-	createColorSchemeStore,
 	createTheme,
-	type Theme,
+	type ColorSchemeMode,
 } from "@omnifront/ui-react"
 import { useEffect, useMemo, useState } from "react"
 
-// The colour scheme is a normal omnifront store: any framework reads it with useStore / injectStore.
-const colorScheme = createColorSchemeStore({ defaultMode: "system", storageKey: "omni-ui-demo-scheme", target: () => document.documentElement })
+// The same page exists for Vue and Angular (examples/ui-vue, examples/ui-angular). The URL sets the
+// starting state (?scheme=dark&theme=brand&open=dialog&tab=queries) so the three can be compared
+// screenshot by screenshot (e2e/visual.spec.ts).
+const params = new URLSearchParams(location.search)
 
 // A theme is plain data. These are omnifront's own brand colours, as a sample theme.
-const brand: Theme = createTheme({
+const brand = createTheme({
 	palette: { primary: { main: "#7C3AED" }, secondary: { main: "#06B6D4" }, success: { main: "#10B981" } },
 	shape: { borderRadius: 8 },
 })
+const standard = createTheme()
+
+const heading = { font: "var(--omni-typography-h6-font)", margin: 0 } as const
 
 export function App() {
-	const mode = useStore(colorScheme, (s) => s.mode)
-	const setMode = useStore(colorScheme, (s) => s.setMode)
-	const [custom, setCustom] = useState(false)
-	useEffect(() => colorScheme.restore(), [])
-	const theme = useMemo(() => (custom ? brand : createTheme()), [custom])
+	const [mode, setMode] = useState<ColorSchemeMode>((params.get("scheme") as ColorSchemeMode | null) ?? "light")
+	const [custom, setCustom] = useState(params.get("theme") === "brand")
+	const theme = useMemo(() => (custom ? brand : standard), [custom])
 
-	const [dialog, setDialog] = useState(false)
+	const [dialog, setDialog] = useState(params.get("open") === "dialog")
 	const [anchor, setAnchor] = useState<HTMLElement | null>(null)
-	const [tab, setTab] = useState("overview")
+	const [tab, setTab] = useState(params.get("tab") ?? "overview")
 	const [email, setEmail] = useState("")
 	const [picked, setPicked] = useState("")
+	useEffect(() => {
+		if (params.get("open") === "menu") setAnchor(document.getElementById("menu-button"))
+	}, [])
 
 	return (
-		<ThemeProvider theme={theme} colorScheme={mode}>
-			<main style={{ maxWidth: 880, margin: "0 auto", padding: 24, display: "grid", gap: 32, background: "var(--omni-palette-background-default)", color: "var(--omni-palette-text-primary)", font: "var(--omni-typography-body1-font)", minHeight: "100vh" }}>
+		<ThemeProvider theme={theme} colorScheme={mode} global>
+			<main style={{ maxWidth: 880, margin: "0 auto", padding: 24, display: "grid", gap: 32, color: "var(--omni-palette-text-primary)", font: "var(--omni-typography-body1-font)" }}>
 				<header style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
 					<h1 style={{ font: "var(--omni-typography-h4-font)", margin: 0, flex: 1 }}>omnifront UI</h1>
 					{(["light", "dark", "system"] as const).map((m) => (
@@ -59,7 +63,7 @@ export function App() {
 				</header>
 
 				<section style={{ display: "grid", gap: 16 }}>
-					<h2 style={{ font: "var(--omni-typography-h6-font)", margin: 0 }}>Button</h2>
+					<h2 style={heading}>Button</h2>
 					<div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
 						<Button>Text</Button>
 						<Button variant="outlined">Outlined</Button>
@@ -76,7 +80,7 @@ export function App() {
 				</section>
 
 				<section style={{ display: "grid", gap: 16 }}>
-					<h2 style={{ font: "var(--omni-typography-h6-font)", margin: 0 }}>TextField</h2>
+					<h2 style={heading}>TextField</h2>
 					<div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-start" }}>
 						<TextField label="Email" value={email} onChange={(e) => setEmail(e.target.value)} helperText="We never share it" />
 						<TextField label="Filled" variant="filled" defaultValue="Oslo" />
@@ -90,7 +94,7 @@ export function App() {
 				</section>
 
 				<section style={{ display: "grid", gap: 16 }}>
-					<h2 style={{ font: "var(--omni-typography-h6-font)", margin: 0 }}>Dialog and Menu</h2>
+					<h2 style={heading}>Dialog and Menu</h2>
 					<div style={{ display: "flex", gap: 12, alignItems: "center" }}>
 						<Button variant="contained" onClick={() => setDialog(true)}>Open dialog</Button>
 						<Button variant="outlined" id="menu-button" onClick={(e) => setAnchor(e.currentTarget)}>Open menu</Button>
@@ -116,7 +120,7 @@ export function App() {
 				</section>
 
 				<section style={{ display: "grid", gap: 8 }}>
-					<h2 style={{ font: "var(--omni-typography-h6-font)", margin: 0 }}>Tabs</h2>
+					<h2 style={heading}>Tabs</h2>
 					<TabContext value={tab} onChange={(_e, v) => setTab(v)}>
 						<TabList aria-label="Sections">
 							<Tab value="overview" label="Overview" />

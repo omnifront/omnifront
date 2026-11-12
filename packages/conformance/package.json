@@ -13,7 +13,8 @@
 		"@omnifront/api": "workspace:*",
 		"@omnifront/core": "workspace:*",
 		"@omnifront/query": "workspace:*",
+		"@omnifront/query-infinite": "workspace:*",
 		"@omnifront/store": "workspace:*",
-		"@omnifront/query-infinite": "workspace:*"
+		"axe-core": "^4.11.0"
 	}
 }

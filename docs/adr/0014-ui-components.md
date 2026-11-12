@@ -134,18 +134,30 @@ ui-angular  → ui, angular (+ peer: @angular/core, @angular/common)
 
 - **قرارداد ماشین:** `connect()` برای هر المان یک `Part` برمی‌گرداند (`attrs` با نام‌های DOM، `on` با نام رویداد DOM به‌حروف کوچک) و `attach()` سمت DOM را (فوکوس، قفل اسکرول، `aria-hidden`، جای‌گذاری) راه می‌اندازد. callbackها رویداد DOM اصلی را هم می‌گیرند تا `onClose(event, reason)` مثل MUI باشد. برای React، `setProps(props, { silent: true })` در render و `flush()` بعد از commit اضافه شد، چون اعلان در حین render ممنوع است.
 - **CSS:** توکن‌های پیش‌فرض در `@layer omnifront-tokens` (کم‌اولویت‌ترین) و استایل کامپوننت‌ها در `@layer omnifront` هستند؛ CSS بدون لایه‌ی کاربر و خروجی `ThemeProvider` همیشه برنده‌اند. انیمیشن‌های ورود و خروج با `@keyframes` و `data-state` است (transition روی المنتی که تازه وارد DOM شده اثر ندارد).
-- **ThemeProvider** متغیرها را فقط روی wrapper خودش (`display: contents`) می‌گذارد و overlayها (در portal) همان attribute را کپی می‌کنند. برای تم سفارشی روی کل صفحه (از جمله `<body>`) باید `themeToCss(theme)` روی `:root` بنشیند (در راهنما آمده). یک prop مثل `global` برای این کار پیگیری بعدی است.
+- **ThemeProvider** متغیرها را فقط روی wrapper خودش (`display: contents`) می‌گذارد و overlayها (در portal) همان attribute را کپی می‌کنند. برای تم روی کل صفحه (از جمله `<body>`) prop `global` اضافه شد (تم روی `:root`، scheme روی `<html>`).
 - **Angular:** کامپوننت‌ها با selector صفتی روی المان بومی (`button[omni-button]`، `a[omni-button]`، `li[omniMenuItem]`) ساخته شدند تا معنای HTML بماند. Dialog و Menu در Angular برای portal، خود host را به `<body>` منتقل می‌کنند و بعد از اولین رندر در مرورگر ظاهر می‌شوند (مثل React و Vue، پس HTML سرور و hydration یکی است). `@angular/forms` یک peer شد، چون TextField یک `ControlValueAccessor` است. Angular قالب را فقط با AOT (ng-packagr) می‌سازد؛ در تست‌ها JIT است.
 - **Vue:** SFC با Vite و `vue-tsc` برای d.ts. Vue boolean prop نبودنش را `false` می‌کند، پس پیش‌فرض‌های `true` (مثل `autoFocus` منو) باید با `withDefaults` گفته شوند.
 - **API نسبت به MUI:** منو زیر anchor باز می‌شود (در MUI روی آن)؛ Tabs با شکل MUI Lab (`TabContext` / `TabList` / `Tab` / `TabPanel`)؛ adornment به‌صورت `startAdornment` / `endAdornment`؛ `theme.components` فقط `defaultProps` دارد (custom variants هنوز نه).
-- **بودجه (فقط ثبت، بدون سقف سخت):** `ui` ۸.۶KB، `ui/position` ۶.۹KB (floating-ui)، `styles.css` ۵.۴KB، `ui-react` ۳.۷KB، `ui-vue` ۴.۵KB، `ui-angular` ۶.۹KB (gzip). سقف‌های `.size-limit.json` همان اندازه‌ی ثبت‌شده به‌علاوه‌ی حدود ۱۵٪ است.
+- **بودجه (فقط ثبت، بدون سقف سخت):** `ui` ۸.۶KB، `ui/position` ۶.۹KB (floating-ui)، `styles.css` ۵.۴KB، `ui-react` ۳.۸KB، `ui-vue` ۴.۷KB، `ui-angular` ۷.۱KB (gzip). سقف‌های `.size-limit.json` همان اندازه‌ی ثبت‌شده به‌علاوه‌ی حدود ۱۵٪ است.
 
-### انجام‌نشده در موج ۰ (باید در موج بعد یا قبل از «تمام» شمردن موج ۰ بسته شود)
+### تکمیل موج ۰ (2026-11-12، روز دوم)
 
-- مقایسه‌ی تصویری Playwright بین سه فریم‌ورک (بخش ۶) و تست `axe`؛ فقط aria، صفحه‌کلید و فوکوس در conformance تست می‌شوند. ظاهر فقط با چشم در مرورگر برای مثال React بررسی شد.
-- مثال Vue و Angular (فقط React دارد) و صفحه‌های مرجع API در `apps/docs/api`.
-- `keepMounted` برای Dialog و Menu، دکمه‌های اسکرول در Tabs، `variants` سفارشی در `theme.components`، و prop سراسری `global` برای ThemeProvider.
-- hydration واقعی (سرور ← مرورگر) فقط در حد رندر سرور تست شده، نه رفت‌وبرگشت کامل. در Vue 3.3 و 3.4 شناسه‌ها شمارنده‌اند و بین سرور و کلاینت پایدار نیستند (Vue 3.5 `useId` دارد).
+آنچه در فهرست «انجام‌نشده» بود بسته شد:
+
+- **axe:** در conformance (jsdom، بدون contrast و بدون قاعده‌ی `region`، که مخصوص صفحه‌ی کامل است) و در مرورگر واقعی با `@axe-core/playwright` (WCAG 2.1 AA، contrast هم) روی ۱۵ حالت صفحه، هر سه فریم‌ورک.
+- **مقایسه‌ی تصویری:** `tooling/e2e-ui` همان صفحه را در React، Vue و Angular در هشت حالت (روشن، تیره، تم برند، دیالوگ، منو، تب) اسکرین‌شات می‌گیرد و pixel به pixel با React می‌سنجد (حداکثر ۰.۱٪ تفاوت). baseline ذخیره‌شده ندارد، پس به فونت و سیستم‌عامل وابسته نیست. job جدا در CI (`e2e-ui`).
+- **مثال Vue و Angular** (`examples/ui-vue`, `examples/ui-angular`) با همان صفحه‌ی مثال React؛ حالت اولیه از URL می‌آید (`?scheme=dark&theme=brand&open=dialog&tab=queries`).
+- **hydration واقعی** در هر سه فریم‌ورک: HTML سرور، بعد hydrate در کلاینت؛ بدون mismatch و با استفاده‌ی دوباره از همان DOM (در Angular همان المان `button` حفظ می‌شود).
+- **صفحه‌های مرجع API** (`apps/docs/api/ui*.md`) که `check-api.mjs` هم صحتشان را می‌سنجد.
+- **`global` روی ThemeProvider** (تم روی `:root` و scheme روی `<html>`) و **`keepMounted`** برای Dialog و Menu.
+
+آزمون مرورگر سه مشکل واقعی پیدا کرد که با jsdom دیده نمی‌شد و رفع شد:
+
+1. **contrast:** `contrastThreshold` پیش‌فرض MUI برابر ۳ است و متن سفید روی `#f44336` (نسبت ۳.۶۸) را مجاز می‌کند. پیش‌فرض ما **۴.۵ (WCAG AA)** شد. فقط رنگ برچسب `warning` و `info` در حالت روشن و `error` در حالت تیره عوض می‌شود (متن تیره به‌جای سفید). با `contrastThreshold: 3` همان انتخاب MUI برمی‌گردد.
+2. **focus:** رنگ پس‌زمینه‌ی ۱۲٪ هنگام `:focus-visible` نسبت contrast دکمه‌ی متنی را به ۳.۹ می‌رساند؛ حالا برچسب در همان حالت ۳۰٪ به‌سمت رنگ متن می‌رود (Button و Tab).
+3. **Vue:** prop ای که نوعش شامل `false` است (`maxWidth: "sm" | ... | false`) در صورت نبودن، به `false` تبدیل می‌شود (boolean casting) و دیالوگ بدون حداکثر عرض رندر می‌شد. با `withDefaults` رفع شد. همین ریشه را `autoFocus` منو داشت.
+
+باقی‌مانده: hydration فقط با jsdom تست شده (نه مرورگر واقعی)؛ در Vue 3.3 و 3.4 شناسه‌ها شمارنده‌اند و بین سرور و کلاینت پایدار نیستند (Vue 3.5 `useId` دارد)؛ `variants` سفارشی در `theme.components` و دکمه‌های اسکرول Tabs هنوز نیستند؛ مقایسه‌ی تصویری فقط Chromium را پوشش می‌دهد.
 
 ## معیار بازبینی
 

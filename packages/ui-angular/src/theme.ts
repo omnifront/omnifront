@@ -1,4 +1,4 @@
-import { Component, ElementRef, Injectable, Input, OnChanges, OnInit, inject, signal } from "@angular/core"
+import { Component, ElementRef, Injectable, Input, OnChanges, OnDestroy, OnInit, booleanAttribute, inject, signal } from "@angular/core"
 import { DOCUMENT } from "@angular/common"
 import {
 	COLOR_SCHEME_ATTRIBUTE,
@@ -54,10 +54,15 @@ export function injectDefaults(): <P extends object>(name: string, props: P) => 
 	host: { style: "display: contents" },
 	template: "<ng-content />",
 })
-export class OmniThemeProvider implements OnInit, OnChanges {
+export class OmniThemeProvider implements OnInit, OnChanges, OnDestroy {
 	@Input({ required: true }) theme!: Theme
 	/** `light`, `dark`, or `system`. Inherited from an outer provider, else `system`. */
 	@Input() colorScheme: ColorSchemeMode | undefined
+	/**
+	 * Put the theme on `:root` and the colour scheme on `<html>`, so the whole page (`<body>` included)
+	 * is themed, instead of only this provider's subtree. Use it once, near the root.
+	 */
+	@Input({ transform: booleanAttribute }) global = false
 
 	private readonly scope = inject(ThemeScope, { self: true })
 	private readonly parent = inject(ThemeScope, { skipSelf: true, optional: true })
@@ -65,6 +70,7 @@ export class OmniThemeProvider implements OnInit, OnChanges {
 	private readonly doc = inject(DOCUMENT)
 	private readonly id = inject(OmniIds).create()
 	private style: HTMLStyleElement | undefined
+	private before: string | null | undefined
 
 	ngOnInit(): void {
 		this.sync()
@@ -77,15 +83,31 @@ export class OmniThemeProvider implements OnInit, OnChanges {
 	private sync(): void {
 		const scheme = this.colorScheme ?? this.parent?.scheme() ?? "system"
 		this.scope.theme.set(this.theme)
-		this.scope.id.set(this.id)
+		// A global theme has no scope id: overlays moved to the body just inherit from :root.
+		this.scope.id.set(this.global ? undefined : this.id)
 		this.scope.scheme.set(scheme)
-		this.host.setAttribute(THEME_ATTRIBUTE, this.id)
-		this.host.setAttribute(COLOR_SCHEME_ATTRIBUTE, scheme)
+		if (this.global) {
+			const html = this.doc.documentElement
+			if (this.before === undefined) this.before = html.getAttribute(COLOR_SCHEME_ATTRIBUTE)
+			html.setAttribute(COLOR_SCHEME_ATTRIBUTE, scheme)
+			this.host.removeAttribute(THEME_ATTRIBUTE)
+			this.host.removeAttribute(COLOR_SCHEME_ATTRIBUTE)
+		} else {
+			this.host.setAttribute(THEME_ATTRIBUTE, this.id)
+			this.host.setAttribute(COLOR_SCHEME_ATTRIBUTE, scheme)
+		}
 		if (!this.style) {
 			this.style = this.doc.createElement("style")
 			this.host.insertBefore(this.style, this.host.firstChild)
 		}
-		this.style.textContent = themeToCss(this.theme, { selector: `[${THEME_ATTRIBUTE}="${this.id}"]` })
+		this.style.textContent = themeToCss(this.theme, this.global ? {} : { selector: `[${THEME_ATTRIBUTE}="${this.id}"]` })
+	}
+
+	ngOnDestroy(): void {
+		if (this.before === undefined) return
+		const html = this.doc.documentElement
+		if (this.before === null) html.removeAttribute(COLOR_SCHEME_ATTRIBUTE)
+		else html.setAttribute(COLOR_SCHEME_ATTRIBUTE, this.before)
 	}
 }
 

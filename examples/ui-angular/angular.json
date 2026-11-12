@@ -1,0 +1,50 @@
+{
+	"$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+	"version": 1,
+	"cli": {
+		"analytics": false
+	},
+	"projects": {
+		"example-ui-angular": {
+			"projectType": "application",
+			"root": "",
+			"sourceRoot": "src",
+			"architect": {
+				"build": {
+					"builder": "@angular/build:application",
+					"options": {
+						"browser": "src/main.ts",
+						"index": "src/index.html",
+						"tsConfig": "tsconfig.app.json",
+						"outputPath": "dist",
+						"styles": [
+							"node_modules/@omnifront/ui/dist/styles.css"
+						]
+					},
+					"configurations": {
+						"production": {
+							"outputHashing": "all"
+						},
+						"development": {
+							"optimization": false,
+							"sourceMap": true
+						}
+					},
+					"defaultConfiguration": "production"
+				},
+				"serve": {
+					"builder": "@angular/build:dev-server",
+					"configurations": {
+						"production": {
+							"buildTarget": "example-ui-angular:build:production"
+						},
+						"development": {
+							"buildTarget": "example-ui-angular:build:development"
+						}
+					},
+					"defaultConfiguration": "development"
+				}
+			}
+		}
+	}
+}

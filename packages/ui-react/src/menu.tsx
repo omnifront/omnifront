@@ -16,6 +16,8 @@ export interface MenuProps {
 	placement?: Placement | undefined
 	/** Move focus to the first item on open. Default true. */
 	autoFocus?: boolean | undefined
+	/** Keep the menu in the page (hidden) while closed. */
+	keepMounted?: boolean | undefined
 	className?: string | undefined
 	/** The anchor's `id`-less trigger can be labelled through this. */
 	"aria-label"?: string | undefined
@@ -25,7 +27,7 @@ const MenuContext = createContext<MenuMachine | null>(null)
 
 /** Dropdown menu. Arrow keys, Home, End and typing move focus; Enter or Space choose; Escape and a click outside close. */
 export function Menu(rawProps: MenuProps): ReactNode {
-	const { anchorEl, open, onClose, children, placement, autoFocus, className, "aria-label": label } = useDefaultProps("OmniMenu", rawProps)
+	const { anchorEl, open, onClose, children, placement, autoFocus, keepMounted, className, "aria-label": label } = useDefaultProps("OmniMenu", rawProps)
 	const id = useId()
 	const [menu, state] = useMachine(() => createMenu({ id }), {
 		id,
@@ -39,7 +41,7 @@ export function Menu(rawProps: MenuProps): ReactNode {
 		return menu.attach({ content: list, anchor: anchorEl, position: (anchor, floating) => autoPosition(anchor, floating, placement ? { placement } : {}) })
 	}, [menu, state.open, list, anchorEl, placement])
 
-	if (!state.mounted) return null
+	if (!state.mounted && !keepMounted) return null
 	const parts = menu.connect()
 	return (
 		<Portal>
@@ -47,6 +49,7 @@ export function Menu(rawProps: MenuProps): ReactNode {
 				<ul
 					{...mergeProps(toReactProps(parts.content), { className: cx("omni-menu", className), "aria-label": label })}
 					aria-labelledby={label ? undefined : (anchorEl?.id || undefined)}
+					hidden={state.mounted ? undefined : true}
 					ref={setList}
 				>
 					{children}

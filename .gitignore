@@ -15,3 +15,5 @@ apps/docs/.vitepress/cache/
 apps/docs/.vitepress/dist/
 .nuxt/
 .output/
+test-results
+playwright-report

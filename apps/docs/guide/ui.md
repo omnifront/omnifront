@@ -101,12 +101,13 @@ To avoid a flash before the first paint, put `colorSchemeScript({ storageKey: "s
 
 ### A custom theme for the whole page
 
-A `ThemeProvider` scopes its variables to its own wrapper. For page-level use (so `<body>` is themed too), put the CSS on `:root` instead:
+By default a `ThemeProvider` scopes its variables to its own wrapper, so you can nest themes. Add `global` once, near the root, to put the theme on `:root` and the colour scheme on `<html>` instead, so `<body>` is themed too:
 
-```ts
-import { themeToCss } from "@omnifront/ui"
-document.head.append(Object.assign(document.createElement("style"), { textContent: themeToCss(theme) }))
+```tsx
+<ThemeProvider theme={theme} colorScheme="system" global>…</ThemeProvider>
 ```
+
+On the server there is no `<html>` to write to; set `data-omni-color-scheme` on it yourself (or use `colorSchemeScript`) if the first paint must already be dark.
 
 ## Components
 
@@ -157,12 +158,17 @@ Names follow MUI. Where a framework has a native idiom, the API uses it: `onClos
 - **No `styled()` and no `sx`.** Style with CSS variables, a `class`, `slotProps` (React), or the `data-*` attributes each component sets (`data-variant`, `data-disabled`, `data-state`, ...). Everything is in `@layer omnifront`, so ordinary CSS overrides it.
 - **`theme.components` supports `defaultProps`** only for now (no `styleOverrides`, no custom `variants`).
 - **Menu opens below its anchor** (MUI's default overlaps it). Use `placement` to change it.
+- **Label colours follow WCAG AA.** `contrastThreshold` defaults to 4.5 where MUI uses 3, so a few colours (light `warning` and `info`, dark `error`) get dark label text instead of white. Pass `contrastThreshold: 3` to get MUI's choice back.
 - **TextField adornments** are `startAdornment` / `endAdornment` (React, Vue slots), not `InputProps`.
-- Not in wave 0 yet: `keepMounted` on Dialog and Menu, scroll buttons on Tabs, layout components (`Box`, `Stack`, `Grid`) and the rest of the component list.
+- Not built yet: scroll buttons on Tabs, layout components (`Box`, `Stack`, `Grid`) and the rest of the component list.
 
 ## Server-side rendering
 
 Components render to HTML on the server in all three frameworks. Overlays (Dialog, Menu) render into a portal in the browser, so they produce no server HTML; everything else hydrates as it was rendered, including a floated label for a field that starts with a value.
+
+## How it is tested
+
+The same 26 scenarios (roles, keyboard, focus, `aria-*`, controlled and uncontrolled use, and axe) run against React, Vue and Angular. In a real browser, one example page per framework (`examples/ui-react`, `ui-vue`, `ui-angular`) is screenshotted in eight states (light, dark, brand theme, open dialog, open menu, ...) and compared pixel by pixel to the React one, and axe checks WCAG 2.1 AA, colour contrast included. Server rendering followed by hydration is tested for each framework: no mismatch, and the server's DOM is reused.
 
 ## Under the hood
 

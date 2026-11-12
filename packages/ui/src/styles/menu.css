@@ -27,6 +27,7 @@
 	@keyframes omni-menu-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.95); } }
 	.omni-menu[data-placement^="top"] { transform-origin: bottom; }
 
+	.omni-menu[hidden] { display: none; }
 	.omni-menu__item {
 		position: relative;
 		display: flex;

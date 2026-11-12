@@ -7,15 +7,21 @@ import { DIALOG } from "./dialog-context"
 
 defineOptions({ name: "OmniDialog", inheritAttrs: false })
 
-const raw = defineProps<{
-	open: boolean
-	maxWidth?: "xs" | "sm" | "md" | "lg" | "xl" | false | undefined
-	fullWidth?: boolean | undefined
-	fullScreen?: boolean | undefined
-	disableEscapeKeyDown?: boolean | undefined
-	hideBackdrop?: boolean | undefined
-	role?: "dialog" | "alertdialog" | undefined
-}>()
+// `maxWidth` can be `false`, so Vue would turn an absent one into `false` (boolean casting): state the default.
+const raw = withDefaults(
+	defineProps<{
+		open: boolean
+		maxWidth?: "xs" | "sm" | "md" | "lg" | "xl" | false | undefined
+		fullWidth?: boolean | undefined
+		fullScreen?: boolean | undefined
+		disableEscapeKeyDown?: boolean | undefined
+		hideBackdrop?: boolean | undefined
+		/** Keep the dialog in the page (hidden) while closed, so its content is not rebuilt each time. */
+		keepMounted?: boolean | undefined
+		role?: "dialog" | "alertdialog" | undefined
+	}>(),
+	{ maxWidth: "sm" },
+)
 type DialogCloseReason = Extract<CloseReason, "escapeKeyDown" | "backdropClick" | "closeButton" | "programmatic">
 const emit = defineEmits<{
 	/** The user asked to close (Escape, click outside). You decide by setting `open`. */
@@ -64,7 +70,8 @@ const dataState = computed(() => (state.value.open ? "open" : "closed"))
 <template>
 	<Portal>
 		<div
-			v-if="state.mounted"
+			v-if="state.mounted || props.keepMounted"
+			:hidden="state.mounted ? undefined : true"
 			:class="['omni-dialog', className]"
 			:style="style as never"
 			:data-max-width="props.maxWidth === false ? undefined : (props.maxWidth ?? 'sm')"

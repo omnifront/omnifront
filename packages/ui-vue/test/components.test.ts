@@ -552,3 +552,9 @@ it("unmounting releases subscriptions", async () => {
 	expect(document.body.style.overflow).toBe("")
 	expect(screen.queryByRole("dialog")).toBeNull()
 })
+
+it("Dialog has a default maxWidth of sm (Vue would otherwise cast an absent one to false)", async () => {
+	mount(() => h(Dialog, { open: true }, slot("x")))
+	await waitFor(() => screen.getByRole("dialog"))
+	expect((screen.getByRole("dialog").closest(".omni-dialog") as HTMLElement).dataset["maxWidth"]).toBe("sm")
+})

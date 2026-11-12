@@ -40,7 +40,11 @@
 
 	/* text (default) */
 	.omni-button:hover { background-color: color-mix(in srgb, var(--_main) 4%, transparent); }
-	.omni-button:focus-visible { background-color: color-mix(in srgb, var(--_main) 12%, transparent); }
+	.omni-button:focus-visible {
+		background-color: color-mix(in srgb, var(--_main) 12%, transparent);
+		/* the tint lowers the label's contrast, so the label moves towards the text colour (AA, 4.5:1) */
+		color: color-mix(in srgb, var(--_main), var(--omni-palette-text-primary) 30%);
+	}
 
 	/* outlined */
 	.omni-button[data-variant="outlined"] { padding: 5px 15px; border: 1px solid color-mix(in srgb, var(--_main) 50%, transparent); }
@@ -53,7 +57,7 @@
 		box-shadow: var(--omni-shadow-2);
 	}
 	.omni-button[data-variant="contained"]:hover { background-color: var(--_dark); box-shadow: var(--omni-shadow-4); }
-	.omni-button[data-variant="contained"]:focus-visible { background-color: var(--_dark); box-shadow: var(--omni-shadow-6); }
+	.omni-button[data-variant="contained"]:focus-visible { color: var(--_contrast); background-color: var(--_dark); box-shadow: var(--omni-shadow-6); }
 	.omni-button[data-variant="contained"]:active { box-shadow: var(--omni-shadow-8); }
 	.omni-button[data-variant="contained"][data-disable-elevation],
 	.omni-button[data-variant="contained"][data-disable-elevation]:hover,

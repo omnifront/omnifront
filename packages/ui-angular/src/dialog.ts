@@ -55,7 +55,7 @@ export const OMNI_DIALOG = new InjectionToken<OmniDialog>("OMNI_DIALOG")
 	providers: [{ provide: OMNI_DIALOG, useExisting: forwardRef(() => OmniDialog) }],
 	host: { style: "display: contents" },
 	template: `
-		@if (clientReady() && state().mounted) {
+		@if (clientReady() && (state().mounted || keepMounted)) {
 			<div
 				class="omni-dialog"
 				[class]="className ? 'omni-dialog ' + className : 'omni-dialog'"
@@ -63,6 +63,7 @@ export const OMNI_DIALOG = new InjectionToken<OmniDialog>("OMNI_DIALOG")
 				[attr.data-full-width]="fullWidth ? '' : null"
 				[attr.data-full-screen]="fullScreen ? '' : null"
 				[attr.data-state]="state().open ? 'open' : 'closed'"
+				[attr.hidden]="state().mounted ? null : ''"
 			>
 				@if (!hideBackdrop) {
 					<div class="omni-dialog__backdrop" [omniPart]="parts().backdrop"></div>
@@ -81,6 +82,8 @@ export class OmniDialog implements OnInit, OnChanges {
 	@Input({ transform: booleanAttribute }) fullScreen = false
 	@Input({ transform: booleanAttribute }) disableEscapeKeyDown = false
 	@Input({ transform: booleanAttribute }) hideBackdrop = false
+	/** Keep the dialog in the page (hidden) while closed, so its content is not rebuilt each time. */
+	@Input({ transform: booleanAttribute }) keepMounted = false
 	@Input() role: "dialog" | "alertdialog" | undefined
 	/** `aria-label`, for a dialog with no visible title. */
 	@Input() label: string | undefined
@@ -153,7 +156,7 @@ export class OmniDialog implements OnInit, OnChanges {
 	private syncDom(): void {
 		const { mounted, open } = this.machine.getSnapshot()
 		if (this.browser && this.clientReady()) {
-			if (mounted) this.portal.enter()
+			if (mounted || this.keepMounted) this.portal.enter()
 			else this.portal.leave()
 		}
 		const want = open && this.paper !== undefined

@@ -15,6 +15,8 @@ export interface DialogProps {
 	fullScreen?: boolean | undefined
 	disableEscapeKeyDown?: boolean | undefined
 	hideBackdrop?: boolean | undefined
+	/** Keep the dialog in the page (hidden) while closed, so its content is not rebuilt each time. */
+	keepMounted?: boolean | undefined
 	role?: "dialog" | "alertdialog" | undefined
 	"aria-label"?: string | undefined
 	className?: string | undefined
@@ -43,6 +45,7 @@ export function Dialog(rawProps: DialogProps): ReactNode {
 		fullScreen,
 		disableEscapeKeyDown,
 		hideBackdrop,
+		keepMounted,
 		role,
 		className,
 		slotProps,
@@ -66,7 +69,7 @@ export function Dialog(rawProps: DialogProps): ReactNode {
 		return dialog.attach({ content: paper, container: container ?? undefined })
 	}, [dialog, state.open, paper, container])
 
-	if (!state.mounted) return null
+	if (!state.mounted && !keepMounted) return null
 	const dataState = state.open ? "open" : "closed"
 	return (
 		<Portal>
@@ -77,6 +80,7 @@ export function Dialog(rawProps: DialogProps): ReactNode {
 					data-full-width={fullWidth ? "" : undefined}
 					data-full-screen={fullScreen ? "" : undefined}
 					data-state={dataState}
+					hidden={state.mounted ? undefined : true}
 				>
 					{hideBackdrop ? null : (
 						<div {...mergeProps(toReactProps(parts.backdrop), { ...slotProps?.backdrop, className: cx("omni-dialog__backdrop", slotProps?.backdrop?.className) })} />
