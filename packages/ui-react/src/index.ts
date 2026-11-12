@@ -8,6 +8,9 @@ export { Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } 
 export type { DialogProps, DialogCloseReason } from "./dialog"
 export { Menu, MenuItem, MenuDivider } from "./menu"
 export type { MenuProps, MenuItemProps, MenuCloseReason } from "./menu"
+export { Select } from "./select"
+export type { SelectProps, SelectCloseReason } from "./select"
+export type { SelectOption } from "@omnifront/ui"
 export { TabContext, TabList, Tab, TabPanel } from "./tabs"
 export type { TabContextProps, TabListProps, TabProps, TabPanelProps } from "./tabs"
 // Theme and store helpers from the framework-free core, so one import covers the common case.

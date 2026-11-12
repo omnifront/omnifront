@@ -432,7 +432,7 @@
 	{
 		"name": "@omnifront/ui-angular",
 		"path": "packages/ui-angular/dist/fesm2022/omnifront-ui-angular.mjs",
-		"limit": "8 KB",
+		"limit": "9 KB",
 		"gzip": true,
 		"ignore": [
 			"@angular/core",

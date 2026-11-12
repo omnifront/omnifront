@@ -10,7 +10,7 @@ const servers = [
 export default defineConfig({
 	testDir: "./tests",
 	// Same browser, same fonts, no motion: any pixel difference between frameworks is real.
-	use: { viewport: { width: 1000, height: 1300 }, reducedMotion: "reduce", colorScheme: "light" },
+	use: { viewport: { width: 1000, height: 1500 }, reducedMotion: "reduce", colorScheme: "light" },
 	reporter: [["list"]],
 	webServer: servers.map((s) => ({
 		command: `pnpm exec vite preview --outDir ${s.dir} --port ${s.port} --strictPort`,

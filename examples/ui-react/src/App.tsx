@@ -8,6 +8,7 @@ import {
 	Menu,
 	MenuDivider,
 	MenuItem,
+	Select,
 	Tab,
 	TabContext,
 	TabList,
@@ -32,6 +33,12 @@ const brand = createTheme({
 const standard = createTheme()
 
 const heading = { font: "var(--omni-typography-h6-font)", margin: 0 } as const
+const fruit = [
+	{ value: "a", label: "Apple" },
+	{ value: "b", label: "Banana", disabled: true },
+	{ value: "c", label: "Cherry" },
+	{ value: "d", label: "Date" },
+]
 
 export function App() {
 	const [mode, setMode] = useState<ColorSchemeMode>((params.get("scheme") as ColorSchemeMode | null) ?? "light")
@@ -41,6 +48,8 @@ export function App() {
 	const [dialog, setDialog] = useState(params.get("open") === "dialog")
 	const [anchor, setAnchor] = useState<HTMLElement | null>(null)
 	const [tab, setTab] = useState(params.get("tab") ?? "overview")
+	const [fruitValue, setFruitValue] = useState("")
+	const [selectOpen, setSelectOpen] = useState(params.get("open") === "select")
 	const [email, setEmail] = useState("")
 	const [picked, setPicked] = useState("")
 	useEffect(() => {
@@ -90,6 +99,17 @@ export function App() {
 						<TextField label="Required" required size="small" />
 						<TextField label="Amount" startAdornment="$" endAdornment="USD" />
 						<TextField label="Bio" multiline rows={3} />
+					</div>
+				</section>
+
+				<section style={{ display: "grid", gap: 16 }}>
+					<h2 style={heading}>Select</h2>
+					<div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "flex-start" }}>
+						<Select label="Fruit" options={fruit} value={fruitValue} onChange={(_e, v) => setFruitValue(v)} open={selectOpen} onOpenChange={setSelectOpen} helperText="Pick one" />
+						<Select label="Filled" variant="filled" options={fruit} defaultValue="c" />
+						<Select label="Standard" variant="standard" options={fruit} />
+						<Select label="Error" error options={fruit} helperText="Required" />
+						<Select label="Disabled" disabled options={fruit} defaultValue="a" />
 					</div>
 				</section>
 

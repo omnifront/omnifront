@@ -1,6 +1,6 @@
 import { defineUiConformanceSuite, type UiHarness } from "@omnifront/conformance"
 import { defineComponent, h, nextTick, ref, type VNodeChild } from "vue"
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Select, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
 import { mount, slot } from "./mount"
 
 type Log = (event: string) => void
@@ -50,6 +50,31 @@ const MenuView = defineComponent({
 	},
 })
 
+const fruit = [
+	{ value: "a", label: "Apple" },
+	{ value: "b", label: "Banana", disabled: true },
+	{ value: "c", label: "Cherry" },
+]
+
+const SelectView = defineComponent({
+	props: { log: { type: Function, required: true }, error: Boolean, disabled: Boolean },
+	setup(props) {
+		const value = ref("")
+		const log = props.log as Log
+		return () =>
+			h(Select, {
+				label: "Fruit",
+				options: fruit,
+				modelValue: value.value,
+				helperText: "Pick one",
+				error: props.error,
+				disabled: props.disabled,
+				"onUpdate:modelValue": (v: string) => { log(`change:${v}`); value.value = v },
+				onClose: (reason: string) => log(`close:${reason}`),
+			})
+	},
+})
+
 const TabsView = defineComponent({
 	props: { log: { type: Function, required: true }, selectionFollowsFocus: Boolean },
 	setup(props) {
@@ -72,6 +97,7 @@ const harness: UiHarness = {
 		mountWith(props, (p) => h(TextField, { label: "Email", helperText: "We never share it", error: p.error, disabled: p.disabled, "onUpdate:modelValue": (v: string) => log(`change:${v}`) })),
 	dialog: (_props, log) => mountWith({}, () => h(DialogView, { log })),
 	menu: (_props, log) => mountWith({}, () => h(MenuView, { log })),
+	select: (props, log) => mountWith(props, (p) => h(SelectView, { log, error: p.error ?? false, disabled: p.disabled ?? false })),
 	tabs: (props, log) => mountWith(props, (p) => h(TabsView, { log, selectionFollowsFocus: p.selectionFollowsFocus ?? false })),
 	settle: async () => {
 		await nextTick()

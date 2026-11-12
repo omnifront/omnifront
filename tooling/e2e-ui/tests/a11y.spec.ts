@@ -5,7 +5,7 @@ import { frameworks, open, scenarios, type Framework } from "./pages"
 // axe in a real browser, so colour contrast is checked too (it needs real layout and paint, which
 // the jsdom conformance tests cannot do).
 for (const framework of Object.keys(frameworks) as Framework[]) {
-	for (const scenario of scenarios.filter((s) => ["light", "dark", "brand", "dialog", "menu"].includes(s.name))) {
+	for (const scenario of scenarios.filter((s) => ["light", "dark", "brand", "dialog", "menu", "select", "select-dark"].includes(s.name))) {
 		test(`axe: ${framework} ${scenario.name}`, async ({ page }) => {
 			await open(page, framework, scenario.query)
 			const result = await new AxeBuilder({ page })

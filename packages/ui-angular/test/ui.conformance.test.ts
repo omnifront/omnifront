@@ -10,6 +10,7 @@ import {
 	OmniDialogTitle,
 	OmniMenu,
 	OmniMenuItem,
+	OmniSelect,
 	OmniTab,
 	OmniTabContext,
 	OmniTabList,
@@ -89,6 +90,34 @@ class MenuView {
 
 @Component({
 	standalone: true,
+	imports: [OmniSelect],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `
+		<omni-select
+			label="Fruit"
+			[options]="fruit"
+			[value]="value()"
+			helperText="Pick one"
+			[error]="!!p().error"
+			[disabled]="!!p().disabled"
+			(valueChange)="log('change:' + $event); value.set($event)"
+			(closed)="log('close:' + $event.reason)"
+		/>
+	`,
+})
+class SelectView {
+	fruit = [
+		{ value: "a", label: "Apple" },
+		{ value: "b", label: "Banana", disabled: true },
+		{ value: "c", label: "Cherry" },
+	]
+	value = signal("")
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+}
+
+@Component({
+	standalone: true,
 	imports: [OmniTabContext, OmniTabList, OmniTab, OmniTabPanel],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
@@ -141,6 +170,7 @@ const harness: UiHarness = {
 	textField: (props, log) => mountView(FieldView, props, log),
 	dialog: (_props, log) => mountView(DialogView, {}, log),
 	menu: (_props, log) => mountView(MenuView, {}, log),
+	select: (props, log) => mountView(SelectView, props, log),
 	tabs: (props, log) => mountView(TabsView, props, log),
 	settle: async () => {
 		for (const fixture of live) await settle(fixture)

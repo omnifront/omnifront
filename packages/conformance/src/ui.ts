@@ -31,6 +31,12 @@ export interface UiHarness {
 	 */
 	menu(props: Record<string, never>, log: (event: string) => void): UiHandle
 	/**
+	 * A Select labelled "Fruit" with options "Apple", "Banana" (disabled) and "Cherry", helper text
+	 * "Pick one", chosen value held by the host (starts empty). Logs `change:<value>`, and
+	 * `close:<reason>` when the list closes.
+	 */
+	select(props: { error?: boolean; disabled?: boolean }, log: (event: string) => void): UiHandle
+	/**
 	 * Tabs labelled "Sections": "One", "Two" (disabled), "Three", with panels "First panel",
 	 * "Second panel", "Third panel", controlled by the host. Logs `change:<value>`.
 	 */
@@ -190,6 +196,121 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				await h.settle()
 				expect($(".omni-text-field").dataset["variant"]).toBe("outlined")
 				expect($(".omni-text-field__legend span").textContent).toBe("Email")
+			})
+		})
+
+		describe("Select", () => {
+			const combobox = (): HTMLElement => $('[role="combobox"]')
+			const closed = async (): Promise<void> => {
+				await new Promise((r) => setTimeout(r, 250)) // the exit animation
+				await h.settle()
+			}
+
+			it("is a combobox named by its label, with a listbox of options when open", async () => {
+				mount(h.select({}, log))
+				await h.settle()
+				expect(combobox().getAttribute("aria-haspopup")).toBe("listbox")
+				expect(combobox().getAttribute("aria-expanded")).toBe("false")
+				expect(combobox().getAttribute("aria-labelledby")?.split(" ")).toEqual([$("label").id, combobox().id])
+				expect(document.getElementById(combobox().getAttribute("aria-describedby") as string)?.textContent).toBe("Pick one")
+				expect($('[role="listbox"]')).toBeNull()
+				combobox().click()
+				await h.settle()
+				const list = $('[role="listbox"]')
+				expect(combobox().getAttribute("aria-expanded")).toBe("true")
+				expect(combobox().getAttribute("aria-controls")).toBe(list.id)
+				expect(list.getAttribute("aria-labelledby")).toBe($("label").id)
+				expect($$('[role="option"]').map((o) => o.textContent?.trim())).toEqual(["Apple", "Banana", "Cherry"])
+				expect(byText('[role="option"]', "Banana").getAttribute("aria-disabled")).toBe("true")
+				expect(list.closest("[data-omni-portal]")?.parentElement).toBe(document.body)
+			})
+
+			it("opens from the keyboard, focuses the first option, and the arrows skip the disabled one and wrap", async () => {
+				mount(h.select({}, log))
+				await h.settle()
+				combobox().focus()
+				keydown(combobox(), "ArrowDown")
+				await h.settle()
+				await new Promise((r) => setTimeout(r, 50))
+				expect(document.activeElement).toBe(byText('[role="option"]', "Apple"))
+				keydown(document.activeElement as Element, "ArrowDown")
+				expect(document.activeElement).toBe(byText('[role="option"]', "Cherry"))
+				keydown(document.activeElement as Element, "ArrowDown")
+				expect(document.activeElement).toBe(byText('[role="option"]', "Apple"))
+				keydown(document.activeElement as Element, "End")
+				expect(document.activeElement).toBe(byText('[role="option"]', "Cherry"))
+			})
+
+			it("Enter chooses: the value is reported, the list closes, the text shows, the label floats, focus returns", async () => {
+				mount(h.select({}, log))
+				await h.settle()
+				const root = $(".omni-select")
+				expect(root.hasAttribute("data-shrink")).toBe(false)
+				combobox().focus()
+				keydown(combobox(), "Enter")
+				await h.settle()
+				await new Promise((r) => setTimeout(r, 50))
+				keydown(document.activeElement as Element, "End")
+				keydown(document.activeElement as Element, "Enter")
+				await h.settle()
+				expect(events).toEqual(["change:c", "close:select"])
+				await closed()
+				expect($('[role="listbox"]')).toBeNull()
+				expect(combobox().textContent?.trim()).toBe("Cherry")
+				expect(root.hasAttribute("data-filled")).toBe(true)
+				expect(root.hasAttribute("data-shrink")).toBe(true)
+				expect(document.activeElement).toBe(combobox())
+			})
+
+			it("a click chooses an option; a disabled option cannot be chosen", async () => {
+				mount(h.select({}, log))
+				await h.settle()
+				combobox().click()
+				await h.settle()
+				byText('[role="option"]', "Banana").click()
+				expect(events).toEqual([])
+				byText('[role="option"]', "Apple").click()
+				await h.settle()
+				expect(events).toEqual(["change:a", "close:select"])
+			})
+
+			it("Escape and a press outside close it with the reason", async () => {
+				mount(h.select({}, log))
+				await h.settle()
+				for (const [act, reason] of [
+					[() => keydown($('[role="listbox"]'), "Escape"), "escapeKeyDown"],
+					[() => pointerdown(document.body), "outsidePress"],
+				] as const) {
+					combobox().click()
+					await h.settle()
+					act()
+					await h.settle()
+					expect(events[events.length - 1]).toBe(`close:${reason}`)
+					await closed()
+				}
+			})
+
+			it("type-ahead moves to the option whose label starts with the typed letter", async () => {
+				mount(h.select({}, log))
+				await h.settle()
+				combobox().click()
+				await h.settle()
+				await new Promise((r) => setTimeout(r, 50))
+				keydown(document.activeElement as Element, "c")
+				expect(document.activeElement).toBe(byText('[role="option"]', "Cherry"))
+			})
+
+			it("disabled cannot be opened; error is exposed; the label is not a form label for a div", async () => {
+				const handle = mount(h.select({}, log))
+				await h.settle()
+				await handle.set({ error: true, disabled: true })
+				await h.settle()
+				expect(combobox().getAttribute("aria-disabled")).toBe("true")
+				expect(combobox().getAttribute("aria-invalid")).toBe("true")
+				combobox().click()
+				await h.settle()
+				expect($('[role="listbox"]')).toBeNull()
+				expect($("label").hasAttribute("for")).toBe(false)
 			})
 		})
 
@@ -353,6 +474,26 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				byText("button", "Open").click()
 				await h.settle()
 				await expectAccessible("open dialog")
+			})
+
+			it("a closed select, an open select, and a select in error", async () => {
+				const combobox = (): HTMLElement => $('[role="combobox"]')
+				const handle = mount(h.select({}, log))
+				await h.settle()
+				await expectAccessible("closed select")
+				combobox().click()
+				await h.settle()
+				await new Promise((r) => setTimeout(r, 50))
+				await expectAccessible("open select")
+				keydown($('[role="listbox"]'), "Escape")
+				await new Promise((r) => setTimeout(r, 250))
+				await h.settle()
+				await handle.set({ error: true })
+				await h.settle()
+				await expectAccessible("select in error")
+				await handle.set({ disabled: true })
+				await h.settle()
+				await expectAccessible("disabled select")
 			})
 
 			it("an open menu", async () => {

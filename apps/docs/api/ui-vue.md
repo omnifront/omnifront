@@ -1,6 +1,6 @@
 # @omnifront/ui-vue
 
-Vue components (single-file components) for the UI kit. About 4.7 KB gzipped (excluding Vue and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions` and `ColorSchemeMode` are re-exported from [`@omnifront/ui`](/api/ui).
+Vue components (single-file components) for the UI kit. About 4.7 KB gzipped (excluding Vue and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui).
 
 Every component also reads `theme.components.Omni<Name>.defaultProps`. Attributes and classes you put on a component reach its main element. Events: `@click` on `Button` and `MenuItem`, `@close` and `v-model:open` on `Dialog` and `Menu`, `v-model` on `TextField` and `TabContext`.
 
@@ -27,6 +27,14 @@ Props: `variant`, `color`, `size`, `fullWidth`, `disableElevation`, `loading`, `
 ### `TextField`
 
 Props: `modelValue` (`v-model`; leave it out for an uncontrolled field) / `defaultValue`, `label`, `helperText`, `error`, `disabled`, `required`, `readOnly`, `variant`, `size`, `color`, `fullWidth`, `multiline`, `rows`, `id`, `type`, `placeholder`. Slots: `startAdornment`, `endAdornment`. Events: `update:modelValue`, `focus`, `blur`.
+
+### `Select`
+
+```vue
+<Select v-model="fruit" label="Fruit" :options="[{ value: 'a', label: 'Apple' }]" />
+```
+
+Looks like a `TextField` and opens a list of options. Props: `label`, `options` (`SelectOption[]`: `{ value, label, disabled? }`), `modelValue` (`v-model`; leave it out for an uncontrolled select) / `defaultValue`, `open` (`v-model:open`; stays uncontrolled when absent) / `defaultOpen`, `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`), `id`. Events: `update:modelValue`, `change(event, value)`, `update:open`, `close(reason)`. The options are data, not children, so every framework shows the chosen label the same way, including on the server.
 
 ### `Dialog`
 

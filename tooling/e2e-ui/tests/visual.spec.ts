@@ -13,7 +13,7 @@ for (const scenario of scenarios) {
 	test(`React, Vue and Angular look the same: ${scenario.name}`, async ({ browser }, info) => {
 		const shots = {} as Record<Framework, Buffer>
 		for (const framework of Object.keys(frameworks) as Framework[]) {
-			const context = await browser.newContext({ viewport: { width: 1000, height: 1300 }, reducedMotion: "reduce" })
+			const context = await browser.newContext({ viewport: { width: 1000, height: 1500 }, reducedMotion: "reduce" })
 			const page = await context.newPage()
 			await open(page, framework, scenario.query)
 			shots[framework] = await page.screenshot({ animations: "disabled", caret: "hide" })

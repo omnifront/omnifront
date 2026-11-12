@@ -6,6 +6,9 @@ export { OmniDialog, OmniDialogTitle, OmniDialogContent, OmniDialogContentText, 
 export type { DialogCloseEvent, DialogCloseReason } from "./dialog"
 export { OmniMenu, OmniMenuItem, OmniMenuDivider, OMNI_MENU } from "./menu"
 export type { MenuCloseEvent, MenuCloseReason } from "./menu"
+export { OmniSelect } from "./select"
+export type { SelectCloseEvent, SelectCloseReason } from "./select"
+export type { SelectOption } from "@omnifront/ui"
 export { OmniTabContext, OmniTabList, OmniTab, OmniTabPanel, OMNI_TABS } from "./tabs"
 // Theme and store helpers from the framework-free core, so one import covers the common case.
 export { createTheme, createColorSchemeStore, colorSchemeScript } from "@omnifront/ui"

@@ -9,6 +9,7 @@ import {
 	Menu,
 	MenuDivider,
 	MenuItem,
+	Select,
 	Tab,
 	TabContext,
 	TabList,
@@ -39,6 +40,14 @@ const theme = computed(() => (custom.value ? brand : standard))
 const dialog = ref(params.get("open") === "dialog")
 const anchor = ref<HTMLElement | null>(null)
 const tab = ref(params.get("tab") ?? "overview")
+const fruit = [
+	{ value: "a", label: "Apple" },
+	{ value: "b", label: "Banana", disabled: true },
+	{ value: "c", label: "Cherry" },
+	{ value: "d", label: "Date" },
+]
+const fruitValue = ref("")
+const selectOpen = ref(params.get("open") === "select")
 const email = ref("")
 const picked = ref("")
 onMounted(() => {
@@ -86,6 +95,17 @@ onMounted(() => {
 						<template #endAdornment>USD</template>
 					</TextField>
 					<TextField label="Bio" multiline :rows="3" />
+				</div>
+			</section>
+
+			<section style="display: grid; gap: 16px">
+				<h2 style="font: var(--omni-typography-h6-font); margin: 0">Select</h2>
+				<div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start">
+					<Select v-model="fruitValue" v-model:open="selectOpen" label="Fruit" :options="fruit" helper-text="Pick one" />
+					<Select label="Filled" variant="filled" :options="fruit" default-value="c" />
+					<Select label="Standard" variant="standard" :options="fruit" />
+					<Select label="Error" error :options="fruit" helper-text="Required" />
+					<Select label="Disabled" disabled :options="fruit" default-value="a" />
 				</div>
 			</section>
 

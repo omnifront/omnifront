@@ -1,7 +1,7 @@
 import { act, render } from "@testing-library/react"
 import { useState, type ReactNode } from "react"
 import { defineUiConformanceSuite, type UiHarness } from "@omnifront/conformance"
-import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
+import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Select, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
 
 type Log = (event: string) => void
 
@@ -48,6 +48,28 @@ function MenuView({ log }: { log: Log }) {
 	)
 }
 
+const fruit = [
+	{ value: "a", label: "Apple" },
+	{ value: "b", label: "Banana", disabled: true },
+	{ value: "c", label: "Cherry" },
+]
+
+function SelectView({ error, disabled, log }: { error: boolean | undefined; disabled: boolean | undefined; log: Log }) {
+	const [value, setValue] = useState("")
+	return (
+		<Select
+			label="Fruit"
+			options={fruit}
+			value={value}
+			helperText="Pick one"
+			error={error}
+			disabled={disabled}
+			onChange={(_e, v) => { log(`change:${v}`); setValue(v) }}
+			onOpenChange={(open, reason) => { if (!open) log(`close:${reason}`) }}
+		/>
+	)
+}
+
 function TabsView({ selectionFollowsFocus, log }: { selectionFollowsFocus: boolean | undefined; log: Log }) {
 	const [value, setValue] = useState("one")
 	return (
@@ -77,6 +99,7 @@ const harness: UiHarness = {
 		)),
 	dialog: (_props, log) => mountWith({}, () => <DialogView log={log} />),
 	menu: (_props, log) => mountWith({}, () => <MenuView log={log} />),
+	select: (props, log) => mountWith(props, (p) => <SelectView error={p.error} disabled={p.disabled} log={log} />),
 	tabs: (props, log) => mountWith(props, (p) => <TabsView selectionFollowsFocus={p.selectionFollowsFocus} log={log} />),
 	settle: async () => void (await act(async () => { await new Promise((r) => setTimeout(r, 0)) })),
 }

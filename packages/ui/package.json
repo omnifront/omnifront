@@ -3,25 +3,49 @@
 	"version": "0.0.0",
 	"description": "Framework-free core of the omnifront UI kit: a Material-style theme, behaviour machines, accessibility utilities and static CSS.",
 	"license": "MIT",
-	"keywords": ["omnifront", "ui", "theme", "material", "headless"],
+	"keywords": [
+		"omnifront",
+		"ui",
+		"theme",
+		"material",
+		"headless"
+	],
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/omnifront/omnifront.git",
 		"directory": "packages/ui"
 	},
 	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/ui#readme",
-	"bugs": { "url": "https://github.com/omnifront/omnifront/issues" },
+	"bugs": {
+		"url": "https://github.com/omnifront/omnifront/issues"
+	},
 	"type": "module",
-	"sideEffects": ["*.css"],
-	"engines": { "node": ">=18" },
+	"sideEffects": [
+		"*.css"
+	],
+	"engines": {
+		"node": ">=18"
+	},
 	"exports": {
 		".": {
-			"import": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
-			"require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
+			"import": {
+				"types": "./dist/index.d.ts",
+				"default": "./dist/index.js"
+			},
+			"require": {
+				"types": "./dist/index.d.cts",
+				"default": "./dist/index.cjs"
+			}
 		},
 		"./position": {
-			"import": { "types": "./dist/position.d.ts", "default": "./dist/position.js" },
-			"require": { "types": "./dist/position.d.cts", "default": "./dist/position.cjs" }
+			"import": {
+				"types": "./dist/position.d.ts",
+				"default": "./dist/position.js"
+			},
+			"require": {
+				"types": "./dist/position.d.cts",
+				"default": "./dist/position.cjs"
+			}
 		},
 		"./styles.css": "./dist/styles.css",
 		"./baseline.css": "./dist/baseline.css",
@@ -30,9 +54,12 @@
 		"./text-field.css": "./dist/text-field.css",
 		"./dialog.css": "./dist/dialog.css",
 		"./menu.css": "./dist/menu.css",
-		"./tabs.css": "./dist/tabs.css"
+		"./tabs.css": "./dist/tabs.css",
+		"./select.css": "./dist/select.css"
 	},
-	"files": ["dist"],
+	"files": [
+		"dist"
+	],
 	"scripts": {
 		"build": "tsup src/index.ts src/position.ts --format esm,cjs --dts --clean && node scripts/build-css.mjs",
 		"test": "vitest run --coverage",

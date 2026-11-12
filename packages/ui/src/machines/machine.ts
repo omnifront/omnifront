@@ -14,6 +14,22 @@ export interface Part {
 export const part = (attrs: Attrs = {}, on: Handlers = {}): Part => ({ attrs, on })
 
 /**
+ * Combine parts for one element (a select's trigger is both a field control and a combobox).
+ * Attributes: later parts win. Handlers for the same event all run, in order.
+ */
+export function mergeParts(...parts: Part[]): Part {
+	const attrs: Attrs = {}
+	const lists: Record<string, Array<(event: Event) => void>> = {}
+	for (const p of parts) {
+		for (const [name, value] of Object.entries(p.attrs)) if (value !== undefined) attrs[name] = value
+		for (const [event, handler] of Object.entries(p.on)) (lists[event] ??= []).push(handler)
+	}
+	const on: Handlers = {}
+	for (const [event, handlers] of Object.entries(lists)) on[event] = (e) => handlers.forEach((h) => h(e))
+	return { attrs, on }
+}
+
+/**
  * Base for every behaviour machine. A machine is a Subscribable (ADR-0001): `subscribe` /
  * `getSnapshot` give the state, `setProps` feeds it the latest props on every render, and
  * `connect()` turns the current state into attributes and handlers for each element.

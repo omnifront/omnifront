@@ -52,7 +52,7 @@ export class Field extends Machine<FieldProps, FieldState> {
 		}
 	}
 
-	connect(): { root: Part; label: Part; input: Part; helper: Part; fieldset: Part } {
+	connect(): { root: Part; label: Part; input: Part; trigger: Part; helper: Part; fieldset: Part } {
 		const s = this.getSnapshot()
 		const id = s.id
 		const flags = {
@@ -85,6 +85,25 @@ export class Field extends Machine<FieldProps, FieldState> {
 					},
 					input: (event) => {
 						this.typedFilled = (event.target as HTMLInputElement).value !== ""
+						this.refresh()
+					},
+				},
+			),
+			// For a control that is not an <input> (a select's combobox): the state that applies to any
+			// control, without input-only attributes (`required`, `readonly`) and without an `id` of its own.
+			trigger: part(
+				{
+					"aria-invalid": s.error ? "true" : undefined,
+					"aria-describedby": this.props.hasHelper ? `${id}-helper` : undefined,
+					"aria-required": s.required ? "true" : undefined,
+				},
+				{
+					focus: () => {
+						this.focused = true
+						this.refresh()
+					},
+					blur: () => {
+						this.focused = false
 						this.refresh()
 					},
 				},

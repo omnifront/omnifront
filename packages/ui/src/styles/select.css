@@ -1,0 +1,35 @@
+/* Select reuses the text field's box (label, outline or underline, helper text) and the menu's list. */
+@layer omnifront {
+	/* A text field gets its width from its <input> (about 210px with padding); a select has no such default. */
+	.omni-text-field.omni-select:not([data-full-width]) { inline-size: 210px; }
+	.omni-text-field.omni-select[data-variant] .omni-select__trigger {
+		display: block;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		cursor: pointer;
+		user-select: none;
+		padding-inline-end: 32px; /* room for the arrow */
+	}
+	.omni-select__trigger[data-disabled] { cursor: default; color: var(--omni-palette-text-disabled); }
+
+	/* the arrow: a CSS triangle, turned over while open */
+	.omni-select__icon {
+		position: absolute;
+		inset-inline-end: 7px;
+		inset-block-start: calc(50% - 2.5px);
+		inline-size: 0;
+		block-size: 0;
+		border-inline: 5px solid transparent;
+		border-block-start: 5px solid var(--omni-palette-action-active);
+		pointer-events: none;
+		transition: transform var(--omni-duration-shorter) var(--omni-easing-ease-in-out);
+	}
+	.omni-select__icon[data-state="open"] { transform: rotate(180deg); }
+	.omni-text-field[data-disabled] .omni-select__icon { border-block-start-color: var(--omni-palette-action-disabled); }
+	.omni-text-field[data-variant="standard"] .omni-select__icon { inset-inline-end: 0; }
+
+	/* the list: the menu's paper, at least as wide as the select */
+	.omni-select__listbox { min-inline-size: var(--omni-anchor-width, 0); }
+	@media (prefers-reduced-motion: reduce) { .omni-select__icon { transition: none; } }
+}

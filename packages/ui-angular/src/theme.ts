@@ -142,3 +142,28 @@ export class HostPortal {
 		this.portal = undefined
 	}
 }
+
+/**
+ * Moves one element (the list of a select) into a `<div data-omni-portal>` at the end of `<body>`,
+ * carrying the theme scope. Angular removes the element wherever it is when its view goes away.
+ */
+export class ElementPortal {
+	private portal: PortalRoot | undefined
+
+	constructor(
+		private readonly doc: Document,
+		private readonly scope: ThemeScope | null,
+	) {}
+
+	enter(element: HTMLElement): void {
+		this.leave()
+		const id = this.scope?.id()
+		this.portal = createPortalRoot({ [THEME_ATTRIBUTE]: id, [COLOR_SCHEME_ATTRIBUTE]: id ? this.scope?.scheme() : undefined }, this.doc)
+		this.portal.element.appendChild(element)
+	}
+
+	leave(): void {
+		this.portal?.remove()
+		this.portal = undefined
+	}
+}

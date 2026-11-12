@@ -84,9 +84,19 @@ The base class: `subscribe`, `getSnapshot`, `getServerSnapshot`, `setProps(props
 
 `createTabs(props): Tabs` (`Tabs` is the class). Props (`TabsProps`): `id`, `value` / `defaultValue` / `onValueChange(value, event)`, `orientation`, `selectionFollowsFocus`. State (`TabsState`): `id`, `value`, `orientation`. `connect()` returns `root` and `list`; `tab(value, options)` (`TabOptions`) and `panel(value)` return per-tab parts; `select(value)`; `attach(listElement)` keeps the indicator variables `--omni-tabs-indicator-start` and `--omni-tabs-indicator-size` up to date.
 
+### `createSelect`
+
+`createSelect(props): Select` (`Select` is the class): a select, that is a `combobox` that opens a `listbox`. Props (`SelectProps`): `id`, `options` (a list of `SelectOption`: `{ value, label, disabled? }`), `value` / `defaultValue` / `onValueChange(value, event)`, `open` / `defaultOpen` / `onOpenChange(open, reason, event)`, `disabled`, `exitDuration` (default 120 ms). Use the same `id` as the field machine so the label links up. `""` as a value means nothing is selected. State (`SelectState`): `open`, `mounted`, `status`, `id`, `value`, `label` (the selected option's label, or `""`), `filled`, `disabled`.
+
+`connect()` returns `trigger` and `listbox`. The trigger carries `role="combobox"`, `aria-expanded`, `aria-controls` and `aria-labelledby` (the label, then its own text), and opens on click, Enter, Space and the arrows. `option(option)` returns one option's part (`role="option"`, `aria-selected`, click chooses). `choose(value)` chooses and closes. `attach({ content, trigger, position })` (`SelectElements`) focuses the selected option (else the first), closes on a press outside, and gives focus back to the trigger. In the list the arrows, Home, End and type-ahead move real focus, Enter and Space choose, Escape and Tab close.
+
+### `mergeParts`
+
+`mergeParts(...parts): Part`: combine parts for one element (a select's trigger is both a field control and a combobox). Later attributes win; handlers for the same event all run, in order.
+
 ### `createField`
 
-`createField(props): Field` (`Field` is the class): the state of a text field. Props (`FieldProps`): `id`, `disabled`, `error`, `required`, `readOnly`, `filled`, `defaultFilled`, `alwaysShrink`, `hasHelper`. State (`FieldState`): `focused`, `filled`, `shrink`, and the flags. `connect()` returns `root`, `label`, `input`, `helper` and `fieldset`.
+`createField(props): Field` (`Field` is the class): the state of a text field. Props (`FieldProps`): `id`, `disabled`, `error`, `required`, `readOnly`, `filled`, `defaultFilled`, `alwaysShrink`, `hasHelper`. State (`FieldState`): `focused`, `filled`, `shrink`, and the flags. `connect()` returns `root`, `label`, `input`, `helper` and `fieldset`, and `trigger`: the state for a control that is not an `<input>` (a select's combobox).
 
 ### `buttonPart`
 

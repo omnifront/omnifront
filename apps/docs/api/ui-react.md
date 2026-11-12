@@ -1,6 +1,6 @@
 # @omnifront/ui-react
 
-React components for the UI kit. About 3.8 KB gzipped (excluding React and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions` and `ColorSchemeMode` are re-exported from [`@omnifront/ui`](/api/ui), so one import covers the common case.
+React components for the UI kit. About 3.8 KB gzipped (excluding React and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui), so one import covers the common case.
 
 Every component also reads `theme.components.Omni<Name>.defaultProps` (`OmniButton`, `OmniTextField`, `OmniDialog`, `OmniMenu`, `OmniTabs`).
 
@@ -27,6 +27,14 @@ Props (`ButtonProps` also takes every native `<button>` prop): `variant` (`text`
 ### `TextField`
 
 Props (`TextFieldProps`): `label`, `value` / `defaultValue` / `onChange`, `helperText`, `error`, `disabled`, `required`, `readOnly`, `variant` (`outlined` / `filled` / `standard`), `size`, `color`, `fullWidth`, `multiline`, `rows`, `startAdornment`, `endAdornment`, `slotProps.input`, `inputRef`, `id`, plus native input props.
+
+### `Select`
+
+```tsx
+<Select label="Fruit" options={[{ value: "a", label: "Apple" }]} value={value} onChange={(event, value) => setValue(value)} />
+```
+
+Looks like a `TextField` and opens a list of options. Props (`SelectProps`): `label`, `options` (`SelectOption[]`: `{ value, label, disabled? }`), `value` / `defaultValue` / `onChange(event, value)`, `open` / `defaultOpen` / `onOpenChange(open, reason)` (`SelectCloseReason`: `escapeKeyDown`, `outsidePress`, `tab`, `select`, `trigger`, `programmatic`), `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`, for forms), `id`, `className`. The options are data, not children, so the closed select can show the chosen label on the server and in all three frameworks the same way. Differences from MUI: `onChange` gets `(event, value)`, not an event with `target.value`, and the list opens below the select.
 
 ### `Dialog`
 

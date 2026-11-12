@@ -13,6 +13,8 @@ export const scenarios = [
 	{ name: "dialog", query: "open=dialog" },
 	{ name: "dialog-dark", query: "open=dialog&scheme=dark" },
 	{ name: "menu", query: "open=menu" },
+	{ name: "select", query: "open=select" },
+	{ name: "select-dark", query: "open=select&scheme=dark" },
 ] as const
 
 export async function open(page: Page, framework: Framework, query: string): Promise<void> {
@@ -23,6 +25,7 @@ export async function open(page: Page, framework: Framework, query: string): Pro
 		await page.locator('[role="menu"]').waitFor()
 		await page.locator('[role="menu"][data-placement]').waitFor() // positioned by floating-ui
 	}
+	if (query.includes("open=select")) await page.locator('[role="listbox"][data-placement]').waitFor()
 	await page.evaluate(() => document.fonts.ready)
 	await page.waitForTimeout(300)
 }

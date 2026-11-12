@@ -9,6 +9,7 @@ import {
 	OmniMenu,
 	OmniMenuDivider,
 	OmniMenuItem,
+	OmniSelect,
 	OmniTab,
 	OmniTabContext,
 	OmniTabList,
@@ -47,6 +48,7 @@ const standard = createTheme()
 		OmniMenu,
 		OmniMenuItem,
 		OmniMenuDivider,
+		OmniSelect,
 		OmniTabContext,
 		OmniTabList,
 		OmniTab,
@@ -91,6 +93,17 @@ const standard = createTheme()
 						<omni-text-field label="Required" required size="small" />
 						<omni-text-field label="Amount"><span omniStartAdornment>$</span><span omniEndAdornment>USD</span></omni-text-field>
 						<omni-text-field label="Bio" multiline [rows]="3" />
+					</div>
+				</section>
+
+				<section style="display: grid; gap: 16px">
+					<h2 style="font: var(--omni-typography-h6-font); margin: 0">Select</h2>
+					<div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start">
+						<omni-select label="Fruit" [options]="fruit" [value]="fruitValue()" (valueChange)="fruitValue.set($event)" [open]="selectOpen()" (openChange)="selectOpen.set($event)" helperText="Pick one" />
+						<omni-select label="Filled" variant="filled" [options]="fruit" defaultValue="c" />
+						<omni-select label="Standard" variant="standard" [options]="fruit" />
+						<omni-select label="Error" error [options]="fruit" helperText="Required" />
+						<omni-select label="Disabled" disabled [options]="fruit" defaultValue="a" />
 					</div>
 				</section>
 
@@ -148,6 +161,14 @@ export class AppComponent implements AfterViewInit {
 	readonly dialog = signal(params.get("open") === "dialog")
 	readonly anchor = signal<HTMLElement | null>(null)
 	readonly tab = signal(params.get("tab") ?? "overview")
+	readonly fruit = [
+		{ value: "a", label: "Apple" },
+		{ value: "b", label: "Banana", disabled: true },
+		{ value: "c", label: "Cherry" },
+		{ value: "d", label: "Date" },
+	]
+	readonly fruitValue = signal("")
+	readonly selectOpen = signal(params.get("open") === "select")
 	readonly email = signal("")
 	readonly picked = signal("")
 
