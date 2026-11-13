@@ -5,7 +5,7 @@
 	"type": "module",
 	"description": "Real-browser checks for the UI kit: the same page in React, Vue and Angular must look the same, and pass axe including colour contrast.",
 	"scripts": {
-		"build:examples": "pnpm --filter @omnifront/ui build && pnpm --filter @omnifront/ui-react --filter @omnifront/ui-vue --filter @omnifront/ui-angular build && pnpm --filter @omnifront/example-ui-react --filter @omnifront/example-ui-vue --filter @omnifront/example-ui-angular build",
+		"build:examples": "pnpm --filter \"@omnifront/example-ui-react...\" --filter \"@omnifront/example-ui-vue...\" --filter \"@omnifront/example-ui-angular...\" --workspace-concurrency=1 build",
 		"e2e": "playwright test",
 		"install-browsers": "playwright install chromium",
 		"typecheck": "tsc --noEmit"
