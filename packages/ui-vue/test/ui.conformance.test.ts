@@ -1,6 +1,6 @@
 import { defineUiConformanceSuite, type UiHarness } from "@omnifront/conformance"
 import { defineComponent, h, nextTick, ref, type VNodeChild } from "vue"
-import { Checkbox, Radio, RadioGroup } from "../src"
+import { Checkbox, Radio, RadioGroup, Switch } from "../src"
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Select, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
 import { mount, slot } from "./mount"
 
@@ -68,6 +68,16 @@ const CheckboxView = defineComponent({
 	},
 })
 
+const SwitchView = defineComponent({
+	props: { log: { type: Function, required: true }, disabled: Boolean, error: Boolean },
+	setup(props) {
+		const checked = ref(false)
+		const log = props.log as Log
+		return () =>
+			h(Switch, { label: "Wi-Fi", modelValue: checked.value, disabled: props.disabled, error: props.error, "onUpdate:modelValue": (c: boolean) => { log(`change:${c}`); checked.value = c } })
+	},
+})
+
 const RadioGroupView = defineComponent({
 	props: { log: { type: Function, required: true }, disabled: Boolean, error: Boolean },
 	setup(props) {
@@ -130,6 +140,7 @@ const harness: UiHarness = {
 	dialog: (_props, log) => mountWith({}, () => h(DialogView, { log })),
 	menu: (_props, log) => mountWith({}, () => h(MenuView, { log })),
 	checkbox: (props, log) => mountWith(props, (p) => h(CheckboxView, { log, indeterminate: p.indeterminate ?? false, disabled: p.disabled ?? false, error: p.error ?? false })),
+	switch: (props, log) => mountWith(props, (p) => h(SwitchView, { log, disabled: p.disabled ?? false, error: p.error ?? false })),
 	radioGroup: (props, log) => mountWith(props, (p) => h(RadioGroupView, { log, disabled: p.disabled ?? false, error: p.error ?? false })),
 	select: (props, log) => mountWith(props, (p) => h(SelectView, { log, error: p.error ?? false, disabled: p.disabled ?? false })),
 	tabs: (props, log) => mountWith(props, (p) => h(TabsView, { log, selectionFollowsFocus: p.selectionFollowsFocus ?? false })),

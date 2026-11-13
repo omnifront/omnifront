@@ -1,7 +1,7 @@
 import { act, render } from "@testing-library/react"
 import { useState, type ReactNode } from "react"
 import { defineUiConformanceSuite, type UiHarness } from "@omnifront/conformance"
-import { Checkbox, Radio, RadioGroup } from "../src"
+import { Checkbox, Radio, RadioGroup, Switch } from "../src"
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Select, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
 
 type Log = (event: string) => void
@@ -52,6 +52,11 @@ function MenuView({ log }: { log: Log }) {
 function CheckboxView({ indeterminate, disabled, error, log }: { indeterminate: boolean | undefined; disabled: boolean | undefined; error: boolean | undefined; log: Log }) {
 	const [checked, setChecked] = useState(false)
 	return <Checkbox label="Accept terms" checked={checked} indeterminate={indeterminate} disabled={disabled} error={error} onChange={(_e, c) => { log(`change:${c}`); setChecked(c) }} />
+}
+
+function SwitchView({ disabled, error, log }: { disabled: boolean | undefined; error: boolean | undefined; log: Log }) {
+	const [checked, setChecked] = useState(false)
+	return <Switch label="Wi-Fi" checked={checked} disabled={disabled} error={error} onChange={(_e, c) => { log(`change:${c}`); setChecked(c) }} />
 }
 
 function RadioGroupView({ disabled, error, log }: { disabled: boolean | undefined; error: boolean | undefined; log: Log }) {
@@ -117,6 +122,7 @@ const harness: UiHarness = {
 	dialog: (_props, log) => mountWith({}, () => <DialogView log={log} />),
 	menu: (_props, log) => mountWith({}, () => <MenuView log={log} />),
 	checkbox: (props, log) => mountWith(props, (p) => <CheckboxView indeterminate={p.indeterminate} disabled={p.disabled} error={p.error} log={log} />),
+	switch: (props, log) => mountWith(props, (p) => <SwitchView disabled={p.disabled} error={p.error} log={log} />),
 	radioGroup: (props, log) => mountWith(props, (p) => <RadioGroupView disabled={p.disabled} error={p.error} log={log} />),
 	select: (props, log) => mountWith(props, (p) => <SelectView error={p.error} disabled={p.disabled} log={log} />),
 	tabs: (props, log) => mountWith(props, (p) => <TabsView selectionFollowsFocus={p.selectionFollowsFocus} log={log} />),

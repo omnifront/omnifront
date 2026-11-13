@@ -102,3 +102,12 @@ describe("formGroupParts", () => {
 		expect(formGroupParts({ id: "f", disabled: true }).group.attrs).toMatchObject({ disabled: true, "data-disabled": "" })
 	})
 })
+
+describe("Checkbox as a switch", () => {
+	it("role: 'switch' goes on the native input, and nothing else changes", () => {
+		const plain = createCheckbox({ id: "s" })
+		expect(plain.connect().input.attrs.role).toBeUndefined()
+		const sw = createCheckbox({ id: "s", role: "switch", defaultChecked: true })
+		expect(sw.connect().input.attrs).toMatchObject({ role: "switch", type: "checkbox", checked: true })
+	})
+})

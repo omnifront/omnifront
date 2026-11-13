@@ -96,7 +96,7 @@ The base class: `subscribe`, `getSnapshot`, `getServerSnapshot`, `setProps(props
 
 ### `createCheckbox`
 
-`createCheckbox(props): Checkbox` (`Checkbox` is the class): the state of a checkbox. The control is a real `<input type="checkbox">`, so the keyboard, focus, forms and assistive technology are the browser's own; the machine decides what is checked and what to tell the listener. Props (`CheckboxProps`): `id`, `checked` / `defaultChecked` / `onCheckedChange(checked, event)`, `indeterminate`, `disabled`, `required`, `error`. State (`CheckboxState`): `id`, `checked`, `indeterminate`, `disabled`. `connect()` returns `input` (the input's attributes and `change` handler); `change(checked)` is what the handler calls. `indeterminate` has no HTML attribute: set `input.indeterminate = state.indeterminate` after every render.
+`createCheckbox(props): Checkbox` (`Checkbox` is the class): the state of a checkbox. The control is a real `<input type="checkbox">`, so the keyboard, focus, forms and assistive technology are the browser's own; the machine decides what is checked and what to tell the listener. Props (`CheckboxProps`): `id`, `checked` / `defaultChecked` / `onCheckedChange(checked, event)`, `indeterminate`, `disabled`, `required`, `error`. State (`CheckboxState`): `id`, `checked`, `indeterminate`, `disabled`. `connect()` returns `input` (the input's attributes and `change` handler); `change(checked)` is what the handler calls. `indeterminate` has no HTML attribute: set `input.indeterminate = state.indeterminate` after every render. `role: "switch"` makes the same native checkbox a switch for assistive technology (the Switch component uses it).
 
 ### `createRadioGroup`
 

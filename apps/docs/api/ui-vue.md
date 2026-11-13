@@ -36,6 +36,14 @@ Props: `modelValue` (`v-model`; leave it out for an uncontrolled field) / `defau
 
 A real `<input type="checkbox">` inside a clickable `<label>`. Props: `modelValue` (`v-model`; leave it out for an uncontrolled checkbox) / `defaultChecked`, `indeterminate`, `label` (or the default slot), `labelPlacement`, `disabled`, `required`, `error`, `color`, `size`, `name`, `value`, `id`. Events: `update:modelValue`, `change(event, checked)`. `aria-*` attributes go to the input; the rest go to the label.
 
+### `Switch`
+
+```vue
+<Switch v-model="wifi" label="Wi-Fi" />
+```
+
+An on/off setting: a real `<input type="checkbox" role="switch">` under a track and a thumb. Props: `modelValue` (`v-model`; leave it out for an uncontrolled switch) / `defaultChecked`, `label` (or the default slot), `labelPlacement`, `disabled`, `required`, `error`, `color`, `size`, `name`, `value`, `id`. Events: `update:modelValue`, `change(event, checked)`. `aria-*` attributes go to the input; the rest go to the label.
+
 ### `RadioGroup`
 
 ```vue

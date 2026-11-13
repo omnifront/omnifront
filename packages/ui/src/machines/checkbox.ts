@@ -11,6 +11,8 @@ export interface CheckboxProps {
 	disabled?: boolean | undefined
 	required?: boolean | undefined
 	error?: boolean | undefined
+	/** `"switch"` makes the same native checkbox a switch for assistive technology (the Switch component uses it). */
+	role?: "switch" | undefined
 	onCheckedChange?: ((checked: boolean, event?: Event) => void) | undefined
 }
 
@@ -62,6 +64,7 @@ export class Checkbox extends Machine<CheckboxProps, CheckboxState> {
 				{
 					id: s.id,
 					type: "checkbox",
+					role: this.props.role,
 					checked: s.checked,
 					disabled: s.disabled || undefined,
 					required: this.props.required || undefined,

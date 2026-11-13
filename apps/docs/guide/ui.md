@@ -1,7 +1,7 @@
 # UI components
 
 ::: info Pre-release
-Not on npm yet. Wave 0 of the UI kit (ADR-0014) has Button, TextField, Dialog, Menu and Tabs, Select, Checkbox and Radio from wave 1. More components arrive in later waves.
+Not on npm yet. Wave 0 of the UI kit (ADR-0014) has Button, TextField, Dialog, Menu and Tabs, Select, Checkbox, Radio and Switch from wave 1. More components arrive in later waves.
 :::
 
 A Material-style component library for React, Vue and Angular. Behaviour, accessibility and look are written once, in `@omnifront/ui`; each framework package only renders it. The result: the same DOM, the same keyboard behaviour and the same theme in all three, and a conformance suite that runs the same scenarios against each.
@@ -150,6 +150,7 @@ Names follow MUI. Where a framework has a native idiom, the API uses it: `onClos
 | **Button** | `variant` (`text` / `outlined` / `contained`), `color`, `size`, `fullWidth`, `disableElevation`, `loading` (spinner, ignores clicks), start and end icons, `href` makes it a link, touch ripple. |
 | **TextField** | `outlined` / `filled` / `standard`, floating label, `helperText`, `error`, `required`, adornments, `multiline`. Angular: works with `ngModel` and reactive forms. Vue: `v-model`. |
 | **Checkbox** | A real `<input type="checkbox">` in a clickable label, so Space, focus, forms and screen readers are the browser's own. Controlled or not, `indeterminate`, colours, sizes, `labelPlacement`. Works with `v-model`, `ngModel` and reactive forms. |
+| **Switch** | An on/off setting: the same native checkbox with `role="switch"` under a track and a thumb (so Space, focus, forms and screen readers are native). Controlled or not, colours, sizes, `labelPlacement`; `v-model`, `ngModel` and reactive forms. |
 | **RadioGroup**, **Radio** | A `<fieldset role="radiogroup">` with a `<legend>`, helper text and error; the radios are native with one shared `name`, so the arrow keys move the choice (skipping disabled radios) and Tab leaves the group. `FormGroup` is the same labelled fieldset for other controls, such as several checkboxes. |
 | **Select** | Looks like a TextField, opens a list of options (`options` is data: `{ value, label, disabled? }`). A real `combobox` and `listbox` for assistive technology: Enter, Space and the arrows open it; arrows, Home, End and typing move focus in the list; Enter or Space choose; Escape closes. Works with `v-model`, `ngModel` and reactive forms; `name` also writes a hidden input for plain forms. |
 | **Dialog** | Focus moves in and is trapped, Escape and a click outside ask to close (`reason`: `escapeKeyDown`, `backdropClick`), the page behind stops scrolling and is hidden from screen readers, focus returns to the opener. `maxWidth`, `fullWidth`, `fullScreen`, exit animation. |
@@ -171,7 +172,7 @@ Components render to HTML on the server in all three frameworks. Overlays (Dialo
 
 ## How it is tested
 
-The same 41 scenarios (roles, keyboard, focus, `aria-*`, controlled and uncontrolled use, and axe) run against React, Vue and Angular. In a real browser, one example page per framework (`examples/ui-react`, `ui-vue`, `ui-angular`) is screenshotted in eight states (light, dark, brand theme, open dialog, open menu, ...) and compared pixel by pixel to the React one, and axe checks WCAG 2.1 AA, colour contrast included. Key presses (Space on a checkbox, arrows in a radio group, the select's list) are driven in the real browser for every framework. Server rendering followed by hydration is tested for each framework: no mismatch, and the server's DOM is reused.
+The same 44 scenarios (roles, keyboard, focus, `aria-*`, controlled and uncontrolled use, and axe) run against React, Vue and Angular. In a real browser, one example page per framework (`examples/ui-react`, `ui-vue`, `ui-angular`) is screenshotted in eight states (light, dark, brand theme, open dialog, open menu, ...) and compared pixel by pixel to the React one, and axe checks WCAG 2.1 AA, colour contrast included. Key presses (Space on a checkbox or switch, arrows in a radio group, the select's list) are driven in the real browser for every framework. Server rendering followed by hydration is tested for each framework: no mismatch, and the server's DOM is reused.
 
 ## Under the hood
 

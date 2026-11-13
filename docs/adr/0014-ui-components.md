@@ -180,6 +180,13 @@ ui-angular  → ui, angular (+ peer: @angular/core, @angular/common)
 - **بودجه (ثبت، بدون سقف سخت):** `ui` ۹.۵KB، `styles.css` ۶.۲KB، `ui-react` ۵.۲KB، `ui-vue` ۶.۶KB، `ui-angular` ۹.۵KB (gzip)؛ سقف‌های `.size-limit.json` به‌همین اندازه به‌علاوه‌ی حاشیه رفتند.
 - **انجام‌نشده:** `Switch`، `Slider`، `Rating`، گروه چک‌باکس با «انتخاب همه» (الگوی indeterminate)، و `Radio` / `Checkbox` با آیکون سفارشی.
 
+## موج ۱: Switch (2026-11-12)
+
+- **همان Checkbox با ظاهر دیگر:** Switch یک `<input type="checkbox" role="switch">` بومی است زیر یک track و یک thumb. ماشین جدیدی لازم نشد: `createCheckbox` یک prop `role: "switch"` گرفت و همان `connect()` را می‌دهد. فقط CSS (`switch.css`) و یک کامپوننت نازک در هر فریم‌ورک اضافه شد. Space، فوکوس، فرم و `required` همان رفتار بومی مرورگرند.
+- **ظاهر:** مثل Material 2 و MUI: track با شفافیت، thumb با سایه، halo هنگام hover و فوکوس صفحه‌کلید. جابه‌جایی thumb با `inset-inline-start` است (نه `translateX`)، پس در RTL بدون کد اضافه درست کار می‌کند. اندازه‌ها (`small`، `medium`) فقط چند متغیر CSS‌اند.
+- **API:** مثل Checkbox (`onChange(event, checked)`، `v-model`، `[(checked)]`، `ngModel`، reactive forms، `aria-label` برای حالت بدون برچسب)، بدون `indeterminate`.
+- **انجام‌نشده در موج ۱:** `Slider` و `Rating`، «انتخاب همه» با `indeterminate`، گزینه‌ی سفارشی و چندانتخابی برای Select.
+
 ## معیار بازبینی
 
 - اگر موج ۰ نشان داد یک ماشین نمی‌تواند در هر سه فریم‌ورک با قرارداد `Subscribable` و `connect` وصل شود (به‌خصوص Dialog یا Menu در Angular)، این ADR و در صورت لزوم ADR-0001 دوباره باز می‌شوند.

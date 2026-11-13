@@ -36,6 +36,14 @@ Props (`TextFieldProps`): `label`, `value` / `defaultValue` / `onChange`, `helpe
 
 A real `<input type="checkbox">` (Space, focus, forms and screen readers work natively) inside a clickable `<label>`. Props (`CheckboxProps`): `checked` / `defaultChecked` / `onChange(event, checked)`, `indeterminate` (a click then makes it checked), `label`, `labelPlacement` (`end`, `start`, `top`, `bottom`), `disabled`, `required`, `error`, `color` (including `error`), `size`, `name`, `value`, `id`, `className`, `slotProps.input` (for example `aria-label` when there is no `label`). The ref is forwarded to the `<label>`.
 
+### `Switch`
+
+```tsx
+<Switch label="Wi-Fi" checked={on} onChange={(event, checked) => setOn(checked)} />
+```
+
+An on/off setting: a real `<input type="checkbox" role="switch">` (Space, focus, forms and screen readers work natively) under a track and a thumb. Props (`SwitchProps`): `checked` / `defaultChecked` / `onChange(event, checked)`, `label`, `labelPlacement` (`end`, `start`, `top`, `bottom`), `disabled`, `required`, `error`, `color`, `size` (`small` or `medium`), `name`, `value`, `id`, `className`, `slotProps.input`. The ref is forwarded to the `<label>`.
+
 ### `RadioGroup`
 
 ```tsx

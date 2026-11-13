@@ -40,6 +40,14 @@ The injectable that `omni-theme-provider` provides: signals `theme`, `id` and `s
 
 A real `<input type="checkbox">` inside a clickable `<label>`; the label is the content. Inputs: `checked`, `defaultChecked`, `indeterminate`, `labelPlacement`, `disabled`, `required`, `error`, `color`, `size`, `name`, `value`, `id`, `aria-label` (for a checkbox with no visible label). Output: `checkedChange`. Works with `ngModel` and reactive forms.
 
+### `OmniSwitch`
+
+```html
+<omni-switch [(checked)]="wifi">Wi-Fi</omni-switch>
+```
+
+An on/off setting: a real `<input type="checkbox" role="switch">` under a track and a thumb; the label is the content. Inputs: `checked`, `defaultChecked`, `labelPlacement`, `disabled`, `required`, `error`, `color`, `size`, `name`, `value`, `id`, `aria-label` (for a switch with no visible label). Output: `checkedChange`. Works with `ngModel` and reactive forms.
+
 ### `OmniRadioGroup`
 
 ```html

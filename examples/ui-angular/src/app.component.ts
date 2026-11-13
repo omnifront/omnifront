@@ -14,6 +14,7 @@ import {
 	OmniMenuDivider,
 	OmniMenuItem,
 	OmniSelect,
+	OmniSwitch,
 	OmniTab,
 	OmniTabContext,
 	OmniTabList,
@@ -53,6 +54,7 @@ const standard = createTheme()
 		OmniMenuItem,
 		OmniMenuDivider,
 		OmniSelect,
+		OmniSwitch,
 		OmniCheckbox,
 		OmniFormGroup,
 		OmniRadio,
@@ -136,6 +138,14 @@ const standard = createTheme()
 							<omni-radio value="free">Free</omni-radio>
 							<omni-radio value="pro" color="secondary">Pro</omni-radio>
 						</omni-radio-group>
+					</div>
+					<div style="display: flex; flex-wrap: wrap; align-items: center">
+						<omni-switch>Wi-Fi</omni-switch>
+						<omni-switch defaultChecked>Bluetooth</omni-switch>
+						<omni-switch color="secondary" defaultChecked>Secondary</omni-switch>
+						<omni-switch size="small" defaultChecked>Small</omni-switch>
+						<omni-switch disabled>Disabled</omni-switch>
+						<omni-switch disabled defaultChecked>Disabled on</omni-switch>
 					</div>
 				</section>
 

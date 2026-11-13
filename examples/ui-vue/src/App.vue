@@ -14,6 +14,7 @@ import {
 	MenuDivider,
 	MenuItem,
 	Select,
+	Switch,
 	Tab,
 	TabContext,
 	TabList,
@@ -134,6 +135,14 @@ onMounted(() => {
 						<Radio value="free" label="Free" />
 						<Radio value="pro" label="Pro" color="secondary" />
 					</RadioGroup>
+				</div>
+				<div style="display: flex; flex-wrap: wrap; align-items: center">
+					<Switch label="Wi-Fi" />
+					<Switch label="Bluetooth" default-checked />
+					<Switch label="Secondary" color="secondary" default-checked />
+					<Switch label="Small" size="small" default-checked />
+					<Switch label="Disabled" disabled />
+					<Switch label="Disabled on" disabled default-checked />
 				</div>
 			</section>
 

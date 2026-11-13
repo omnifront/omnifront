@@ -16,6 +16,19 @@ for (const framework of Object.keys(frameworks) as Framework[]) {
 			await expect(box).not.toBeChecked()
 		})
 
+		test("Space flips a switch, and a click on its label does too", async ({ page }) => {
+			await open(page, framework, "")
+			const wifi = page.getByRole("switch", { name: "Wi-Fi" })
+			await wifi.focus()
+			await expect(wifi).not.toBeChecked()
+			await page.keyboard.press("Space")
+			await expect(wifi).toBeChecked()
+			await page.getByText("Wi-Fi", { exact: true }).click()
+			await expect(wifi).not.toBeChecked()
+			await expect(page.getByRole("switch", { name: "Bluetooth" })).toBeChecked() // defaultChecked
+			await expect(page.getByRole("switch", { name: "Disabled", exact: true })).toBeDisabled()
+		})
+
 		test("an indeterminate checkbox becomes checked on click", async ({ page }) => {
 			await open(page, framework, "")
 			const some = page.getByRole("checkbox", { name: "Some" })

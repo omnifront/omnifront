@@ -13,6 +13,7 @@ import {
 	MenuDivider,
 	MenuItem,
 	Select,
+	Switch,
 	Tab,
 	TabContext,
 	TabList,
@@ -138,6 +139,14 @@ export function App() {
 							<Radio value="free" label="Free" />
 							<Radio value="pro" label="Pro" color="secondary" />
 						</RadioGroup>
+					</div>
+					<div style={{ display: "flex", flexWrap: "wrap", alignItems: "center" }}>
+						<Switch label="Wi-Fi" />
+						<Switch label="Bluetooth" defaultChecked />
+						<Switch label="Secondary" color="secondary" defaultChecked />
+						<Switch label="Small" size="small" defaultChecked />
+						<Switch label="Disabled" disabled />
+						<Switch label="Disabled on" disabled defaultChecked />
 					</div>
 				</section>
 

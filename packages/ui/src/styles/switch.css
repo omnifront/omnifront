@@ -1,0 +1,94 @@
+/* Switch: the same native checkbox (role="switch") under a track and a thumb, like Checkbox's box. */
+@layer omnifront {
+	.omni-switch {
+		--_main: var(--omni-palette-primary-main);
+		--_w: 58px;
+		--_h: 38px;
+		--_pad: 12px;
+		--_thumb: 20px;
+		--_shift: 20px;
+		display: inline-flex;
+		align-items: center;
+		vertical-align: middle;
+		margin-inline: -11px 16px;
+		cursor: pointer;
+		color: var(--omni-palette-text-primary);
+		font: var(--omni-typography-body1-font);
+		letter-spacing: var(--omni-typography-body1-letter-spacing);
+		-webkit-tap-highlight-color: transparent;
+	}
+	.omni-switch[data-size="small"] { --_w: 40px; --_h: 24px; --_pad: 7px; --_thumb: 16px; --_shift: 16px; }
+	.omni-switch[data-color="secondary"] { --_main: var(--omni-palette-secondary-main); }
+	.omni-switch[data-color="success"] { --_main: var(--omni-palette-success-main); }
+	.omni-switch[data-color="info"] { --_main: var(--omni-palette-info-main); }
+	.omni-switch[data-color="warning"] { --_main: var(--omni-palette-warning-main); }
+	.omni-switch[data-color="error"],
+	.omni-switch[data-error] { --_main: var(--omni-palette-error-main); }
+
+	.omni-switch__control {
+		position: relative;
+		display: inline-flex;
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		inline-size: var(--_w);
+		block-size: var(--_h);
+		padding: var(--_pad);
+	}
+	.omni-switch__input {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		inline-size: 100%;
+		block-size: 100%;
+		margin: 0;
+		opacity: 0;
+		cursor: inherit;
+	}
+	.omni-switch__track {
+		inline-size: 100%;
+		block-size: 100%;
+		border-radius: 999px;
+		background-color: var(--omni-palette-text-primary);
+		opacity: 0.38;
+		transition: background-color var(--omni-duration-shortest) var(--omni-easing-ease-in-out), opacity var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
+	}
+	.omni-switch__thumb {
+		position: absolute;
+		inset-block-start: calc((var(--_h) - var(--_thumb)) / 2);
+		inset-inline-start: calc((var(--_h) - var(--_thumb)) / 2);
+		inline-size: var(--_thumb);
+		block-size: var(--_thumb);
+		border-radius: 50%;
+		background-color: var(--omni-palette-grey-50);
+		box-shadow: var(--omni-shadow-1);
+		transition: inset-inline-start var(--omni-duration-shortest) var(--omni-easing-ease-in-out), background-color var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
+	}
+	/* the halo around the thumb on hover and keyboard focus */
+	.omni-switch__thumb::after {
+		content: "";
+		position: absolute;
+		inset: -9px;
+		border-radius: 50%;
+		background-color: transparent;
+		transition: background-color var(--omni-duration-shortest);
+	}
+	.omni-switch:hover .omni-switch__thumb::after { background-color: color-mix(in srgb, var(--omni-palette-action-active) 6%, transparent); }
+	.omni-switch__control:has(:focus-visible) .omni-switch__thumb::after { background-color: color-mix(in srgb, var(--_main) 14%, transparent); }
+
+	.omni-switch__input:checked ~ .omni-switch__track { background-color: var(--_main); opacity: 0.5; }
+	.omni-switch__input:checked ~ .omni-switch__thumb { inset-inline-start: calc((var(--_h) - var(--_thumb)) / 2 + var(--_shift)); background-color: var(--_main); }
+	.omni-switch:hover .omni-switch__input:checked ~ .omni-switch__thumb::after { background-color: color-mix(in srgb, var(--_main) 8%, transparent); }
+
+	.omni-switch__label { user-select: none; }
+	.omni-switch__label:empty { display: none; }
+	.omni-switch[data-label-placement="start"] { flex-direction: row-reverse; margin-inline: 16px -11px; }
+	.omni-switch[data-label-placement="top"] { flex-direction: column-reverse; margin-inline: 16px; }
+	.omni-switch[data-label-placement="bottom"] { flex-direction: column; margin-inline: 16px; }
+
+	.omni-switch[data-disabled] { cursor: default; color: var(--omni-palette-text-disabled); }
+	.omni-switch[data-disabled] .omni-switch__track { opacity: 0.12; background-color: var(--omni-palette-text-primary); }
+	.omni-switch[data-disabled] .omni-switch__thumb { background-color: var(--omni-palette-grey-400); }
+	.omni-switch[data-disabled] .omni-switch__thumb::after { background-color: transparent; }
+
+	@media (prefers-reduced-motion: reduce) { .omni-switch * { transition: none !important; } }
+}

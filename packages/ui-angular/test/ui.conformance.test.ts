@@ -14,6 +14,7 @@ import {
 	OmniRadio,
 	OmniRadioGroup,
 	OmniSelect,
+	OmniSwitch,
 	OmniTab,
 	OmniTabContext,
 	OmniTabList,
@@ -98,6 +99,18 @@ class MenuView {
 	template: `<omni-checkbox [checked]="checked()" [indeterminate]="!!p().indeterminate" [disabled]="!!p().disabled" [error]="!!p().error" (checkedChange)="log('change:' + $event); checked.set($event)">Accept terms</omni-checkbox>`,
 })
 class CheckboxView {
+	checked = signal(false)
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+}
+
+@Component({
+	standalone: true,
+	imports: [OmniSwitch],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `<omni-switch [checked]="checked()" [disabled]="!!p().disabled" [error]="!!p().error" (checkedChange)="log('change:' + $event); checked.set($event)">Wi-Fi</omni-switch>`,
+})
+class SwitchView {
 	checked = signal(false)
 	p = signal<Record<string, unknown>>({})
 	log: Log = () => {}
@@ -204,6 +217,7 @@ const harness: UiHarness = {
 	dialog: (_props, log) => mountView(DialogView, {}, log),
 	menu: (_props, log) => mountView(MenuView, {}, log),
 	checkbox: (props, log) => mountView(CheckboxView, props, log),
+	switch: (props, log) => mountView(SwitchView, props, log),
 	radioGroup: (props, log) => mountView(RadioGroupView, props, log),
 	select: (props, log) => mountView(SelectView, props, log),
 	tabs: (props, log) => mountView(TabsView, props, log),

@@ -36,6 +36,11 @@ export interface UiHarness {
 	 */
 	checkbox(props: { indeterminate?: boolean; disabled?: boolean; error?: boolean }, log: (event: string) => void): UiHandle
 	/**
+	 * A Switch labelled "Wi-Fi", on/off state held by the host (starts off). Logs
+	 * `change:<true|false>`.
+	 */
+	switch(props: { disabled?: boolean; error?: boolean }, log: (event: string) => void): UiHandle
+	/**
 	 * A RadioGroup labelled "Fruit" with helper text "Pick one" and radios "Apple" (value a),
 	 * "Banana" (value b, disabled) and "Cherry" (value c); the chosen value is held by the host
 	 * (starts empty). Logs `change:<value>`.
@@ -250,6 +255,37 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				await h.settle()
 				expect(checkbox().getAttribute("aria-invalid")).toBe("true")
 				expect(checkbox().closest("label")?.hasAttribute("data-error")).toBe(true)
+			})
+		})
+
+		describe("Switch", () => {
+			const toggle = (): HTMLInputElement => $<HTMLInputElement>('input[role="switch"]')
+
+			it("is a native checkbox with role=switch, named by its label, whose label is clickable", async () => {
+				mount(h.switch({}, log))
+				await h.settle()
+				expect(toggle().type).toBe("checkbox")
+				expect(toggle().checked).toBe(false)
+				expect(toggle().closest("label")?.textContent?.trim()).toBe("Wi-Fi")
+				expect(toggle().closest("label")?.dataset).toMatchObject({ size: "medium", color: "primary" })
+				byText(".omni-switch__label", "Wi-Fi").click()
+				await h.settle()
+				expect(events).toEqual(["change:true"])
+				expect(toggle().checked).toBe(true)
+				toggle().click()
+				await h.settle()
+				expect(events).toEqual(["change:true", "change:false"])
+			})
+
+			it("disabled is really disabled; error is exposed", async () => {
+				const handle = mount(h.switch({ disabled: true }, log))
+				await h.settle()
+				expect(toggle().disabled).toBe(true)
+				expect(toggle().closest("label")?.hasAttribute("data-disabled")).toBe(true)
+				await handle.set({ disabled: false, error: true })
+				await h.settle()
+				expect(toggle().getAttribute("aria-invalid")).toBe("true")
+				expect(toggle().closest("label")?.hasAttribute("data-error")).toBe(true)
 			})
 		})
 
@@ -569,6 +605,21 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				byText("button", "Open").click()
 				await h.settle()
 				await expectAccessible("open dialog")
+			})
+
+			it("a switch in each state", async () => {
+				const handle = mount(h.switch({}, log))
+				await h.settle()
+				await expectAccessible("switch")
+				$<HTMLInputElement>('input[role="switch"]').click()
+				await h.settle()
+				await expectAccessible("switch on")
+				await handle.set({ error: true })
+				await h.settle()
+				await expectAccessible("switch in error")
+				await handle.set({ disabled: true })
+				await h.settle()
+				await expectAccessible("disabled switch")
 			})
 
 			it("a checkbox in each state, and a radio group in each state", async () => {
