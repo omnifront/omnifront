@@ -6,15 +6,10 @@ import { Portal, useDefaultProps } from "./theme"
 
 export type SelectCloseReason = Extract<CloseReason, "escapeKeyDown" | "outsidePress" | "tab" | "select" | "trigger" | "programmatic">
 
-export interface SelectProps {
+interface SelectBaseProps {
 	label?: ReactNode | undefined
 	/** What can be chosen. `value` is what `onChange` reports; `label` is what the user sees. */
 	options: readonly SelectOption[]
-	/** Controlled value. Leave it out for an uncontrolled select. `""` means nothing is selected. */
-	value?: string | undefined
-	defaultValue?: string | undefined
-	/** Called when the user chooses an option. */
-	onChange?: ((event: Event | undefined, value: string) => void) | undefined
 	open?: boolean | undefined
 	defaultOpen?: boolean | undefined
 	onOpenChange?: ((open: boolean, reason: SelectCloseReason) => void) | undefined
@@ -32,6 +27,26 @@ export interface SelectProps {
 	className?: string | undefined
 }
 
+export interface SingleSelectProps extends SelectBaseProps {
+	multiple?: false | undefined
+	/** Controlled value. Leave it out for an uncontrolled select. `""` means nothing is selected. */
+	value?: string | undefined
+	defaultValue?: string | undefined
+	/** Called when the user chooses an option: `(event, value)`. */
+	onChange?: ((event: Event | undefined, value: string) => void) | undefined
+}
+
+export interface MultipleSelectProps extends SelectBaseProps {
+	/** Several options at once: choosing one toggles it and the list stays open. */
+	multiple: true
+	value?: readonly string[] | undefined
+	defaultValue?: readonly string[] | undefined
+	/** Called when the user toggles an option: `(event, values)`. */
+	onChange?: ((event: Event | undefined, value: string[]) => void) | undefined
+}
+
+export type SelectProps = SingleSelectProps | MultipleSelectProps
+
 /**
  * Material select: looks like a TextField, opens a listbox of options. Keyboard: Enter, Space and
  * the arrows open it; in the list the arrows, Home, End and typing move focus, Enter or Space
@@ -44,6 +59,7 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(function Select(ra
 		value,
 		defaultValue,
 		onChange,
+		multiple,
 		open,
 		defaultOpen,
 		onOpenChange,
@@ -58,21 +74,33 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(function Select(ra
 		name,
 		id: idProp,
 		className,
-	} = useDefaultProps("OmniSelect", rawProps)
+	} = useDefaultProps("OmniSelect", rawProps) as SelectBaseProps & {
+		multiple?: boolean | undefined
+		value?: string | readonly string[] | undefined
+		defaultValue?: string | readonly string[] | undefined
+		onChange?: ((event: Event | undefined, value: string | string[]) => void) | undefined
+	}
 	const generated = useId()
 	const id = idProp ?? generated
 	const hasLabel = label !== undefined && label !== null && label !== false
 	const hasHelper = helperText !== undefined && helperText !== null && helperText !== false
 
-	const [select, state] = useMachine(() => createSelect({ id, options, defaultValue, defaultOpen }), {
+	const asList = (v: string | readonly string[] | undefined): string[] | undefined => (v === undefined ? undefined : typeof v === "string" ? (v === "" ? [] : [v]) : [...v])
+	const [select, state] = useMachine(
+		() => createSelect({ id, options, defaultValue: typeof defaultValue === "string" ? defaultValue : undefined, defaultValues: asList(defaultValue), multiple, defaultOpen }),
+		{
 		id,
 		options,
-		value,
+		multiple,
+		value: typeof value === "string" ? value : undefined,
+		values: multiple ? asList(value) : undefined,
 		disabled,
 		open,
 		onValueChange: (next: string, event?: Event) => onChange?.(event, next),
+		onValuesChange: (next: string[], event?: Event) => onChange?.(event, next),
 		onOpenChange: (next: boolean, reason: CloseReason) => onOpenChange?.(next, reason as SelectCloseReason),
-	})
+		},
+	)
 	const [field, fieldState] = useMachine(() => createField({ id }), { id, disabled, error, required, hasHelper, filled: state.filled })
 	const parts = select.connect()
 	const fieldParts = field.connect()
@@ -110,7 +138,11 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(function Select(ra
 					{state.label}
 				</div>
 				<span className="omni-select__icon" aria-hidden="true" data-state={state.open ? "open" : "closed"} />
-				{name ? <input type="hidden" name={name} value={state.value ?? ""} /> : null}
+				{name
+					? state.multiple
+						? state.values.map((v) => <input key={v} type="hidden" name={name} value={v} />)
+						: <input type="hidden" name={name} value={state.value ?? ""} />
+					: null}
 				<fieldset {...toReactProps(fieldParts.fieldset)} className="omni-text-field__fieldset">
 					<legend className="omni-text-field__legend">{hasLabel ? <span>{label}</span> : null}</legend>
 				</fieldset>

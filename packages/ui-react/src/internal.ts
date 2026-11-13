@@ -12,6 +12,8 @@ const EVENTS: Record<string, string> = {
 	mouseup: "onMouseUp",
 	mouseenter: "onMouseEnter",
 	mouseleave: "onMouseLeave",
+	pointerenter: "onPointerEnter",
+	pointerleave: "onPointerLeave",
 }
 
 /** A framework-free Part as React props: `class` becomes `className`, `keydown` becomes `onKeyDown`, and so on. */

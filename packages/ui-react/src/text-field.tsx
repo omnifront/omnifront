@@ -1,5 +1,5 @@
-import { createField, type FieldProps } from "@omnifront/ui"
-import { forwardRef, useCallback, useId, useRef, type ChangeEvent, type ComponentPropsWithoutRef, type ReactNode } from "react"
+import { attachAutosize, createField, type FieldProps } from "@omnifront/ui"
+import { forwardRef, useCallback, useEffect, useId, useRef, type ChangeEvent, type ComponentPropsWithoutRef, type ReactNode } from "react"
 import { cx, mergeProps, toReactProps, useMachine } from "./internal"
 import { useDefaultProps } from "./theme"
 
@@ -18,6 +18,10 @@ export interface TextFieldProps
 	/** A `<textarea>` instead of an `<input>`. */
 	multiline?: boolean | undefined
 	rows?: number | undefined
+	/** With `multiline`: grow with the text, from this many rows... */
+	minRows?: number | undefined
+	/** ...up to this many, then scroll. */
+	maxRows?: number | undefined
 	startAdornment?: ReactNode | undefined
 	endAdornment?: ReactNode | undefined
 	/** Props for the inner `<input>` / `<textarea>` (for example `maxLength`). */
@@ -42,6 +46,8 @@ export const TextField = forwardRef<HTMLDivElement, TextFieldProps>(function Tex
 		fullWidth,
 		multiline,
 		rows,
+		minRows,
+		maxRows,
 		startAdornment,
 		endAdornment,
 		slotProps,
@@ -85,6 +91,22 @@ export const TextField = forwardRef<HTMLDivElement, TextFieldProps>(function Tex
 		[inputRef],
 	)
 
+	// `minRows` / `maxRows` make a multiline field grow and shrink with its text.
+	const autosize = multiline && (minRows !== undefined || maxRows !== undefined)
+	const sizer = useRef<{ update(): void; destroy(): void } | null>(null)
+	useEffect(() => {
+		const el = localRef.current
+		if (!autosize || !(el instanceof HTMLTextAreaElement)) return undefined
+		const a = attachAutosize(el, () => ({ minRows, maxRows }))
+		sizer.current = a
+		return () => {
+			a.destroy()
+			sizer.current = null
+		}
+	}, [autosize, minRows, maxRows])
+	// a value set from code (controlled) does not fire an input event
+	useEffect(() => sizer.current?.update(), [value])
+
 	const inputProps = mergeProps(toReactProps(parts.input), {
 		...inputRest,
 		...slotProps?.input,
@@ -92,7 +114,8 @@ export const TextField = forwardRef<HTMLDivElement, TextFieldProps>(function Tex
 		value,
 		defaultValue,
 		placeholder,
-		rows: multiline ? (rows ?? 1) : undefined,
+		rows: multiline ? (autosize ? (minRows ?? 1) : (rows ?? 1)) : undefined,
+		onInput: autosize ? () => sizer.current?.update() : undefined,
 		onChange,
 		onFocus,
 		onBlur,

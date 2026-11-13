@@ -1,0 +1,92 @@
+@layer omnifront {
+	/* IconButton: a round, icon-only button. */
+	.omni-icon-button {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		margin: 0;
+		padding: 8px;
+		border: 0;
+		border-radius: 50%;
+		outline: 0;
+		overflow: hidden;
+		cursor: pointer;
+		user-select: none;
+		text-decoration: none;
+		font-size: 1.5rem;
+		color: var(--omni-palette-action-active);
+		background-color: transparent;
+		-webkit-tap-highlight-color: transparent;
+		transition: background-color var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
+	}
+	.omni-icon-button[data-color="inherit"] { color: inherit; }
+	.omni-icon-button[data-color="primary"] { color: var(--omni-palette-primary-main); }
+	.omni-icon-button[data-color="secondary"] { color: var(--omni-palette-secondary-main); }
+	.omni-icon-button[data-color="success"] { color: var(--omni-palette-success-main); }
+	.omni-icon-button[data-color="error"] { color: var(--omni-palette-error-main); }
+	.omni-icon-button[data-color="info"] { color: var(--omni-palette-info-main); }
+	.omni-icon-button[data-color="warning"] { color: var(--omni-palette-warning-main); }
+	.omni-icon-button:hover { background-color: color-mix(in srgb, currentColor 8%, transparent); }
+	.omni-icon-button:focus-visible { background-color: color-mix(in srgb, currentColor 16%, transparent); }
+	.omni-icon-button[data-size="small"] { padding: 5px; font-size: 1.125rem; }
+	.omni-icon-button[data-size="large"] { padding: 12px; font-size: 1.75rem; }
+	.omni-icon-button[data-edge="start"] { margin-inline-start: -12px; }
+	.omni-icon-button[data-edge="end"] { margin-inline-end: -12px; }
+	.omni-icon-button[data-edge="start"][data-size="small"] { margin-inline-start: -3px; }
+	.omni-icon-button[data-edge="end"][data-size="small"] { margin-inline-end: -3px; }
+	.omni-icon-button svg { inline-size: 1em; block-size: 1em; fill: currentColor; flex: none; }
+	.omni-icon-button:disabled,
+	.omni-icon-button[data-disabled] { color: var(--omni-palette-action-disabled); background-color: transparent; pointer-events: none; cursor: default; }
+
+	/* Fab: the floating action button. */
+	.omni-fab {
+		--_main: var(--omni-palette-primary-main);
+		--_dark: var(--omni-palette-primary-dark);
+		--_contrast: var(--omni-palette-primary-contrast-text);
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		flex: 0 0 auto;
+		box-sizing: border-box;
+		inline-size: 56px;
+		block-size: 56px;
+		min-inline-size: 0;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		border-radius: 50%;
+		outline: 0;
+		overflow: hidden;
+		cursor: pointer;
+		user-select: none;
+		text-decoration: none;
+		font: var(--omni-typography-button-font);
+		letter-spacing: var(--omni-typography-button-letter-spacing);
+		text-transform: var(--omni-typography-button-text-transform);
+		color: var(--_contrast);
+		background-color: var(--_main);
+		box-shadow: var(--omni-shadow-6);
+		-webkit-tap-highlight-color: transparent;
+		transition: background-color var(--omni-duration-short) var(--omni-easing-ease-in-out), box-shadow var(--omni-duration-short) var(--omni-easing-ease-in-out);
+	}
+	.omni-fab[data-color="inherit"] { --_main: var(--omni-palette-grey-300); --_dark: var(--omni-palette-grey-A100); --_contrast: var(--omni-palette-text-primary); }
+	.omni-fab[data-color="secondary"] { --_main: var(--omni-palette-secondary-main); --_dark: var(--omni-palette-secondary-dark); --_contrast: var(--omni-palette-secondary-contrast-text); }
+	.omni-fab[data-color="success"] { --_main: var(--omni-palette-success-main); --_dark: var(--omni-palette-success-dark); --_contrast: var(--omni-palette-success-contrast-text); }
+	.omni-fab[data-color="error"] { --_main: var(--omni-palette-error-main); --_dark: var(--omni-palette-error-dark); --_contrast: var(--omni-palette-error-contrast-text); }
+	.omni-fab[data-color="info"] { --_main: var(--omni-palette-info-main); --_dark: var(--omni-palette-info-dark); --_contrast: var(--omni-palette-info-contrast-text); }
+	.omni-fab[data-color="warning"] { --_main: var(--omni-palette-warning-main); --_dark: var(--omni-palette-warning-dark); --_contrast: var(--omni-palette-warning-contrast-text); }
+	.omni-fab:hover, .omni-fab:focus-visible { background-color: var(--_dark); box-shadow: var(--omni-shadow-12); }
+	.omni-fab:active { box-shadow: var(--omni-shadow-12); }
+	.omni-fab[data-size="medium"] { inline-size: 48px; block-size: 48px; }
+	.omni-fab[data-size="small"] { inline-size: 40px; block-size: 40px; }
+	.omni-fab[data-variant="extended"] { inline-size: auto; padding-inline: 16px; border-radius: 24px; gap: 8px; }
+	.omni-fab[data-variant="extended"][data-size="medium"] { block-size: 40px; border-radius: 20px; }
+	.omni-fab[data-variant="extended"][data-size="small"] { block-size: 34px; border-radius: 17px; padding-inline: 8px; }
+	.omni-fab svg { inline-size: 1.5rem; block-size: 1.5rem; fill: currentColor; }
+	.omni-fab:disabled, .omni-fab[data-disabled] { color: var(--omni-palette-action-disabled); background-color: var(--omni-palette-action-disabled-background); box-shadow: none; pointer-events: none; cursor: default; }
+	@media (prefers-reduced-motion: reduce) { .omni-icon-button, .omni-fab { transition: none; } }
+}

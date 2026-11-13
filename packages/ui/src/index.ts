@@ -30,8 +30,17 @@ export type {
 
 // Behaviour machines
 export * from "./machines"
-export { buttonPart } from "./button"
-export type { ButtonColor, ButtonOptions, ButtonSize, ButtonVariant } from "./button"
+export { buttonPart, iconButtonPart, fabPart, toggleButtonPart } from "./button"
+export type {
+	ButtonColor,
+	ButtonOptions,
+	ButtonSize,
+	ButtonVariant,
+	FabOptions,
+	IconButtonColor,
+	IconButtonOptions,
+	ToggleButtonOptions,
+} from "./button"
 
 // DOM utilities (browser only, call after mount)
 export { createIdGenerator } from "./dom/ids"
@@ -43,3 +52,5 @@ export { hideOthers } from "./dom/aria-hidden"
 export { createPortalRoot } from "./dom/portal"
 export type { PortalRoot } from "./dom/portal"
 export { attachRipple } from "./dom/ripple"
+export { attachAutosize } from "./dom/autosize"
+export type { AutosizeOptions } from "./dom/autosize"

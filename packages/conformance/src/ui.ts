@@ -36,6 +36,32 @@ export interface UiHarness {
 	 */
 	checkbox(props: { indeterminate?: boolean; disabled?: boolean; error?: boolean }, log: (event: string) => void): UiHandle
 	/**
+	 * An IconButton (aria-label "Delete"), a Fab (aria-label "Add") and an extended Fab ("Create").
+	 * Logs `click:delete`, `click:add` and `click:create`. `disabled` disables all three.
+	 */
+	iconButtons(props: { disabled?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A ButtonGroup (aria-label "Actions", variant outlined, colour secondary, size small) with
+	 * Buttons "One" and "Two"; `disabled` is set on the group. Logs `click:one` and `click:two`.
+	 */
+	buttonGroup(props: { disabled?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A ToggleButtonGroup (aria-label "Format") with "Bold", "Italic" and "Underline" (disabled);
+	 * the pressed values are held by the host (start empty). `exclusive` allows one at a time.
+	 * Logs `change:<values joined with ",">`.
+	 */
+	toggleGroup(props: { exclusive?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A Slider (aria-label "Volume", 0 to 100, step 10, value label on hover and focus) whose value is
+	 * held by the host (starts at 30). Logs `change:<number>`.
+	 */
+	slider(props: { disabled?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A Rating (aria-label "Rating", 5 stars, whole steps) whose value is held by the host (starts at
+	 * 0). `readOnly` makes it show 3. Logs `change:<number>`.
+	 */
+	rating(props: { readOnly?: boolean; disabled?: boolean }, log: (event: string) => void): UiHandle
+	/**
 	 * A Switch labelled "Wi-Fi", on/off state held by the host (starts off). Logs
 	 * `change:<true|false>`.
 	 */
@@ -49,9 +75,10 @@ export interface UiHarness {
 	/**
 	 * A Select labelled "Fruit" with options "Apple", "Banana" (disabled) and "Cherry", helper text
 	 * "Pick one", chosen value held by the host (starts empty). Logs `change:<value>`, and
-	 * `close:<reason>` when the list closes.
+	 * `close:<reason>` when the list closes. With `multiple` (set at mount) the value is a list
+	 * (starts empty) and `change:` logs the values joined with ",".
 	 */
-	select(props: { error?: boolean; disabled?: boolean }, log: (event: string) => void): UiHandle
+	select(props: { error?: boolean; disabled?: boolean; multiple?: boolean }, log: (event: string) => void): UiHandle
 	/**
 	 * Tabs labelled "Sections": "One", "Two" (disabled), "Three", with panels "First panel",
 	 * "Second panel", "Third panel", controlled by the host. Logs `change:<value>`.
@@ -258,6 +285,168 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 			})
 		})
 
+		describe("IconButton, Fab and ButtonGroup", () => {
+			it("an icon button and a fab are native buttons named by their aria-label, and click", async () => {
+				mount(h.iconButtons({}, log))
+				await h.settle()
+				const del = $('button[aria-label="Delete"]')
+				expect(del.className).toContain("omni-icon-button")
+				expect($('button[aria-label="Add"]').dataset).toMatchObject({ variant: "circular", color: "primary", size: "large" })
+				expect(byText("button", "Create").dataset).toMatchObject({ variant: "extended" })
+				del.click()
+				$('button[aria-label="Add"]').click()
+				byText("button", "Create").click()
+				expect(events).toEqual(["click:delete", "click:add", "click:create"])
+			})
+
+			it("disabled disables them; a ripple starts under a press", async () => {
+				const handle = mount(h.iconButtons({}, log))
+				await h.settle()
+				$('button[aria-label="Delete"]').dispatchEvent(Object.assign(new Event("pointerdown", { bubbles: true }), { button: 0, clientX: 2, clientY: 2 }))
+				expect($('button[aria-label="Delete"] .omni-ripple')).not.toBeNull()
+				await handle.set({ disabled: true })
+				await h.settle()
+				expect($$<HTMLButtonElement>("button").every((b) => b.disabled)).toBe(true)
+			})
+
+			it("a button group is a labelled group whose buttons take its variant, colour and size, and follow its disabled", async () => {
+				const handle = mount(h.buttonGroup({}, log))
+				await h.settle()
+				const group = $('[role="group"]')
+				expect(group.getAttribute("aria-label")).toBe("Actions")
+				expect(group.className).toContain("omni-button-group")
+				expect(byText("button", "One").dataset).toMatchObject({ variant: "outlined", color: "secondary", size: "small" })
+				byText("button", "Two").click()
+				expect(events).toEqual(["click:two"])
+				await handle.set({ disabled: true })
+				await h.settle()
+				expect($$<HTMLButtonElement>("button").every((b) => b.disabled)).toBe(true)
+			})
+		})
+
+		describe("ToggleButtonGroup", () => {
+			const pressed = (): string[] => $$("button").filter((b) => b.getAttribute("aria-pressed") === "true").map((b) => b.textContent?.trim() as string)
+
+			it("is a labelled group of buttons with aria-pressed; several can be pressed", async () => {
+				mount(h.toggleGroup({}, log))
+				await h.settle()
+				expect($('[role="group"]').getAttribute("aria-label")).toBe("Format")
+				expect($$("button").map((b) => b.getAttribute("aria-pressed"))).toEqual(["false", "false", "false"])
+				byText("button", "Bold").click()
+				await h.settle()
+				byText("button", "Italic").click()
+				await h.settle()
+				expect(pressed()).toEqual(["Bold", "Italic"])
+				expect(events).toEqual(["change:bold", "change:bold,italic"])
+				byText("button", "Bold").click()
+				await h.settle()
+				expect(pressed()).toEqual(["Italic"])
+				expect(byText("button", "Underline").hasAttribute("disabled")).toBe(true)
+			})
+
+			it("exclusive: one at a time, and pressing it again unpresses it", async () => {
+				mount(h.toggleGroup({ exclusive: true }, log))
+				await h.settle()
+				byText("button", "Bold").click()
+				await h.settle()
+				byText("button", "Italic").click()
+				await h.settle()
+				expect(pressed()).toEqual(["Italic"])
+				byText("button", "Italic").click()
+				await h.settle()
+				expect(pressed()).toEqual([])
+				expect(events).toEqual(["change:bold", "change:italic", "change:"])
+			})
+		})
+
+		describe("Slider", () => {
+			const range = (): HTMLInputElement => $<HTMLInputElement>('input[type="range"]')
+			const move = (value: string): void => {
+				Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(range(), value)
+				range().dispatchEvent(new Event("input", { bubbles: true }))
+			}
+
+			it("is a native range input named by its aria-label, with its range, step and value", async () => {
+				mount(h.slider({}, log))
+				await h.settle()
+				expect(range().getAttribute("aria-label")).toBe("Volume")
+				expect([range().min, range().max, range().step, range().value]).toEqual(["0", "100", "10", "30"])
+				expect($(".omni-slider").dataset).toMatchObject({ size: "medium", color: "primary", label: "auto" })
+				expect($(".omni-slider__label").textContent).toBe("30")
+			})
+
+			it("moving it reports the value on a step, updates the label and the thumb position", async () => {
+				mount(h.slider({}, log))
+				await h.settle()
+				move("47")
+				await h.settle()
+				expect(events).toEqual(["change:50"])
+				expect(range().value).toBe("50")
+				expect($(".omni-slider__label").textContent).toBe("50")
+				expect($(".omni-slider").getAttribute("style")).toContain("--omni-slider-percent: 50")
+			})
+
+			it("disabled is really disabled", async () => {
+				mount(h.slider({ disabled: true }, log))
+				await h.settle()
+				expect(range().disabled).toBe(true)
+				expect($(".omni-slider").hasAttribute("data-disabled")).toBe(true)
+			})
+		})
+
+		describe("Rating", () => {
+			const radios = (): HTMLInputElement[] => $$<HTMLInputElement>('input[type="radio"]')
+			const fills = (): string[] => $$(".omni-rating__star").map((s) => s.dataset["fill"] as string)
+
+			it("is a radiogroup of native radios: a hidden 'no rating' one, then one per star", async () => {
+				mount(h.rating({}, log))
+				await h.settle()
+				expect($('[role="radiogroup"]').getAttribute("aria-label")).toBe("Rating")
+				expect(radios().map((r) => r.value)).toEqual(["0", "1", "2", "3", "4", "5"])
+				expect(radios().find((r) => r.checked)?.value).toBe("0")
+				expect(new Set(radios().map((r) => r.name)).size).toBe(1)
+				expect(radios()[4]?.getAttribute("aria-label")).toBe("4 out of 5")
+			})
+
+			it("choosing a star rates and fills the stars; choosing it again clears", async () => {
+				mount(h.rating({}, log))
+				await h.settle()
+				radios()[4]?.click()
+				await h.settle()
+				expect(events).toEqual(["change:4"])
+				expect(fills()).toEqual(["100", "100", "100", "100", "0"])
+				radios()[4]?.click()
+				await h.settle()
+				expect(events).toEqual(["change:4", "change:0"])
+				expect(fills()).toEqual(["0", "0", "0", "0", "0"])
+			})
+
+			it("hovering a star previews it, and leaving restores the rating", async () => {
+				mount(h.rating({}, log))
+				await h.settle()
+				// frameworks listen differently: React to the bubbling pointerover, Vue and Angular to pointerenter
+				radios()[3]?.dispatchEvent(new Event("pointerover", { bubbles: true }))
+				radios()[3]?.dispatchEvent(new Event("pointerenter"))
+				await h.settle()
+				expect(fills()).toEqual(["100", "100", "100", "0", "0"])
+				radios()[3]?.dispatchEvent(new Event("pointerout", { bubbles: true }))
+				radios()[3]?.dispatchEvent(new Event("pointerleave"))
+				await h.settle()
+				expect(fills()).toEqual(["0", "0", "0", "0", "0"])
+			})
+
+			it("read-only is an image with a text alternative and no inputs; disabled disables every radio", async () => {
+				const handle = mount(h.rating({ readOnly: true }, log))
+				await h.settle()
+				expect($('[role="img"]').getAttribute("aria-label")).toBe("Rating: 3 out of 5") // the name and the value, since an image has nothing else to read
+				expect(radios().length).toBe(0)
+				expect(fills()).toEqual(["100", "100", "100", "0", "0"])
+				await handle.set({ readOnly: false, disabled: true })
+				await h.settle()
+				expect(radios().every((r) => r.disabled)).toBe(true)
+			})
+		})
+
 		describe("Switch", () => {
 			const toggle = (): HTMLInputElement => $<HTMLInputElement>('input[role="switch"]')
 
@@ -419,6 +608,28 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 					expect(events[events.length - 1]).toBe(`close:${reason}`)
 					await closed()
 				}
+			})
+
+			it("multiple: options toggle, the list stays open, the labels show together, and the list is reported", async () => {
+				mount(h.select({ multiple: true }, log))
+				await h.settle()
+				combobox().click()
+				await h.settle()
+				expect($('[role="listbox"]').getAttribute("aria-multiselectable")).toBe("true")
+				byText('[role="option"]', "Cherry").click()
+				await h.settle()
+				byText('[role="option"]', "Apple").click()
+				await h.settle()
+				byText('[role="option"]', "Banana").click() // disabled
+				await h.settle()
+				expect(events).toEqual(["change:c", "change:c,a"])
+				expect($('[role="listbox"]')).not.toBeNull()
+				expect(byText('[role="option"]', "Apple").getAttribute("aria-selected")).toBe("true")
+				expect(combobox().textContent?.trim()).toBe("Apple, Cherry")
+				byText('[role="option"]', "Cherry").click()
+				await h.settle()
+				expect(combobox().textContent?.trim()).toBe("Apple")
+				expect(events).not.toContain("close:select")
 			})
 
 			it("type-ahead moves to the option whose label starts with the typed letter", async () => {
@@ -605,6 +816,36 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				byText("button", "Open").click()
 				await h.settle()
 				await expectAccessible("open dialog")
+			})
+
+			it("icon buttons, a button group and a toggle group", async () => {
+				mount(h.iconButtons({}, log))
+				mount(h.buttonGroup({}, log))
+				const toggles = mount(h.toggleGroup({}, log))
+				await h.settle()
+				await expectAccessible("icon buttons, button group and toggle group")
+				byText("button", "Bold").click()
+				await h.settle()
+				await expectAccessible("a pressed toggle button")
+				await toggles.set({ exclusive: true })
+				await h.settle()
+				await expectAccessible("an exclusive toggle group")
+			})
+
+			it("a slider and a rating in each state", async () => {
+				const slider = mount(h.slider({}, log))
+				const rating = mount(h.rating({}, log))
+				await h.settle()
+				await expectAccessible("slider and rating")
+				$$<HTMLInputElement>('input[type="radio"]')[2]?.click()
+				await h.settle()
+				await expectAccessible("rating after choosing")
+				await rating.set({ readOnly: true })
+				await h.settle()
+				await expectAccessible("read-only rating")
+				await slider.set({ disabled: true })
+				await h.settle()
+				await expectAccessible("disabled slider")
 			})
 
 			it("a switch in each state", async () => {

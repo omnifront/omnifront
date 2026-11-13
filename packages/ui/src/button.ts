@@ -41,3 +41,74 @@ export function buttonPart(options: ButtonOptions = {}): Part {
 			: { role: "button", "aria-disabled": inactive ? "true" : undefined, tabindex: inactive ? -1 : undefined }),
 	})
 }
+
+export type IconButtonColor = "default" | "inherit" | "primary" | "secondary" | "success" | "error" | "info" | "warning"
+
+export interface IconButtonOptions {
+	color?: IconButtonColor | undefined
+	size?: ButtonSize | undefined
+	/** Pull the button outwards so its icon lines up with the edge of its container. */
+	edge?: "start" | "end" | false | undefined
+	disabled?: boolean | undefined
+	as?: "button" | "a" | undefined
+	type?: "button" | "submit" | "reset" | undefined
+}
+
+/**
+ * Attributes for an IconButton: a round, icon-only button. It has no text, so give it an
+ * `aria-label` (the components pass attributes through to the element).
+ */
+export function iconButtonPart(options: IconButtonOptions = {}): Part {
+	const { color = "default", size = "medium", as = "button" } = options
+	return part({
+		class: "omni-icon-button",
+		"data-color": color,
+		"data-size": size,
+		"data-edge": options.edge || undefined,
+		"data-disabled": options.disabled ? "" : undefined,
+		...(as === "button"
+			? { type: options.type ?? "button", disabled: options.disabled === true || undefined }
+			: { role: "button", "aria-disabled": options.disabled ? "true" : undefined, tabindex: options.disabled ? -1 : undefined }),
+	})
+}
+
+export interface FabOptions {
+	color?: ButtonColor | undefined
+	size?: ButtonSize | undefined
+	/** `circular` (icon only; give it an `aria-label`) or `extended` (icon and text). */
+	variant?: "circular" | "extended" | undefined
+	disabled?: boolean | undefined
+	as?: "button" | "a" | undefined
+	type?: "button" | "submit" | "reset" | undefined
+}
+
+/** Attributes for a Fab, the floating action button. */
+export function fabPart(options: FabOptions = {}): Part {
+	const { color = "primary", size = "large", variant = "circular", as = "button" } = options
+	return part({
+		class: "omni-fab",
+		"data-variant": variant,
+		"data-color": color,
+		"data-size": size,
+		"data-disabled": options.disabled ? "" : undefined,
+		...(as === "button"
+			? { type: options.type ?? "button", disabled: options.disabled === true || undefined }
+			: { role: "button", "aria-disabled": options.disabled ? "true" : undefined, tabindex: options.disabled ? -1 : undefined }),
+	})
+}
+
+export interface ToggleButtonOptions {
+	selected?: boolean | undefined
+	disabled?: boolean | undefined
+}
+
+/** Attributes for a ToggleButton on its own: a button that is pressed or not (`aria-pressed`). */
+export function toggleButtonPart(options: ToggleButtonOptions = {}): Part {
+	return part({
+		class: "omni-toggle-button",
+		type: "button",
+		"aria-pressed": options.selected ? "true" : "false",
+		"data-selected": options.selected ? "" : undefined,
+		disabled: options.disabled === true || undefined,
+	})
+}

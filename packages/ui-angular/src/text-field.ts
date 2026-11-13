@@ -1,5 +1,7 @@
 import {
 	AfterContentInit,
+	AfterViewChecked,
+	OnDestroy,
 	ChangeDetectionStrategy,
 	Component,
 	ElementRef,
@@ -15,7 +17,7 @@ import {
 	signal,
 } from "@angular/core"
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from "@angular/forms"
-import { createField, type FieldProps } from "@omnifront/ui"
+import { attachAutosize, createField, type FieldProps } from "@omnifront/ui"
 import { bindMachine } from "./machine"
 import { OmniPart } from "./part"
 import { OmniIds, injectDefaults } from "./theme"
@@ -57,7 +59,7 @@ import { OmniIds, injectDefaults } from "./theme"
 		<div class="omni-text-field__control" (click)="focus()">
 			<span class="omni-text-field__adornment" data-position="start"><ng-content select="[omniStartAdornment]" /></span>
 			@if (multiline) {
-				<textarea #field class="omni-text-field__input" [omniPart]="parts().input" [attr.rows]="rows ?? 1" [attr.placeholder]="placeholder" [attr.name]="name" [value]="text()" (input)="onInput($event)" (blur)="onTouched()"></textarea>
+				<textarea #field class="omni-text-field__input" [omniPart]="parts().input" [attr.rows]="autosizing() ? (minRows ?? 1) : (rows ?? 1)" [attr.placeholder]="placeholder" [attr.name]="name" [value]="text()" (input)="onInput($event)" (blur)="onTouched()"></textarea>
 			} @else {
 				<input #field class="omni-text-field__input" [omniPart]="parts().input" [attr.type]="type" [attr.placeholder]="placeholder" [attr.name]="name" [value]="text()" (input)="onInput($event)" (blur)="onTouched()" />
 			}
@@ -69,7 +71,7 @@ import { OmniIds, injectDefaults } from "./theme"
 		}
 	`,
 })
-export class OmniTextField implements ControlValueAccessor, OnInit, OnChanges, AfterContentInit {
+export class OmniTextField implements ControlValueAccessor, OnInit, OnChanges, AfterContentInit, AfterViewChecked, OnDestroy {
 	@Input() label: string | undefined
 	@Input() helperText: string | undefined
 	@Input({ transform: booleanAttribute }) error = false
@@ -83,6 +85,10 @@ export class OmniTextField implements ControlValueAccessor, OnInit, OnChanges, A
 	/** A `<textarea>` instead of an `<input>`. */
 	@Input({ transform: booleanAttribute }) multiline = false
 	@Input() rows: number | undefined
+	/** With `multiline`: grow with the text, from this many rows... */
+	@Input() minRows: number | undefined
+	/** ...up to this many, then scroll. */
+	@Input() maxRows: number | undefined
 	@Input() type: string | undefined
 	@Input() placeholder: string | undefined
 	@Input() name: string | undefined
@@ -97,7 +103,15 @@ export class OmniTextField implements ControlValueAccessor, OnInit, OnChanges, A
 	}
 	@Output() valueChange = new EventEmitter<string>()
 
-	@ViewChild("field") private field: ElementRef<HTMLInputElement | HTMLTextAreaElement> | undefined
+	private field: ElementRef<HTMLInputElement | HTMLTextAreaElement> | undefined
+	@ViewChild("field") private set fieldRef(ref: ElementRef<HTMLInputElement | HTMLTextAreaElement> | undefined) {
+		this.field = ref
+		this.syncAutosize()
+	}
+	private sizer: { update(): void; destroy(): void } | undefined
+	protected autosizing(): boolean {
+		return this.multiline && (this.minRows !== undefined || this.maxRows !== undefined)
+	}
 
 	readonly text = signal("")
 	private touchedValue = false
@@ -119,6 +133,23 @@ export class OmniTextField implements ControlValueAccessor, OnInit, OnChanges, A
 
 	ngOnChanges(): void {
 		this.sync()
+		this.syncAutosize()
+	}
+
+	/** Make a multiline field with `minRows` or `maxRows` grow and shrink with its text. */
+	private syncAutosize(): void {
+		this.sizer?.destroy()
+		const el = this.field?.nativeElement
+		this.sizer = this.autosizing() && el instanceof HTMLTextAreaElement ? attachAutosize(el, () => ({ minRows: this.minRows, maxRows: this.maxRows })) : undefined
+	}
+
+	// The value property is bound by the template, so measure after it was written.
+	ngAfterViewChecked(): void {
+		this.sizer?.update()
+	}
+
+	ngOnDestroy(): void {
+		this.sizer?.destroy()
 	}
 
 	ngAfterContentInit(): void {

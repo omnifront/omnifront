@@ -24,6 +24,50 @@ Teleports its content into a `div[data-omni-portal]` at the end of `<body>`, car
 
 Props: `variant`, `color`, `size`, `fullWidth`, `disableElevation`, `loading`, `disabled`, `disableRipple`, `href` (renders an `<a>`), `type`. Slots: default, `startIcon`, `endIcon`.
 
+### `IconButton`, `Fab`
+
+```vue
+<IconButton aria-label="Delete" color="primary"><DeleteIcon /></IconButton>
+<Fab aria-label="Add"><AddIcon /></Fab>
+```
+
+`IconButton`: a round button with only an icon: `color`, `size`, `edge` (`start` or `end`), `disabled`, `disableRipple`, `href` / `target` / `rel`. `Fab`: a floating action button: `variant` (`circular` or `extended`), `color`, `size`, `disabled`, `disableRipple`, `href`. Both need an `aria-label`.
+
+### `ButtonGroup`
+
+```vue
+<ButtonGroup aria-label="Actions" variant="outlined"><Button>One</Button><Button>Two</Button></ButtonGroup>
+```
+
+Joins buttons into one `role="group"`. Props: `variant`, `color`, `size`, `disabled`, `disableElevation`, `orientation`, `full-width`. Each `Button` inside takes these as its defaults; its own prop wins.
+
+### `ToggleButtonGroup`, `ToggleButton`
+
+```vue
+<ToggleButtonGroup v-model="format" aria-label="Format">
+  <ToggleButton value="bold">Bold</ToggleButton>
+  <ToggleButton value="italic">Italic</ToggleButton>
+</ToggleButtonGroup>
+```
+
+Buttons that stay pressed. `ToggleButtonGroup`: `v-model` (a list of values; with `exclusive`, one value or `null`), `default-value`, `exclusive`, `orientation`, `size`, `color`, `disabled`, `full-width`, and a `change` event `(event, value)`. `ToggleButton`: `value`, `selected` (alone, without a group), `color`, `size`, `disabled`, `change`.
+
+### `Slider`
+
+```vue
+<Slider v-model="volume" aria-label="Volume" value-label-display="auto" />
+```
+
+A real `<input type="range">`, so dragging, the keys, forms and screen readers are native. Props: `v-model`, `default-value`, `min`, `max`, `step`, `marks` (`true` or a list of `{ value, label? }`), `value-label-display` (`auto`, `on`, `off`), `value-label-format`, `get-aria-value-text`, `size`, `color`, `disabled`, `name`, `aria-label`. Event `change(event, value)`. Not yet: two thumbs and a vertical slider.
+
+### `Rating`
+
+```vue
+<Rating v-model="stars" aria-label="Rating" />
+```
+
+Stars made of native radios. Props: `v-model` (`0` means no rating), `default-value`, `max` (5), `precision` (`1`, `0.5`, `0.25`), `read-only` (an image named "Rating: 3 out of 5"), `disabled`, `size`, `color`, `name`, `aria-label`. Events `change(event, value)` and `change-active`.
+
 ### `TextField`
 
 Props: `modelValue` (`v-model`; leave it out for an uncontrolled field) / `defaultValue`, `label`, `helperText`, `error`, `disabled`, `required`, `readOnly`, `variant`, `size`, `color`, `fullWidth`, `multiline`, `rows`, `id`, `type`, `placeholder`. Slots: `startAdornment`, `endAdornment`. Events: `update:modelValue`, `focus`, `blur`.

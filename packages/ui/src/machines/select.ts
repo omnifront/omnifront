@@ -1,6 +1,6 @@
 import { focusInside } from "../dom/focus"
 import { pushLayer, type Layer } from "../dom/layers"
-import { OpenMachine, part, type OpenProps, type OpenState, type Part } from "./machine"
+import { OpenMachine, part, stableList, type OpenProps, type OpenState, type Part } from "./machine"
 
 export interface SelectOption {
 	value: string
@@ -17,17 +17,26 @@ export interface SelectProps extends OpenProps {
 	value?: string | undefined
 	defaultValue?: string | undefined
 	onValueChange?: ((value: string, event?: Event) => void) | undefined
+	/** Several values at once: choosing an option toggles it and the list stays open. Use `values` instead of `value`. */
+	multiple?: boolean | undefined
+	/** Controlled values, when `multiple`. Leave undefined to let the machine keep its own. */
+	values?: readonly string[] | undefined
+	defaultValues?: readonly string[] | undefined
+	onValuesChange?: ((values: string[], event?: Event) => void) | undefined
 	disabled?: boolean | undefined
 }
 
 export interface SelectState extends OpenState {
 	id: string
 	value: string | undefined
-	/** The selected option's label, or `""`. */
+	/** The selected option's label (several: the labels in option order, joined with ", "), or `""`. */
 	label: string
-	/** A value is selected. */
+	/** Something is selected. */
 	filled: boolean
 	disabled: boolean
+	multiple: boolean
+	/** The selected values when `multiple` (empty otherwise). */
+	values: string[]
 }
 
 export interface SelectElements {
@@ -48,6 +57,7 @@ const OPTION = '[role="option"]:not([aria-disabled="true"])'
  */
 export class Select extends OpenMachine<SelectProps, SelectState> {
 	private internalValue: string | undefined
+	private internalValues: string[]
 	private layer: Layer | undefined
 	private typed = ""
 	private typedAt = 0
@@ -56,25 +66,45 @@ export class Select extends OpenMachine<SelectProps, SelectState> {
 	constructor(props: SelectProps) {
 		super(props)
 		this.internalValue = props.defaultValue
+		this.internalValues = [...(props.defaultValues ?? [])]
 		this.start()
 	}
 
 	protected compute(): SelectState {
+		const multiple = this.props.multiple === true
+		const values = stableList(this.peek()?.values, multiple ? [...(this.props.values ?? this.internalValues)] : [])
 		const value = this.props.value ?? this.internalValue
 		const selected = this.props.options.find((o) => o.value === value)
 		return {
 			...this.openState(),
 			id: this.props.id,
-			value,
-			label: selected?.label ?? "",
-			filled: value !== undefined && value !== "",
+			value: multiple ? undefined : value,
+			label: multiple
+				? this.props.options.filter((o) => values.includes(o.value)).map((o) => o.label).join(", ")
+				: (selected?.label ?? ""),
+			filled: multiple ? values.length > 0 : value !== undefined && value !== "",
 			disabled: this.props.disabled === true,
+			multiple,
+			values,
 		}
 	}
 
-	/** Choose a value (from a click or Enter), then close. Choosing the current value just closes. */
+	/**
+	 * Choose a value (from a click or Enter), then close. Choosing the current value just closes.
+	 * With `multiple` it toggles the value and the list stays open.
+	 */
 	choose = (value: string, event?: Event): void => {
 		if (this.props.disabled) return
+		if (this.getSnapshot().multiple) {
+			const current = this.getSnapshot().values
+			const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value]
+			this.props.onValuesChange?.(next, event)
+			if (this.props.values === undefined) {
+				this.internalValues = next
+				this.refresh()
+			}
+			return
+		}
 		if (value !== this.getSnapshot().value) {
 			this.props.onValueChange?.(value, event)
 			if (this.props.value === undefined) {
@@ -154,7 +184,14 @@ export class Select extends OpenMachine<SelectProps, SelectState> {
 				{ click: (event) => !disabled && this.toggle(event), keydown: this.onTriggerKeydown },
 			),
 			listbox: part(
-				{ id: `${id}-listbox`, role: "listbox", "aria-labelledby": `${id}-label`, tabindex: -1, "data-state": open ? "open" : "closed" },
+				{
+					id: `${id}-listbox`,
+					role: "listbox",
+					"aria-labelledby": `${id}-label`,
+					"aria-multiselectable": this.getSnapshot().multiple ? "true" : undefined,
+					tabindex: -1,
+					"data-state": open ? "open" : "closed",
+				},
 				{ keydown: this.onListKeydown },
 			),
 		}
@@ -162,7 +199,8 @@ export class Select extends OpenMachine<SelectProps, SelectState> {
 
 	/** Attributes and click handler for one option. A disabled option cannot be chosen or focused by the arrows. */
 	option(option: SelectOption): Part {
-		const selected = option.value === this.getSnapshot().value
+		const s = this.getSnapshot()
+		const selected = s.multiple ? s.values.includes(option.value) : option.value === s.value
 		const disabled = option.disabled === true
 		return part(
 			{

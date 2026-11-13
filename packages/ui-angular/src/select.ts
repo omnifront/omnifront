@@ -71,7 +71,13 @@ export interface SelectCloseEvent {
 			<div #trigger class="omni-text-field__input omni-select__trigger" [omniPart]="triggerPart()">{{ state().label }}</div>
 			<span class="omni-select__icon" aria-hidden="true" [attr.data-state]="state().open ? 'open' : 'closed'"></span>
 			@if (name) {
-				<input type="hidden" [attr.name]="name" [value]="state().value ?? ''" />
+				@if (state().multiple) {
+					@for (v of state().values; track v) {
+						<input type="hidden" [attr.name]="name" [value]="v" />
+					}
+				} @else {
+					<input type="hidden" [attr.name]="name" [value]="state().value ?? ''" />
+				}
 			}
 			<fieldset class="omni-text-field__fieldset" [omniPart]="fieldParts().fieldset"><legend class="omni-text-field__legend">@if (label) {<span>{{ label }}</span>}</legend></fieldset>
 		</div>
@@ -87,18 +93,20 @@ export interface SelectCloseEvent {
 		}
 	`,
 })
-export class OmniSelect implements ControlValueAccessor, OnInit, OnChanges {
+export class OmniSelect<T extends string | readonly string[] = string> implements ControlValueAccessor, OnInit, OnChanges {
 	@Input() label: string | undefined
 	/** What can be chosen. `value` is what is reported; `label` is what the user sees. */
 	@Input() options: readonly SelectOption[] = []
-	/** The chosen value. `""` means nothing is selected. */
-	@Input() set value(v: string | null | undefined) {
-		this.current.set(v === null || v === undefined ? undefined : v)
+	/** The chosen value (a list when `multiple`). `""` means nothing is selected. */
+	@Input() set value(v: T | null | undefined) {
+		this.store(v)
 	}
 	/** The value an uncontrolled select starts with. */
-	@Input() set defaultValue(v: string | undefined) {
-		if (!this.touchedValue) this.current.set(v)
+	@Input() set defaultValue(v: T | undefined) {
+		if (!this.touchedValue) this.store(v)
 	}
+	/** Several options at once: choosing one toggles it and the list stays open. The value is then a list. */
+	@Input({ transform: booleanAttribute }) multiple = false
 	@Input() open: boolean | undefined
 	@Input() helperText: string | undefined
 	@Input({ transform: booleanAttribute }) error = false
@@ -111,14 +119,15 @@ export class OmniSelect implements ControlValueAccessor, OnInit, OnChanges {
 	/** Name for a form: the value is also written to a hidden `<input>`. */
 	@Input() name: string | undefined
 	@Input() id: string | undefined
-	@Output() valueChange = new EventEmitter<string>()
+	@Output() valueChange = new EventEmitter<T>()
 	@Output() openChange = new EventEmitter<boolean>()
 	/** The list closed; `reason` tells why. */
 	@Output() closed = new EventEmitter<SelectCloseEvent>()
 
 	private readonly current = signal<string | undefined>(undefined)
+	private readonly currentList = signal<string[]>([])
 	private touchedValue = false
-	private onChange: (value: string) => void = () => {}
+	private onChange: (value: T) => void = () => {}
 	onTouched: () => void = () => {}
 
 	@ViewChild("trigger", { static: true }) private triggerRef!: ElementRef<HTMLElement>
@@ -139,8 +148,15 @@ export class OmniSelect implements ControlValueAccessor, OnInit, OnChanges {
 			this.touchedValue = true
 			this.current.set(value)
 			this.sync() // the machine is always controlled by this component: hand it the new value
-			this.onChange(value)
-			this.valueChange.emit(value)
+			this.onChange(value as T)
+			this.valueChange.emit(value as T)
+		},
+		onValuesChange: (values) => {
+			this.touchedValue = true
+			this.currentList.set(values)
+			this.sync()
+			this.onChange(values as unknown as T)
+			this.valueChange.emit(values as unknown as T)
 		},
 		onOpenChange: (open, reason, event) => {
 			this.openChange.emit(open)
@@ -185,15 +201,30 @@ export class OmniSelect implements ControlValueAccessor, OnInit, OnChanges {
 		this.variant = p.variant
 		const id = this.id ?? this.fieldId
 		const value = this.current()
-		this.select.setProps({ id, options: this.options, value: value ?? "", disabled: this.disabled || undefined, open: this.open })
+		const values = this.currentList()
+		this.select.setProps({
+			id,
+			options: this.options,
+			multiple: this.multiple || undefined,
+			value: this.multiple ? undefined : (value ?? ""),
+			values: this.multiple ? values : undefined,
+			disabled: this.disabled || undefined,
+			open: this.open,
+		})
 		this.field.setProps({
 			id,
 			disabled: this.disabled || undefined,
 			error: this.error || undefined,
 			required: this.required || undefined,
 			hasHelper: !!this.helperText,
-			filled: value !== undefined && value !== "",
+			filled: this.multiple ? values.length > 0 : value !== undefined && value !== "",
 		})
+	}
+
+	/** Keep a value from `[value]`, `[defaultValue]` or a form: a string, or a list for `multiple`. */
+	private store(v: T | null | undefined): void {
+		if (Array.isArray(v) || (v !== null && v !== undefined && typeof v !== "string")) this.currentList.set([...(v as readonly string[])])
+		else this.current.set(v === null || v === undefined ? undefined : (v as string))
 	}
 
 	/** Move the list to the portal and run the machine's DOM side while open and rendered. */
@@ -219,13 +250,16 @@ export class OmniSelect implements ControlValueAccessor, OnInit, OnChanges {
 	}
 
 	// ControlValueAccessor: how Angular forms read and write the value.
-	writeValue(value: string | null | undefined): void {
+	writeValue(value: T | null | undefined): void {
 		this.touchedValue = true
-		this.current.set(value === null || value === undefined ? undefined : value)
+		if (value === null || value === undefined) {
+			this.current.set(undefined)
+			this.currentList.set([])
+		} else this.store(value)
 		this.sync()
 	}
 
-	registerOnChange(fn: (value: string) => void): void {
+	registerOnChange(fn: (value: T) => void): void {
 		this.onChange = fn
 	}
 

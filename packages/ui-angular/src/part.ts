@@ -25,6 +25,13 @@ export class PartBinding {
 				;(this.element as HTMLInputElement).checked = value === true
 				continue
 			}
+			// An input's `value` is a property too (the attribute is only its default): a slider must follow it.
+			if (name === "value" && this.element instanceof HTMLInputElement && value !== undefined) {
+				this.element.value = String(value)
+				next.add(name)
+				this.element.setAttribute(name, String(value))
+				continue
+			}
 			if (value === undefined || value === false) continue
 			if (name === "class") {
 				for (const c of String(value).split(/\s+/).filter(Boolean)) {

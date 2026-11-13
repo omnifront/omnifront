@@ -24,6 +24,51 @@ Renders one `<style>` with the theme's CSS variables and a `display: contents` w
 
 Props (`ButtonProps` also takes every native `<button>` prop): `variant` (`text` / `outlined` / `contained`), `color`, `size`, `fullWidth`, `disableElevation`, `loading` (spinner, ignores clicks), `disableRipple`, `startIcon`, `endIcon`, `href` (renders an `<a>`), `target`, `rel`. The ref is forwarded.
 
+### `IconButton`, `Fab`
+
+```tsx
+<IconButton aria-label="Delete" color="primary"><DeleteIcon /></IconButton>
+<Fab aria-label="Add"><AddIcon /></Fab>
+<Fab variant="extended"><AddIcon /> Create</Fab>
+```
+
+`IconButton` (`IconButtonProps`) is a round button with only an icon: `color` (`default`, `inherit`, `primary`, `secondary`, `success`, `error`, `info`, `warning`), `size`, `edge` (`start` or `end`, pulls it into the padding of its parent), `disabled`, `disableRipple`, `href` / `target` / `rel` (makes it a link), `className`. `Fab` (`FabProps`) is a floating action button: `variant` (`circular` or `extended`), `color`, `size`, `disabled`, `disableRipple`, `href`. Both need an `aria-label` (nothing else names an icon-only button), and the ref goes to the element.
+
+### `ButtonGroup`
+
+```tsx
+<ButtonGroup aria-label="Actions" variant="outlined"><Button>One</Button><Button>Two</Button></ButtonGroup>
+```
+
+Joins buttons into one control (`role="group"`). `ButtonGroupProps`: `variant`, `color`, `size`, `disabled`, `disableElevation`, `orientation`, `fullWidth`, `aria-label`, `className`. Each `Button` inside takes these as its defaults; a button's own prop wins.
+
+### `ToggleButtonGroup`, `ToggleButton`
+
+```tsx
+<ToggleButtonGroup aria-label="Format" value={format} onChange={(event, value) => setFormat(value)}>
+  <ToggleButton value="bold">Bold</ToggleButton>
+  <ToggleButton value="italic">Italic</ToggleButton>
+</ToggleButtonGroup>
+```
+
+Buttons that stay pressed (`aria-pressed`). `ToggleButtonGroupProps`: `value` / `defaultValue` / `onChange(event, value)` (a list of values; with `exclusive` one value or `null`), `exclusive`, `orientation`, `size`, `color`, `disabled`, `fullWidth`, `aria-label`. `ToggleButtonProps`: `value`, `selected` / `onChange` (when used alone, without a group), `color`, `size`, `disabled`.
+
+### `Slider`
+
+```tsx
+<Slider aria-label="Volume" value={volume} onChange={(event, value) => setVolume(value)} valueLabelDisplay="auto" />
+```
+
+A real `<input type="range">` under a styled track and thumb, so dragging, the arrow keys, Home, End, Page Up and Down, forms and screen readers are native. `SliderProps`: `value` / `defaultValue` / `onChange(event, value)`, `min`, `max`, `step`, `marks` (`true` for one at every step, or a list of `SliderMark`: `{ value, label? }`), `valueLabelDisplay` (`auto`, `on`, `off`), `valueLabelFormat`, `getAriaValueText`, `size`, `color`, `disabled`, `name`, `aria-label` / `aria-labelledby`. Not yet: two thumbs and a vertical slider.
+
+### `Rating`
+
+```tsx
+<Rating aria-label="Rating" value={stars} onChange={(event, value) => setStars(value)} />
+```
+
+Stars made of native radios (the arrow keys and Tab are the browser's). `RatingProps`: `value` / `defaultValue` / `onChange(event, value)` (`0` means no rating), `onChangeActive` (the value under the pointer), `max` (5), `precision` (`1`, `0.5`, `0.25`), `readOnly` (an image named "Rating: 3 out of 5"), `disabled`, `size`, `color`, `name`, `aria-label` / `aria-labelledby`.
+
 ### `TextField`
 
 Props (`TextFieldProps`): `label`, `value` / `defaultValue` / `onChange`, `helperText`, `error`, `disabled`, `required`, `readOnly`, `variant` (`outlined` / `filled` / `standard`), `size`, `color`, `fullWidth`, `multiline`, `rows`, `startAdornment`, `endAdornment`, `slotProps.input`, `inputRef`, `id`, plus native input props.
@@ -68,7 +113,7 @@ A labelled group of related controls (a `<fieldset>` with a `<legend>`), for exa
 <Select label="Fruit" options={[{ value: "a", label: "Apple" }]} value={value} onChange={(event, value) => setValue(value)} />
 ```
 
-Looks like a `TextField` and opens a list of options. Props (`SelectProps`): `label`, `options` (`SelectOption[]`: `{ value, label, disabled? }`), `value` / `defaultValue` / `onChange(event, value)`, `open` / `defaultOpen` / `onOpenChange(open, reason)` (`SelectCloseReason`: `escapeKeyDown`, `outsidePress`, `tab`, `select`, `trigger`, `programmatic`), `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`, for forms), `id`, `className`. The options are data, not children, so the closed select can show the chosen label on the server and in all three frameworks the same way. Differences from MUI: `onChange` gets `(event, value)`, not an event with `target.value`, and the list opens below the select.
+Looks like a `TextField` and opens a list of options. Props (`SelectProps`): `label`, `options` (`SelectOption[]`: `{ value, label, disabled? }`), `value` / `defaultValue` / `onChange(event, value)`, `open` / `defaultOpen` / `onOpenChange(open, reason)` (`SelectCloseReason`: `escapeKeyDown`, `outsidePress`, `tab`, `select`, `trigger`, `programmatic`), `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`, for forms), `id`, `className`. `multiple` keeps the list open and makes `value` a list (`MultipleSelectProps`; the default is `SingleSelectProps`, with a single `value`), and the field shows the chosen labels separated by commas. The options are data, not children, so the closed select can show the chosen label on the server and in all three frameworks the same way. Differences from MUI: `onChange` gets `(event, value)`, not an event with `target.value`, and the list opens below the select.
 
 ### `Dialog`
 

@@ -1,4 +1,4 @@
-<script setup lang="ts">
+<script setup lang="ts" generic="T extends string | readonly string[] = string">
 import { createField, createSelect, mergeParts, type CloseReason, type SelectOption } from "@omnifront/ui"
 import { autoPosition } from "@omnifront/ui/position"
 import { computed, mergeProps, ref, useAttrs, watch } from "vue"
@@ -13,9 +13,11 @@ const raw = withDefaults(
 		label?: string | undefined
 		/** What can be chosen. `value` is what the model holds; `label` is what the user sees. */
 		options: readonly SelectOption[]
-		/** The chosen value (`v-model`). Leave it out for an uncontrolled select. `""` means nothing is selected. */
-		modelValue?: string | undefined
-		defaultValue?: string | undefined
+		/** The chosen value (`v-model`; a list when `multiple`). Leave it out for an uncontrolled select. `""` means nothing is selected. */
+		modelValue?: T | undefined
+		defaultValue?: T | undefined
+		/** Several options at once: choosing one toggles it and the list stays open. */
+		multiple?: boolean | undefined
 		open?: boolean | undefined
 		defaultOpen?: boolean | undefined
 		helperText?: string | undefined
@@ -34,9 +36,9 @@ const raw = withDefaults(
 )
 type SelectCloseReason = Extract<CloseReason, "escapeKeyDown" | "outsidePress" | "tab" | "select" | "trigger" | "programmatic">
 const emit = defineEmits<{
-	"update:modelValue": [value: string]
-	/** The user chose an option. */
-	change: [event: Event | undefined, value: string]
+	"update:modelValue": [value: T]
+	/** The user chose an option (a list when `multiple`). */
+	change: [event: Event | undefined, value: T]
 	"update:open": [open: boolean]
 	/** The list closed, and why. */
 	close: [reason: SelectCloseReason]
@@ -49,17 +51,32 @@ const id = computed(() => props.value.id ?? generated)
 const hasLabel = computed(() => props.value.label !== undefined && props.value.label !== "")
 const hasHelper = computed(() => props.value.helperText !== undefined && props.value.helperText !== "")
 
+const asList = (v: string | readonly string[] | undefined): string[] | undefined => (v === undefined ? undefined : typeof v === "string" ? (v === "" ? [] : [v]) : [...v])
 const { machine: select, state } = useMachine(
-	() => createSelect({ id: id.value, options: raw.options, defaultValue: raw.defaultValue, defaultOpen: raw.defaultOpen }),
+	() =>
+		createSelect({
+			id: id.value,
+			options: raw.options,
+			defaultValue: typeof raw.defaultValue === "string" ? raw.defaultValue : undefined,
+			defaultValues: asList(raw.defaultValue),
+			multiple: raw.multiple,
+			defaultOpen: raw.defaultOpen,
+		}),
 	() => ({
 		id: id.value,
 		options: props.value.options,
-		value: props.value.modelValue,
+		multiple: props.value.multiple,
+		value: typeof props.value.modelValue === "string" ? props.value.modelValue : undefined,
+		values: props.value.multiple ? asList(props.value.modelValue) : undefined,
 		disabled: props.value.disabled,
 		open: props.value.open,
 		onValueChange: (value: string, event?: Event) => {
-			emit("change", event, value)
-			emit("update:modelValue", value)
+			emit("change", event, value as T)
+			emit("update:modelValue", value as T)
+		},
+		onValuesChange: (values: string[], event?: Event) => {
+			emit("change", event, values as unknown as T)
+			emit("update:modelValue", values as unknown as T)
 		},
 		onOpenChange: (open: boolean, reason: CloseReason) => {
 			emit("update:open", open)
@@ -112,7 +129,10 @@ watch(
 		<div class="omni-text-field__control">
 			<div ref="trigger" v-bind="triggerBinding" class="omni-text-field__input omni-select__trigger">{{ state.label }}</div>
 			<span class="omni-select__icon" aria-hidden="true" :data-state="state.open ? 'open' : 'closed'" />
-			<input v-if="props.name" type="hidden" :name="props.name" :value="state.value ?? ''" />
+			<template v-if="props.name">
+				<template v-if="state.multiple"><input v-for="v in state.values" :key="v" type="hidden" :name="props.name" :value="v" /></template>
+				<input v-else type="hidden" :name="props.name" :value="state.value ?? ''" />
+			</template>
 			<fieldset v-bind="toVueProps(fieldParts.fieldset)" class="omni-text-field__fieldset">
 				<legend class="omni-text-field__legend"><span v-if="hasLabel">{{ props.label }}</span></legend>
 			</fieldset>

@@ -1,6 +1,13 @@
 import {
 	Button,
+	ButtonGroup,
 	Checkbox,
+	Fab,
+	IconButton,
+	Rating,
+	Slider,
+	ToggleButton,
+	ToggleButtonGroup,
 	FormGroup,
 	Radio,
 	RadioGroup,
@@ -38,6 +45,8 @@ const brand = createTheme({
 const standard = createTheme()
 
 const heading = { font: "var(--omni-typography-h6-font)", margin: 0 } as const
+const plus = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
+const trash = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" /></svg>
 const fruit = [
 	{ value: "a", label: "Apple" },
 	{ value: "b", label: "Banana", disabled: true },
@@ -53,6 +62,10 @@ export function App() {
 	const [dialog, setDialog] = useState(params.get("open") === "dialog")
 	const [anchor, setAnchor] = useState<HTMLElement | null>(null)
 	const [tab, setTab] = useState(params.get("tab") ?? "overview")
+	const [format, setFormat] = useState<string[]>(["bold"])
+	const [align, setAlign] = useState<string | null>("left")
+	const [volume, setVolume] = useState(30)
+	const [stars, setStars] = useState(3)
 	const [fruitValue, setFruitValue] = useState("")
 	const [selectOpen, setSelectOpen] = useState(params.get("open") === "select")
 	const [email, setEmail] = useState("")
@@ -104,6 +117,57 @@ export function App() {
 						<TextField label="Required" required size="small" />
 						<TextField label="Amount" startAdornment="$" endAdornment="USD" />
 						<TextField label="Bio" multiline rows={3} />
+						<TextField label="Notes" multiline minRows={2} maxRows={4} />
+					</div>
+				</section>
+
+				<section style={{ display: "grid", gap: 16 }}>
+					<h2 style={heading}>Icon buttons and groups</h2>
+					<div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
+						<IconButton aria-label="Delete">{trash}</IconButton>
+						<IconButton aria-label="Delete primary" color="primary">{trash}</IconButton>
+						<IconButton aria-label="Delete small" size="small" color="error">{trash}</IconButton>
+						<IconButton aria-label="Delete disabled" disabled>{trash}</IconButton>
+						<Fab aria-label="Add">{plus}</Fab>
+						<Fab aria-label="Add small" size="small" color="secondary">{plus}</Fab>
+						<Fab variant="extended">{plus} Create</Fab>
+						<ButtonGroup aria-label="Actions" variant="outlined">
+							<Button>One</Button>
+							<Button>Two</Button>
+							<Button>Three</Button>
+						</ButtonGroup>
+						<ButtonGroup aria-label="Contained actions" variant="contained" color="secondary">
+							<Button>Left</Button>
+							<Button>Right</Button>
+						</ButtonGroup>
+					</div>
+					<div style={{ display: "flex", gap: 16, flexWrap: "wrap", alignItems: "center" }}>
+						<ToggleButtonGroup aria-label="Format" value={format} onChange={(_e, v) => setFormat(v as string[])}>
+							<ToggleButton value="bold">Bold</ToggleButton>
+							<ToggleButton value="italic">Italic</ToggleButton>
+							<ToggleButton value="underline" disabled>Underline</ToggleButton>
+						</ToggleButtonGroup>
+						<ToggleButtonGroup aria-label="Alignment" exclusive color="secondary" value={align} onChange={(_e, v) => setAlign(v as string | null)}>
+							<ToggleButton value="left">Left</ToggleButton>
+							<ToggleButton value="center">Center</ToggleButton>
+							<ToggleButton value="right">Right</ToggleButton>
+						</ToggleButtonGroup>
+					</div>
+				</section>
+
+				<section style={{ display: "grid", gap: 16 }}>
+					<h2 style={heading}>Slider and Rating</h2>
+					<div style={{ display: "grid", gap: 8, maxWidth: 420 }}>
+						<Slider aria-label="Volume" value={volume} onChange={(_e, v) => setVolume(v)} valueLabelDisplay="on" />
+						<Slider aria-label="Temperature" defaultValue={20} min={0} max={40} step={10} marks={[{ value: 0, label: "0°C" }, { value: 10, label: "10°C" }, { value: 20, label: "20°C" }, { value: 30, label: "30°C" }, { value: 40, label: "40°C" }]} color="secondary" />
+						<Slider aria-label="Small" size="small" defaultValue={60} />
+						<Slider aria-label="Disabled" disabled defaultValue={40} />
+					</div>
+					<div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "center" }}>
+						<Rating aria-label="Rating" value={stars} onChange={(_e, v) => setStars(v)} />
+						<Rating aria-label="Half stars" precision={0.5} defaultValue={2.5} size="large" />
+						<Rating aria-label="Read only" readOnly defaultValue={4} />
+						<Rating aria-label="Disabled rating" disabled defaultValue={2} />
 					</div>
 				</section>
 
@@ -113,6 +177,7 @@ export function App() {
 						<Select label="Fruit" options={fruit} value={fruitValue} onChange={(_e, v) => setFruitValue(v)} open={selectOpen} onOpenChange={setSelectOpen} helperText="Pick one" />
 						<Select label="Filled" variant="filled" options={fruit} defaultValue="c" />
 						<Select label="Standard" variant="standard" options={fruit} />
+						<Select label="Several" multiple options={fruit} defaultValue={["a", "c"]} />
 						<Select label="Error" error options={fruit} helperText="Required" />
 						<Select label="Disabled" disabled options={fruit} defaultValue="a" />
 					</div>

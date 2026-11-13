@@ -58,7 +58,11 @@
 		"./select.css": "./dist/select.css",
 		"./checkbox.css": "./dist/checkbox.css",
 		"./form-group.css": "./dist/form-group.css",
-		"./switch.css": "./dist/switch.css"
+		"./switch.css": "./dist/switch.css",
+		"./icon-button.css": "./dist/icon-button.css",
+		"./button-group.css": "./dist/button-group.css",
+		"./slider.css": "./dist/slider.css",
+		"./rating.css": "./dist/rating.css"
 	},
 	"files": [
 		"dist"

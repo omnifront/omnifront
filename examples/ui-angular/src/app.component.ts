@@ -1,6 +1,13 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, signal } from "@angular/core"
 import {
 	OmniButton,
+	OmniButtonGroup,
+	OmniFab,
+	OmniIconButton,
+	OmniRating,
+	OmniSlider,
+	OmniToggleButton,
+	OmniToggleButtonGroup,
 	OmniCheckbox,
 	OmniFormGroup,
 	OmniRadio,
@@ -55,6 +62,13 @@ const standard = createTheme()
 		OmniMenuDivider,
 		OmniSelect,
 		OmniSwitch,
+		OmniButtonGroup,
+		OmniFab,
+		OmniIconButton,
+		OmniRating,
+		OmniSlider,
+		OmniToggleButton,
+		OmniToggleButtonGroup,
 		OmniCheckbox,
 		OmniFormGroup,
 		OmniRadio,
@@ -103,6 +117,57 @@ const standard = createTheme()
 						<omni-text-field label="Required" required size="small" />
 						<omni-text-field label="Amount"><span omniStartAdornment>$</span><span omniEndAdornment>USD</span></omni-text-field>
 						<omni-text-field label="Bio" multiline [rows]="3" />
+						<omni-text-field label="Notes" multiline [minRows]="2" [maxRows]="4" />
+					</div>
+				</section>
+
+				<section style="display: grid; gap: 16px">
+					<h2 style="font: var(--omni-typography-h6-font); margin: 0">Icon buttons and groups</h2>
+					<div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center">
+						<button omni-icon-button aria-label="Delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="trashPath" /></svg></button>
+						<button omni-icon-button aria-label="Delete primary" color="primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="trashPath" /></svg></button>
+						<button omni-icon-button aria-label="Delete small" size="small" color="error"><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="trashPath" /></svg></button>
+						<button omni-icon-button aria-label="Delete disabled" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="trashPath" /></svg></button>
+						<button omni-fab aria-label="Add"><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="plusPath" /></svg></button>
+						<button omni-fab aria-label="Add small" size="small" color="secondary"><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="plusPath" /></svg></button>
+						<button omni-fab variant="extended"><svg viewBox="0 0 24 24" aria-hidden="true"><path [attr.d]="plusPath" /></svg> Create</button>
+						<omni-button-group label="Actions" variant="outlined">
+							<button omni-button>One</button>
+							<button omni-button>Two</button>
+							<button omni-button>Three</button>
+						</omni-button-group>
+						<omni-button-group label="Contained actions" variant="contained" color="secondary">
+							<button omni-button>Left</button>
+							<button omni-button>Right</button>
+						</omni-button-group>
+					</div>
+					<div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center">
+						<omni-toggle-button-group label="Format" [value]="format()" (valueChange)="format.set($any($event))">
+							<button omni-toggle-button value="bold">Bold</button>
+							<button omni-toggle-button value="italic">Italic</button>
+							<button omni-toggle-button value="underline" disabled>Underline</button>
+						</omni-toggle-button-group>
+						<omni-toggle-button-group label="Alignment" exclusive color="secondary" [value]="align()" (valueChange)="align.set($any($event))">
+							<button omni-toggle-button value="left">Left</button>
+							<button omni-toggle-button value="center">Center</button>
+							<button omni-toggle-button value="right">Right</button>
+						</omni-toggle-button-group>
+					</div>
+				</section>
+
+				<section style="display: grid; gap: 16px">
+					<h2 style="font: var(--omni-typography-h6-font); margin: 0">Slider and Rating</h2>
+					<div style="display: grid; gap: 8px; max-width: 420px">
+						<omni-slider aria-label="Volume" [value]="volume()" (valueChange)="volume.set($event)" valueLabelDisplay="on" />
+						<omni-slider aria-label="Temperature" [defaultValue]="20" [min]="0" [max]="40" [step]="10" [marks]="marks" color="secondary" />
+						<omni-slider aria-label="Small" size="small" [defaultValue]="60" />
+						<omni-slider aria-label="Disabled" disabled [defaultValue]="40" />
+					</div>
+					<div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: center">
+						<omni-rating aria-label="Rating" [value]="stars()" (valueChange)="stars.set($event)" />
+						<omni-rating aria-label="Half stars" [precision]="0.5" [defaultValue]="2.5" size="large" />
+						<omni-rating aria-label="Read only" readOnly [defaultValue]="4" />
+						<omni-rating aria-label="Disabled rating" disabled [defaultValue]="2" />
 					</div>
 				</section>
 
@@ -112,6 +177,7 @@ const standard = createTheme()
 						<omni-select label="Fruit" [options]="fruit" [value]="fruitValue()" (valueChange)="fruitValue.set($event)" [open]="selectOpen()" (openChange)="selectOpen.set($event)" helperText="Pick one" />
 						<omni-select label="Filled" variant="filled" [options]="fruit" defaultValue="c" />
 						<omni-select label="Standard" variant="standard" [options]="fruit" />
+						<omni-select label="Several" multiple [options]="fruit" [defaultValue]="['a', 'c']" />
 						<omni-select label="Error" error [options]="fruit" helperText="Required" />
 						<omni-select label="Disabled" disabled [options]="fruit" defaultValue="a" />
 					</div>
@@ -209,6 +275,13 @@ export class AppComponent implements AfterViewInit {
 		{ value: "c", label: "Cherry" },
 		{ value: "d", label: "Date" },
 	]
+	readonly trashPath = "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+	readonly plusPath = "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+	readonly format = signal<string[]>(["bold"])
+	readonly align = signal<string | null>("left")
+	readonly volume = signal(30)
+	readonly stars = signal(3)
+	readonly marks = [{ value: 0, label: "0°C" }, { value: 10, label: "10°C" }, { value: 20, label: "20°C" }, { value: 30, label: "30°C" }, { value: 40, label: "40°C" }]
 	readonly fruitValue = signal("")
 	readonly selectOpen = signal(params.get("open") === "select")
 	readonly email = signal("")

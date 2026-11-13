@@ -1,7 +1,7 @@
 import { act, render } from "@testing-library/react"
 import { useState, type ReactNode } from "react"
 import { defineUiConformanceSuite, type UiHarness } from "@omnifront/conformance"
-import { Checkbox, Radio, RadioGroup, Switch } from "../src"
+import { ButtonGroup, Checkbox, Fab, IconButton, Radio, RadioGroup, Rating, Slider, Switch, ToggleButton, ToggleButtonGroup } from "../src"
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Select, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
 
 type Log = (event: string) => void
@@ -54,6 +54,46 @@ function CheckboxView({ indeterminate, disabled, error, log }: { indeterminate: 
 	return <Checkbox label="Accept terms" checked={checked} indeterminate={indeterminate} disabled={disabled} error={error} onChange={(_e, c) => { log(`change:${c}`); setChecked(c) }} />
 }
 
+function IconButtonsView({ disabled, log }: { disabled: boolean | undefined; log: Log }) {
+	return (
+		<>
+			<IconButton aria-label="Delete" disabled={disabled} onClick={() => log("click:delete")}><svg /></IconButton>
+			<Fab aria-label="Add" disabled={disabled} onClick={() => log("click:add")}><svg /></Fab>
+			<Fab variant="extended" disabled={disabled} onClick={() => log("click:create")}>Create</Fab>
+		</>
+	)
+}
+
+function ButtonGroupView({ disabled, log }: { disabled: boolean | undefined; log: Log }) {
+	return (
+		<ButtonGroup aria-label="Actions" variant="outlined" color="secondary" size="small" disabled={disabled}>
+			<Button onClick={() => log("click:one")}>One</Button>
+			<Button onClick={() => log("click:two")}>Two</Button>
+		</ButtonGroup>
+	)
+}
+
+function ToggleGroupView({ exclusive, log }: { exclusive: boolean | undefined; log: Log }) {
+	const [value, setValue] = useState<string[]>([])
+	return (
+		<ToggleButtonGroup aria-label="Format" exclusive={exclusive} value={exclusive ? (value[0] ?? null) : value} onChange={(_e, v) => { const list = v === null ? [] : typeof v === "string" ? [v] : v; log(`change:${list.join(",")}`); setValue(list) }}>
+			<ToggleButton value="bold">Bold</ToggleButton>
+			<ToggleButton value="italic">Italic</ToggleButton>
+			<ToggleButton value="underline" disabled>Underline</ToggleButton>
+		</ToggleButtonGroup>
+	)
+}
+
+function SliderView({ disabled, log }: { disabled: boolean | undefined; log: Log }) {
+	const [value, setValue] = useState(30)
+	return <Slider aria-label="Volume" min={0} max={100} step={10} value={value} valueLabelDisplay="auto" disabled={disabled} onChange={(_e, v) => { log(`change:${v}`); setValue(v) }} />
+}
+
+function RatingView({ readOnly, disabled, log }: { readOnly: boolean | undefined; disabled: boolean | undefined; log: Log }) {
+	const [value, setValue] = useState(0)
+	return <Rating aria-label="Rating" value={readOnly ? 3 : value} readOnly={readOnly} disabled={disabled} onChange={(_e, v) => { log(`change:${v}`); setValue(v) }} />
+}
+
 function SwitchView({ disabled, error, log }: { disabled: boolean | undefined; error: boolean | undefined; log: Log }) {
 	const [checked, setChecked] = useState(false)
 	return <Switch label="Wi-Fi" checked={checked} disabled={disabled} error={error} onChange={(_e, c) => { log(`change:${c}`); setChecked(c) }} />
@@ -76,17 +116,17 @@ const fruit = [
 	{ value: "c", label: "Cherry" },
 ]
 
-function SelectView({ error, disabled, log }: { error: boolean | undefined; disabled: boolean | undefined; log: Log }) {
-	const [value, setValue] = useState("")
+function SelectView({ error, disabled, multiple, log }: { error: boolean | undefined; disabled: boolean | undefined; multiple: boolean | undefined; log: Log }) {
+	const [value, setValue] = useState<string | string[]>(multiple ? [] : "")
 	return (
 		<Select
 			label="Fruit"
 			options={fruit}
-			value={value}
+			{...({ multiple, value } as object)}
 			helperText="Pick one"
 			error={error}
 			disabled={disabled}
-			onChange={(_e, v) => { log(`change:${v}`); setValue(v) }}
+			onChange={(_e: Event | undefined, v: string | string[]) => { log(`change:${Array.isArray(v) ? v.join(",") : v}`); setValue(v) }}
 			onOpenChange={(open, reason) => { if (!open) log(`close:${reason}`) }}
 		/>
 	)
@@ -124,7 +164,12 @@ const harness: UiHarness = {
 	checkbox: (props, log) => mountWith(props, (p) => <CheckboxView indeterminate={p.indeterminate} disabled={p.disabled} error={p.error} log={log} />),
 	switch: (props, log) => mountWith(props, (p) => <SwitchView disabled={p.disabled} error={p.error} log={log} />),
 	radioGroup: (props, log) => mountWith(props, (p) => <RadioGroupView disabled={p.disabled} error={p.error} log={log} />),
-	select: (props, log) => mountWith(props, (p) => <SelectView error={p.error} disabled={p.disabled} log={log} />),
+	select: (props, log) => mountWith(props, (p) => <SelectView error={p.error} disabled={p.disabled} multiple={props.multiple} log={log} />),
+	iconButtons: (props, log) => mountWith(props, (p) => <IconButtonsView disabled={p.disabled} log={log} />),
+	buttonGroup: (props, log) => mountWith(props, (p) => <ButtonGroupView disabled={p.disabled} log={log} />),
+	toggleGroup: (props, log) => mountWith(props, (p) => <ToggleGroupView exclusive={p.exclusive} log={log} />),
+	slider: (props, log) => mountWith(props, (p) => <SliderView disabled={p.disabled} log={log} />),
+	rating: (props, log) => mountWith(props, (p) => <RatingView readOnly={p.readOnly} disabled={p.disabled} log={log} />),
 	tabs: (props, log) => mountWith(props, (p) => <TabsView selectionFollowsFocus={p.selectionFollowsFocus} log={log} />),
 	settle: async () => void (await act(async () => { await new Promise((r) => setTimeout(r, 0)) })),
 }

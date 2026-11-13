@@ -114,6 +114,22 @@ The base class: `subscribe`, `getSnapshot`, `getServerSnapshot`, `setProps(props
 
 `buttonPart(options?: ButtonOptions): Part`: attributes for a Button (a button has no state of its own, so there is no machine). `ButtonVariant` is `text`, `outlined` or `contained`; `ButtonColor` is `inherit`, `primary`, `secondary`, `success`, `error`, `info` or `warning`; `ButtonSize` is `small`, `medium` or `large`. `ButtonOptions` also takes `fullWidth`, `disableElevation`, `disabled`, `loading`, `as` and `type`.
 
+### `createSlider`
+
+`createSlider(props): Slider` (`Slider` is the class): one value between `min` and `max` in `step`s. The control is a real `<input type="range">`, so dragging, the arrow keys, Home, End, Page Up and Page Down, forms and assistive technology are the browser's own; the machine keeps the value in range and tells the component where the thumb is. Props (`SliderProps`): `id`, `value` / `defaultValue` / `onValueChange(value, event)`, `min` (0), `max` (100), `step` (1), `disabled`. State (`SliderState`): `id`, `value`, `min`, `max`, `step`, `percent` (0 to 100, for the filled part of the track), `disabled`. Not supported yet: two thumbs (a range) and a vertical slider.
+
+### `createRating`
+
+`createRating(props): Rating` (`Rating` is the class): a star rating made of native radios (so the arrow keys, Tab and forms work natively) plus a clear radio. Props (`RatingProps`): `id`, `name`, `value` / `defaultValue` / `onValueChange(value, event)` (`0` means no rating), `max` (5), `precision` (`1`, `0.5` or `0.25`), `label`, `readOnly`, `disabled`. State (`RatingState`): `value`, `max`, `precision`, `hover` (the value under the pointer), `focused`, `readOnly`, `disabled`. `stars()` returns what to draw: a list of `RatingStar` (`fill`: how much of the star is filled, and its `radios`, a list of `RatingRadio`). A read-only rating is `role="img"` named "Rating: 3 out of 5"; an interactive one is a `radiogroup`.
+
+### `createToggleGroup`
+
+`createToggleGroup(props): ToggleGroup` (`ToggleGroup` is the class): which buttons of a group are pressed. Props (`ToggleGroupProps`): `id`, `value` / `defaultValue` (a list of values) / `onValueChange(value, event)`, `exclusive` (at most one; pressing it again unpresses it), `disabled`, `orientation`. State (`ToggleGroupState`): `id`, `value`, `exclusive`, `disabled`, `orientation`. `item(value, options?: ToggleItemOptions)` returns the `Part` for one button (`aria-pressed`, `data-selected`, the click handler; its options are `ToggleItemOptions`); a group is `role="group"`, so the buttons keep their Tab order.
+
+### `iconButtonPart`, `fabPart`, `toggleButtonPart`
+
+`iconButtonPart(options?: IconButtonOptions): Part`, `fabPart(options?: FabOptions): Part` and `toggleButtonPart(options?: ToggleButtonOptions): Part`: attributes for an icon button (`IconButtonColor` is the `ButtonColor`s plus `default`; also `size`, `edge`, `disabled`, `as`, `type`), a floating action button (`variant`: `circular` or `extended`; also `color`, `size`, `disabled`, `as`, `type`) and a toggle button (`selected`, `color`, `size`, `disabled`, `as`, `type`). Their options are `IconButtonOptions`, `FabOptions` and `ToggleButtonOptions`. Like `buttonPart` they have no state of their own.
+
 ## DOM utilities
 
 Browser only; call them after mount.
@@ -129,6 +145,10 @@ Browser only; call them after mount.
 | `hideOthers` | `(keep)`: `aria-hidden` on every other top-level element. Returns the cleanup. |
 | `createPortalRoot` | `(attributes?)`: a `div[data-omni-portal]` at the end of `<body>`. `PortalRoot` is the result type. |
 | `attachRipple` | `(element, { centered? })`: the Material touch ripple. Returns the cleanup. |
+
+### `attachAutosize`
+
+`attachAutosize(textarea, options?: () => AutosizeOptions): { update(), destroy() }`: makes a `<textarea>` grow and shrink with its text between `minRows` (default 1) and `maxRows` (default no limit; past it the text area scrolls). Call `update()` after a value is set from code; it also follows the element's width where `ResizeObserver` exists. `destroy()` removes what it set. Browser only. Its options are `AutosizeOptions`. The `TextField` components use it for `minRows` and `maxRows`.
 
 ## Positioning
 

@@ -69,7 +69,7 @@ describe("Select", () => {
 
 	it("v-model: shows the value, follows the parent and reports changes", async () => {
 		const value = ref("a")
-		mount(() => h(Select, { label: "Fruit", options, modelValue: value.value, "onUpdate:modelValue": (v: string) => (value.value = v) }))
+		mount(() => h(Select, { label: "Fruit", options, modelValue: value.value, "onUpdate:modelValue": (v: string | readonly string[]) => (value.value = v as string) }))
 		expect(screen.getByRole("combobox").textContent).toBe("Apple")
 		value.value = "c"
 		await flush()

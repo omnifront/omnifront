@@ -1,7 +1,14 @@
 <script setup lang="ts">
 import {
 	Button,
+	ButtonGroup,
 	Checkbox,
+	Fab,
+	IconButton,
+	Rating,
+	Slider,
+	ToggleButton,
+	ToggleButtonGroup,
 	FormGroup,
 	Radio,
 	RadioGroup,
@@ -45,6 +52,13 @@ const theme = computed(() => (custom.value ? brand : standard))
 const dialog = ref(params.get("open") === "dialog")
 const anchor = ref<HTMLElement | null>(null)
 const tab = ref(params.get("tab") ?? "overview")
+const trashPath = "M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"
+const plusPath = "M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"
+const format = ref<string[]>(["bold"])
+const align = ref<string | null>("left")
+const volume = ref(30)
+const stars = ref(3)
+const marks = [{ value: 0, label: "0°C" }, { value: 10, label: "10°C" }, { value: 20, label: "20°C" }, { value: 30, label: "30°C" }, { value: 40, label: "40°C" }]
 const fruit = [
 	{ value: "a", label: "Apple" },
 	{ value: "b", label: "Banana", disabled: true },
@@ -100,6 +114,57 @@ onMounted(() => {
 						<template #endAdornment>USD</template>
 					</TextField>
 					<TextField label="Bio" multiline :rows="3" />
+					<TextField label="Notes" multiline :min-rows="2" :max-rows="4" />
+				</div>
+			</section>
+
+			<section style="display: grid; gap: 16px">
+				<h2 style="font: var(--omni-typography-h6-font); margin: 0">Icon buttons and groups</h2>
+				<div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center">
+					<IconButton aria-label="Delete"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="trashPath" /></svg></IconButton>
+					<IconButton aria-label="Delete primary" color="primary"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="trashPath" /></svg></IconButton>
+					<IconButton aria-label="Delete small" size="small" color="error"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="trashPath" /></svg></IconButton>
+					<IconButton aria-label="Delete disabled" disabled><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="trashPath" /></svg></IconButton>
+					<Fab aria-label="Add"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="plusPath" /></svg></Fab>
+					<Fab aria-label="Add small" size="small" color="secondary"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="plusPath" /></svg></Fab>
+					<Fab variant="extended"><svg viewBox="0 0 24 24" aria-hidden="true"><path :d="plusPath" /></svg> Create</Fab>
+					<ButtonGroup aria-label="Actions" variant="outlined">
+						<Button>One</Button>
+						<Button>Two</Button>
+						<Button>Three</Button>
+					</ButtonGroup>
+					<ButtonGroup aria-label="Contained actions" variant="contained" color="secondary">
+						<Button>Left</Button>
+						<Button>Right</Button>
+					</ButtonGroup>
+				</div>
+				<div style="display: flex; gap: 16px; flex-wrap: wrap; align-items: center">
+					<ToggleButtonGroup v-model="format" aria-label="Format">
+						<ToggleButton value="bold">Bold</ToggleButton>
+						<ToggleButton value="italic">Italic</ToggleButton>
+						<ToggleButton value="underline" disabled>Underline</ToggleButton>
+					</ToggleButtonGroup>
+					<ToggleButtonGroup v-model="align" aria-label="Alignment" exclusive color="secondary">
+						<ToggleButton value="left">Left</ToggleButton>
+						<ToggleButton value="center">Center</ToggleButton>
+						<ToggleButton value="right">Right</ToggleButton>
+					</ToggleButtonGroup>
+				</div>
+			</section>
+
+			<section style="display: grid; gap: 16px">
+				<h2 style="font: var(--omni-typography-h6-font); margin: 0">Slider and Rating</h2>
+				<div style="display: grid; gap: 8px; max-width: 420px">
+					<Slider v-model="volume" aria-label="Volume" value-label-display="on" />
+					<Slider aria-label="Temperature" :default-value="20" :min="0" :max="40" :step="10" :marks="marks" color="secondary" />
+					<Slider aria-label="Small" size="small" :default-value="60" />
+					<Slider aria-label="Disabled" disabled :default-value="40" />
+				</div>
+				<div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: center">
+					<Rating v-model="stars" aria-label="Rating" />
+					<Rating aria-label="Half stars" :precision="0.5" :default-value="2.5" size="large" />
+					<Rating aria-label="Read only" read-only :default-value="4" />
+					<Rating aria-label="Disabled rating" disabled :default-value="2" />
 				</div>
 			</section>
 
@@ -109,6 +174,7 @@ onMounted(() => {
 					<Select v-model="fruitValue" v-model:open="selectOpen" label="Fruit" :options="fruit" helper-text="Pick one" />
 					<Select label="Filled" variant="filled" :options="fruit" default-value="c" />
 					<Select label="Standard" variant="standard" :options="fruit" />
+					<Select label="Several" multiple :options="fruit" :default-value="['a', 'c']" />
 					<Select label="Error" error :options="fruit" helper-text="Required" />
 					<Select label="Disabled" disabled :options="fruit" default-value="a" />
 				</div>

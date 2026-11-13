@@ -187,6 +187,19 @@ ui-angular  → ui, angular (+ peer: @angular/core, @angular/common)
 - **API:** مثل Checkbox (`onChange(event, checked)`، `v-model`، `[(checked)]`، `ngModel`، reactive forms، `aria-label` برای حالت بدون برچسب)، بدون `indeterminate`.
 - **انجام‌نشده در موج ۱:** `Slider` و `Rating`، «انتخاب همه» با `indeterminate`، گزینه‌ی سفارشی و چندانتخابی برای Select.
 
+## موج ۱: دکمه‌ها، Slider، Rating و تکمیل Select و TextField (2026-11-13)
+
+- **دکمه‌ها:** `IconButton`، `Fab` (`circular` و `extended`)، `ButtonGroup` و `ToggleButtonGroup` / `ToggleButton`. ماشین ندارند مگر گروه toggle (`createToggleGroup`: کدام دکمه‌ها فشرده‌اند، `exclusive`)؛ بقیه `Part` خالص‌اند (`iconButtonPart`، `fabPart`، `toggleButtonPart`) مثل `buttonPart`. `ButtonGroup` مقدارهای `variant`، `color`، `size`، `disabled` را به دکمه‌های داخلش می‌دهد (React و Vue با context، Angular با توکن `OMNI_BUTTON_GROUP`)؛ prop خود دکمه برنده است. در Angular «تنظیم‌نشده» با «false» فرق دارد (`optionalBoolean`)؛ تابع باید `function` باشد نه arrow، وگرنه کامپایلر AOT آن را در `transform` نمی‌پذیرد.
+- **Slider:** یک `<input type="range">` واقعی زیر track و thumb، پس کشیدن، فلش‌ها، Home و End، Page Up و Down، فرم و فناوری کمکی بومی‌اند (همان راهبرد Checkbox). ماشین فقط مقدار را در بازه نگه می‌دارد و `percent` را برای رنگ track می‌دهد. `marks`، `valueLabelDisplay` (`auto`، `on`، `off`)، `valueLabelFormat`.
+- **Rating:** ستاره‌ها radio بومی‌اند (فلش و Tab کار مرورگرند) با `precision` ۱، ۰٫۵ و ۰٫۲۵. حالت `readOnly` عنصر `role="img"` با نام «Rating: 3 out of 5» است (یک تصویر فقط با نامش خوانده می‌شود، پس مقدار باید در نام باشد). تست دسترس‌پذیری نشان داد که `aria-label` کاربر باید به ماشین برسد (prop `label`) نه روی عنصر دیگری.
+- **Select چندانتخابی:** `multiple` فهرست را باز نگه می‌دارد و `value` لیست می‌شود (`aria-multiselectable`)؛ متن فیلد برچسب‌ها را با ویرگول نشان می‌دهد. در React نوع `value` با overload جدا (`SingleSelectProps` و `MultipleSelectProps`) و در Vue و Angular با generic است.
+- **TextField چندخطی خودکار:** `minRows` و `maxRows` با `attachAutosize` (کد DOM مشترک در `ui`): ارتفاع از `scrollHeight` گرفته می‌شود و از `maxRows` به بعد اسکرول می‌آید. با `ResizeObserver` عرض را هم دنبال می‌کند.
+- **باگی که فقط مرورگر واقعی نشان داد:** در Vue، `TextField` کنترل‌نشده بعد از هر رندر مجدد متن تایپ‌شده را پاک می‌کرد، چون Vue هر بار `value` را روی عنصر می‌نویسد و مقدار `defaultValue` بود. تست jsdom این را نمی‌گرفت. حالا بعد از رندر اول مقدار خود عنصر برگردانده می‌شود، و برای آن یک تست واحد هم اضافه شد. (این باگ از موج ۰ بود.)
+- **رنگ:** متن ToggleButton فشرده با رنگ `secondary` در تم brand (فیروزه‌ای روشن) از حد AA رد شد؛ درصد مخلوط با رنگ متن از ۳۰ به ۶۰ رفت.
+- **آزمون:** conformance به ۵۹ سناریو در هر فریم‌ورک رسید؛ Playwright ۶۴ آزمون (تصویر مشابه، axe و کلید واقعی برای Slider، Rating، toggle، textarea خودکار و Select چندتایی).
+- **بودجه (ثبت، بدون سقف سخت):** `ui` ۱۱٫۰KB، `styles.css` ۸٫۹KB، `ui-react` ۷٫۲KB، `ui-vue` ۹٫۰KB، `ui-angular` ۱۲٫۹KB (gzip).
+- **انجام‌نشده (آگاهانه):** گروه‌بندی گزینه‌های Select و محتوای سفارشی گزینه، Slider دو‌دستگیره (range) و عمودی، و بررسی CSS اسلایدر در مرورگرهای غیر Chromium. «انتخاب همه» با `indeterminate` با خود `Checkbox` ممکن است و ظاهر آن در مثال‌ها آمده، اما الگوی آماده‌ی جدا ندارد. با این موج، فهرست موج ۱ جز موارد بالا تمام است.
+
 ## معیار بازبینی
 
 - اگر موج ۰ نشان داد یک ماشین نمی‌تواند در هر سه فریم‌ورک با قرارداد `Subscribable` و `connect` وصل شود (به‌خصوص Dialog یا Menu در Angular)، این ADR و در صورت لزوم ADR-0001 دوباره باز می‌شوند.

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { createField } from "@omnifront/ui"
-import { computed, mergeProps, ref, useAttrs, useSlots } from "vue"
+import { attachAutosize, createField } from "@omnifront/ui"
+import { computed, mergeProps, onBeforeUnmount, ref, useAttrs, useSlots, watch } from "vue"
 import { toVueProps, useMachine, useUid } from "../internal"
 import { useDefaultProps } from "../theme"
 
@@ -23,6 +23,10 @@ const raw = defineProps<{
 	/** A `<textarea>` instead of an `<input>`. */
 	multiline?: boolean | undefined
 	rows?: number | undefined
+	/** With `multiline`: grow with the text, from this many rows... */
+	minRows?: number | undefined
+	/** ...up to this many, then scroll. */
+	maxRows?: number | undefined
 	id?: string | undefined
 	type?: string | undefined
 	placeholder?: string | undefined
@@ -66,12 +70,32 @@ const inputBinding = computed(() => {
 	return mergeProps(toVueProps(parts.value.input), inputAttrs, {
 		type: p.multiline ? undefined : p.type,
 		placeholder: p.placeholder,
-		rows: p.multiline ? (p.rows ?? 1) : undefined,
-		value: controlled.value ? p.modelValue : p.defaultValue,
+		rows: p.multiline ? (autosize.value ? (p.minRows ?? 1) : (p.rows ?? 1)) : undefined,
 	})
 })
+// Vue writes `value` to the element on every render. An uncontrolled field must keep what was typed,
+// so after the first render it passes the element's own value back instead of `defaultValue`.
+const shownValue = (): string | number | undefined =>
+	controlled.value ? props.value.modelValue : (input.value?.value ?? props.value.defaultValue)
 const rootBinding = computed(() => mergeProps(toVueProps(parts.value.root), { class: ["omni-text-field", attrs.class], style: attrs.style as never }))
-const onInput = (event: Event): void => emit("update:modelValue", (event.target as HTMLInputElement).value)
+// `minRows` / `maxRows` make a multiline field grow and shrink with its text.
+const autosize = computed(() => props.value.multiline === true && (props.value.minRows !== undefined || props.value.maxRows !== undefined))
+let sizer: { update(): void; destroy(): void } | undefined
+watch(
+	() => [autosize.value, props.value.minRows, props.value.maxRows, input.value] as const,
+	([on, , , el]) => {
+		sizer?.destroy()
+		sizer = on && el instanceof HTMLTextAreaElement ? attachAutosize(el, () => ({ minRows: props.value.minRows, maxRows: props.value.maxRows })) : undefined
+	},
+	{ flush: "post", immediate: true },
+)
+// a value set from code (controlled) does not fire an input event
+watch(() => props.value.modelValue, () => sizer?.update(), { flush: "post" })
+onBeforeUnmount(() => sizer?.destroy())
+const onInput = (event: Event): void => {
+	sizer?.update()
+	emit("update:modelValue", (event.target as HTMLInputElement).value)
+}
 defineExpose({ focus: () => input.value?.focus(), input })
 </script>
 
@@ -93,6 +117,7 @@ defineExpose({ focus: () => input.value?.focus(), input })
 				:is="props.multiline ? 'textarea' : 'input'"
 				ref="input"
 				v-bind="inputBinding"
+				:value="shownValue()"
 				class="omni-text-field__input"
 				@input="onInput"
 				@focus="emit('focus', $event as FocusEvent)"

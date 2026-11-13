@@ -1,0 +1,76 @@
+@layer omnifront {
+	/* ButtonGroup: Buttons joined into one control. */
+	.omni-button-group { display: inline-flex; border-radius: var(--omni-shape-border-radius); }
+	.omni-button-group[data-orientation="vertical"] { flex-direction: column; }
+	.omni-button-group:has(> .omni-button[data-variant="contained"]) { box-shadow: var(--omni-shadow-2); }
+	.omni-button-group > .omni-button[data-variant="contained"] { box-shadow: none; }
+	.omni-button-group > .omni-button:not(:first-child) { border-start-start-radius: 0; border-end-start-radius: 0; }
+	.omni-button-group > .omni-button:not(:last-child) { border-start-end-radius: 0; border-end-end-radius: 0; }
+	.omni-button-group[data-orientation="vertical"] > .omni-button:not(:first-child) { border-start-start-radius: 0; border-start-end-radius: 0; border-end-start-radius: inherit; }
+	.omni-button-group[data-orientation="vertical"] > .omni-button:not(:last-child) { border-end-start-radius: 0; border-end-end-radius: 0; border-start-start-radius: inherit; }
+	.omni-button-group[data-orientation="vertical"] > .omni-button:first-child:not(:last-child) { border-start-start-radius: var(--omni-shape-border-radius); border-start-end-radius: var(--omni-shape-border-radius); }
+	.omni-button-group[data-orientation="vertical"] > .omni-button:last-child:not(:first-child) { border-end-start-radius: var(--omni-shape-border-radius); border-end-end-radius: var(--omni-shape-border-radius); }
+	/* outlined buttons share one border; the others get a divider */
+	.omni-button-group:not([data-orientation="vertical"]) > .omni-button[data-variant="outlined"]:not(:first-child) { margin-inline-start: -1px; }
+	.omni-button-group[data-orientation="vertical"] > .omni-button[data-variant="outlined"]:not(:first-child) { margin-block-start: -1px; }
+	.omni-button-group > .omni-button[data-variant="outlined"]:hover { z-index: 1; }
+	.omni-button-group:not([data-orientation="vertical"]) > .omni-button[data-variant="contained"]:not(:last-child) { border-inline-end: 1px solid var(--omni-palette-grey-400); }
+	.omni-button-group[data-orientation="vertical"] > .omni-button[data-variant="contained"]:not(:last-child) { border-block-end: 1px solid var(--omni-palette-grey-400); }
+	.omni-button-group:not([data-orientation="vertical"]) > .omni-button[data-variant="text"]:not(:last-child) { border-inline-end: 1px solid color-mix(in srgb, var(--_main) 50%, transparent); }
+	.omni-button-group[data-orientation="vertical"] > .omni-button[data-variant="text"]:not(:last-child) { border-block-end: 1px solid color-mix(in srgb, var(--_main) 50%, transparent); }
+	.omni-button-group[data-full-width] { display: flex; inline-size: 100%; }
+	.omni-button-group[data-full-width] > .omni-button { flex: 1 1 auto; }
+
+	/* ToggleButton and ToggleButtonGroup */
+	.omni-toggle-button {
+		--_main: var(--omni-palette-primary-main);
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		margin: 0;
+		padding: 11px;
+		border: 1px solid var(--omni-palette-divider);
+		border-radius: var(--omni-shape-border-radius);
+		outline: 0;
+		cursor: pointer;
+		user-select: none;
+		font: var(--omni-typography-button-font);
+		letter-spacing: var(--omni-typography-button-letter-spacing);
+		text-transform: var(--omni-typography-button-text-transform);
+		color: var(--omni-palette-action-active);
+		background-color: transparent;
+		-webkit-tap-highlight-color: transparent;
+		transition: background-color var(--omni-duration-short) var(--omni-easing-ease-in-out), color var(--omni-duration-short) var(--omni-easing-ease-in-out);
+	}
+	.omni-toggle-button:hover { background-color: var(--omni-palette-action-hover); }
+	.omni-toggle-button:focus-visible { background-color: var(--omni-palette-action-focus); }
+	/* the tint lowers the label's contrast, so a pressed label moves towards the text colour (AA, 4.5:1) */
+	.omni-toggle-button[data-selected] {
+		color: color-mix(in srgb, var(--_main), var(--omni-palette-text-primary) 60%);
+		background-color: color-mix(in srgb, var(--_main) 10%, transparent);
+	}
+	.omni-toggle-button[data-selected]:hover { background-color: color-mix(in srgb, var(--_main) 14%, transparent); }
+	.omni-toggle-button:disabled { color: var(--omni-palette-action-disabled); border-color: var(--omni-palette-action-disabled-background); pointer-events: none; cursor: default; }
+	.omni-toggle-button svg { inline-size: 1.5rem; block-size: 1.5rem; fill: currentColor; }
+	.omni-toggle-button[data-color="secondary"] { --_main: var(--omni-palette-secondary-main); }
+	.omni-toggle-button[data-color="success"] { --_main: var(--omni-palette-success-main); }
+	.omni-toggle-button[data-color="error"] { --_main: var(--omni-palette-error-main); }
+	.omni-toggle-button[data-color="info"] { --_main: var(--omni-palette-info-main); }
+	.omni-toggle-button[data-color="warning"] { --_main: var(--omni-palette-warning-main); }
+	.omni-toggle-button[data-size="small"] { padding: 7px; font-size: 0.8125rem; }
+	.omni-toggle-button[data-size="large"] { padding: 15px; font-size: 0.9375rem; }
+
+	.omni-toggle-group { display: inline-flex; border-radius: var(--omni-shape-border-radius); }
+	.omni-toggle-group[data-orientation="vertical"] { flex-direction: column; }
+	.omni-toggle-group > .omni-toggle-button:not(:first-child) { border-start-start-radius: 0; border-end-start-radius: 0; margin-inline-start: -1px; }
+	.omni-toggle-group > .omni-toggle-button:not(:last-child) { border-start-end-radius: 0; border-end-end-radius: 0; }
+	.omni-toggle-group[data-orientation="vertical"] > .omni-toggle-button:not(:first-child) { margin-inline-start: 0; margin-block-start: -1px; border-start-start-radius: 0; border-start-end-radius: 0; border-end-start-radius: inherit; }
+	.omni-toggle-group[data-orientation="vertical"] > .omni-toggle-button:not(:last-child) { border-end-start-radius: 0; border-end-end-radius: 0; border-start-end-radius: inherit; }
+	.omni-toggle-group[data-orientation="vertical"] > .omni-toggle-button:first-child:not(:last-child) { border-start-start-radius: var(--omni-shape-border-radius); border-start-end-radius: var(--omni-shape-border-radius); }
+	.omni-toggle-group[data-orientation="vertical"] > .omni-toggle-button:last-child:not(:first-child) { border-end-start-radius: var(--omni-shape-border-radius); border-end-end-radius: var(--omni-shape-border-radius); }
+	.omni-toggle-group > .omni-toggle-button[data-selected] { z-index: 1; }
+	.omni-toggle-group[data-full-width] { display: flex; inline-size: 100%; }
+	.omni-toggle-group[data-full-width] > .omni-toggle-button { flex: 1 1 auto; }
+	@media (prefers-reduced-motion: reduce) { .omni-toggle-button { transition: none; } }
+}

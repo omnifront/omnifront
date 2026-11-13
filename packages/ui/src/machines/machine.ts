@@ -11,6 +11,14 @@ export interface Part {
 	on: Handlers
 }
 
+/**
+ * Keep the previous array when the new one has the same items. Snapshots are compared by reference
+ * (ADR-0001), so a state that holds a list must not make a new list every time it is recomputed.
+ */
+export function stableList<T>(previous: readonly T[] | undefined, next: T[]): T[] {
+	return previous && previous.length === next.length && previous.every((v, i) => v === next[i]) ? (previous as T[]) : next
+}
+
 export const part = (attrs: Attrs = {}, on: Handlers = {}): Part => ({ attrs, on })
 
 /**
@@ -57,6 +65,11 @@ export abstract class Machine<P extends object, S extends object> extends BaseSu
 
 	getSnapshot(): S {
 		return this.snapshot as S
+	}
+
+	/** The current snapshot, or undefined while the machine is still being built (for `compute()` to reuse parts of it). */
+	protected peek(): S | undefined {
+		return this.snapshot
 	}
 
 	/** What the server rendered. Stays the first snapshot, so hydration matches. */

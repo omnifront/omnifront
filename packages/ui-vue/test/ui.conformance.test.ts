@@ -1,6 +1,6 @@
 import { defineUiConformanceSuite, type UiHarness } from "@omnifront/conformance"
 import { defineComponent, h, nextTick, ref, type VNodeChild } from "vue"
-import { Checkbox, Radio, RadioGroup, Switch } from "../src"
+import { ButtonGroup, Checkbox, Fab, IconButton, Radio, RadioGroup, Rating, Slider, Switch, ToggleButton, ToggleButtonGroup } from "../src"
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Select, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
 import { mount, slot } from "./mount"
 
@@ -68,6 +68,70 @@ const CheckboxView = defineComponent({
 	},
 })
 
+const IconButtonsView = defineComponent({
+	props: { log: { type: Function, required: true }, disabled: Boolean },
+	setup(props) {
+		const log = props.log as Log
+		return () => [
+			h(IconButton, { "aria-label": "Delete", disabled: props.disabled, onClick: () => log("click:delete") }, slot(h("svg"))),
+			h(Fab, { "aria-label": "Add", disabled: props.disabled, onClick: () => log("click:add") }, slot(h("svg"))),
+			h(Fab, { variant: "extended", disabled: props.disabled, onClick: () => log("click:create") }, slot("Create")),
+		]
+	},
+})
+
+const ButtonGroupView = defineComponent({
+	props: { log: { type: Function, required: true }, disabled: Boolean },
+	setup(props) {
+		const log = props.log as Log
+		return () =>
+			h(ButtonGroup, { "aria-label": "Actions", variant: "outlined", color: "secondary", size: "small", disabled: props.disabled || undefined }, slot(h(Button, { onClick: () => log("click:one") }, slot("One")), h(Button, { onClick: () => log("click:two") }, slot("Two"))))
+	},
+})
+
+const ToggleGroupView = defineComponent({
+	props: { log: { type: Function, required: true }, exclusive: Boolean },
+	setup(props) {
+		const value = ref<string[]>([])
+		const log = props.log as Log
+		return () =>
+			h(
+				ToggleButtonGroup,
+				{
+					"aria-label": "Format",
+					exclusive: props.exclusive,
+					modelValue: props.exclusive ? (value.value[0] ?? null) : value.value,
+					"onUpdate:modelValue": (v: unknown) => {
+						const list = v === null ? [] : typeof v === "string" ? [v] : (v as string[])
+						log(`change:${list.join(",")}`)
+						value.value = list
+					},
+				},
+				slot(h(ToggleButton, { value: "bold" }, slot("Bold")), h(ToggleButton, { value: "italic" }, slot("Italic")), h(ToggleButton, { value: "underline", disabled: true }, slot("Underline"))),
+			)
+	},
+})
+
+const SliderView = defineComponent({
+	props: { log: { type: Function, required: true }, disabled: Boolean },
+	setup(props) {
+		const value = ref(30)
+		const log = props.log as Log
+		return () =>
+			h(Slider, { "aria-label": "Volume", min: 0, max: 100, step: 10, modelValue: value.value, valueLabelDisplay: "auto", disabled: props.disabled, "onUpdate:modelValue": (v: number) => { log(`change:${v}`); value.value = v } })
+	},
+})
+
+const RatingView = defineComponent({
+	props: { log: { type: Function, required: true }, readOnly: Boolean, disabled: Boolean },
+	setup(props) {
+		const value = ref(0)
+		const log = props.log as Log
+		return () =>
+			h(Rating, { "aria-label": "Rating", modelValue: props.readOnly ? 3 : value.value, readOnly: props.readOnly, disabled: props.disabled, "onUpdate:modelValue": (v: number) => { log(`change:${v}`); value.value = v } })
+	},
+})
+
 const SwitchView = defineComponent({
 	props: { log: { type: Function, required: true }, disabled: Boolean, error: Boolean },
 	setup(props) {
@@ -99,19 +163,20 @@ const fruit = [
 ]
 
 const SelectView = defineComponent({
-	props: { log: { type: Function, required: true }, error: Boolean, disabled: Boolean },
+	props: { log: { type: Function, required: true }, error: Boolean, disabled: Boolean, multiple: Boolean },
 	setup(props) {
-		const value = ref("")
+		const value = ref<string | string[]>(props.multiple ? [] : "")
 		const log = props.log as Log
 		return () =>
 			h(Select, {
 				label: "Fruit",
 				options: fruit,
-				modelValue: value.value,
+				multiple: props.multiple,
+				modelValue: value.value as never,
 				helperText: "Pick one",
 				error: props.error,
 				disabled: props.disabled,
-				"onUpdate:modelValue": (v: string) => { log(`change:${v}`); value.value = v },
+				"onUpdate:modelValue": (v: string | readonly string[]) => { log(`change:${Array.isArray(v) ? v.join(",") : (v as string)}`); value.value = v as string | string[] },
 				onClose: (reason: string) => log(`close:${reason}`),
 			})
 	},
@@ -142,7 +207,12 @@ const harness: UiHarness = {
 	checkbox: (props, log) => mountWith(props, (p) => h(CheckboxView, { log, indeterminate: p.indeterminate ?? false, disabled: p.disabled ?? false, error: p.error ?? false })),
 	switch: (props, log) => mountWith(props, (p) => h(SwitchView, { log, disabled: p.disabled ?? false, error: p.error ?? false })),
 	radioGroup: (props, log) => mountWith(props, (p) => h(RadioGroupView, { log, disabled: p.disabled ?? false, error: p.error ?? false })),
-	select: (props, log) => mountWith(props, (p) => h(SelectView, { log, error: p.error ?? false, disabled: p.disabled ?? false })),
+	select: (props, log) => mountWith(props, (p) => h(SelectView, { log, error: p.error ?? false, disabled: p.disabled ?? false, multiple: props.multiple ?? false })),
+	iconButtons: (props, log) => mountWith(props, (p) => h(IconButtonsView, { log, disabled: p.disabled ?? false })),
+	buttonGroup: (props, log) => mountWith(props, (p) => h(ButtonGroupView, { log, disabled: p.disabled ?? false })),
+	toggleGroup: (props, log) => mountWith(props, (p) => h(ToggleGroupView, { log, exclusive: p.exclusive ?? false })),
+	slider: (props, log) => mountWith(props, (p) => h(SliderView, { log, disabled: p.disabled ?? false })),
+	rating: (props, log) => mountWith(props, (p) => h(RatingView, { log, readOnly: p.readOnly ?? false, disabled: p.disabled ?? false })),
 	tabs: (props, log) => mountWith(props, (p) => h(TabsView, { log, selectionFollowsFocus: p.selectionFollowsFocus ?? false })),
 	settle: async () => {
 		await nextTick()

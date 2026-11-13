@@ -1,5 +1,6 @@
 import { attachRipple, buttonPart, type ButtonColor, type ButtonSize, type ButtonVariant } from "@omnifront/ui"
-import { forwardRef, useCallback, useEffect, useRef, type ComponentPropsWithoutRef, type MouseEvent, type ReactNode, type Ref } from "react"
+import { forwardRef, useCallback, useContext, useEffect, useRef, type ComponentPropsWithoutRef, type MouseEvent, type ReactNode, type Ref } from "react"
+import { ButtonGroupContext } from "./button-group-context"
 import { mergeProps, toReactProps } from "./internal"
 import { useDefaultProps } from "./theme"
 
@@ -21,6 +22,15 @@ export interface ButtonProps extends Omit<ComponentPropsWithoutRef<"button">, "c
 	rel?: string | undefined
 }
 
+/** Inside a ButtonGroup, the group's props fill in what the Button did not set itself. */
+function useGroupDefaults<P extends { variant?: unknown; color?: unknown; size?: unknown; disabled?: unknown; disableElevation?: unknown }>(props: P): P {
+	const group = useContext(ButtonGroupContext)
+	if (!group) return props
+	const out: Record<string, unknown> = { ...props }
+	for (const [key, value] of Object.entries(group)) if (out[key] === undefined && value !== undefined) out[key] = value
+	return out as P
+}
+
 /** Material button: `text`, `outlined` or `contained`, with colours, sizes, icons, loading state and ripple. */
 export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonProps>(function Button(rawProps, ref) {
 	const {
@@ -40,7 +50,7 @@ export const Button = forwardRef<HTMLButtonElement | HTMLAnchorElement, ButtonPr
 		onClick,
 		children,
 		...rest
-	} = useDefaultProps("OmniButton", rawProps)
+	} = useGroupDefaults(useDefaultProps("OmniButton", rawProps))
 	const as = href === undefined ? "button" : "a"
 	const part = buttonPart({ variant, color, size, fullWidth, disableElevation, disabled, loading, as, type })
 

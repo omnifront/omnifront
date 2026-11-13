@@ -28,6 +28,49 @@ The injectable that `omni-theme-provider` provides: signals `theme`, `id` and `s
 
 `<button omni-button>` or `<a omni-button href>`. Inputs: `variant`, `color`, `size`, `fullWidth`, `disableElevation`, `loading`, `disabled`, `disableRipple`, `type`. Content projection: `[omniStartIcon]`, `[omniEndIcon]`.
 
+### `OmniIconButton`, `OmniFab`
+
+```html
+<button omni-icon-button aria-label="Delete" color="primary"><svg>…</svg></button>
+<button omni-fab aria-label="Add"><svg>…</svg></button>
+```
+
+Attribute components on `<button>` or `<a>`. `omni-icon-button`: `color`, `size`, `edge` (`start` or `end`), `disabled`, `disableRipple`, `type`. `omni-fab`: `variant` (`circular` or `extended`), `color`, `size`, `disabled`, `disableRipple`, `type`. Both need an `aria-label`.
+
+### `OmniButtonGroup`, `OMNI_BUTTON_GROUP`
+
+```html
+<omni-button-group label="Actions" variant="outlined"><button omni-button>One</button><button omni-button>Two</button></omni-button-group>
+```
+
+Joins buttons into one `role="group"` (named by `label`). Inputs: `variant`, `color`, `size`, `disabled`, `disableElevation`, `orientation`, `fullWidth`. Each `omni-button` inside takes these as its defaults, through the `OMNI_BUTTON_GROUP` injection token; its own input wins.
+
+### `OmniToggleButtonGroup`, `OmniToggleButton`, `OMNI_TOGGLE_GROUP`
+
+```html
+<omni-toggle-button-group label="Format" [value]="format()" (valueChange)="format.set($any($event))">
+  <button omni-toggle-button value="bold">Bold</button>
+</omni-toggle-button-group>
+```
+
+Buttons that stay pressed. Group inputs: `value` / `defaultValue` (a list; with `exclusive`, one value or `null`), `exclusive`, `orientation`, `size`, `color`, `disabled`, `fullWidth`, `label`; output `valueChange`. Button inputs: `value`, `selected` (alone), `color`, `size`, `disabled`. The group is shared with its buttons through `OMNI_TOGGLE_GROUP`.
+
+### `OmniSlider`
+
+```html
+<omni-slider aria-label="Volume" [value]="volume()" (valueChange)="volume.set($event)" valueLabelDisplay="auto" />
+```
+
+A real `<input type="range">`, so dragging, the keys, forms and screen readers are native. Inputs: `value` / `defaultValue`, `min`, `max`, `step`, `marks` (`true` or a list of `SliderMark`: `{ value, label? }`), `valueLabelDisplay` (`auto`, `on`, `off`), `valueLabelFormat`, `getAriaValueText`, `size`, `color`, `disabled`, `name`, `aria-label`; output `valueChange`. Not yet: two thumbs and a vertical slider.
+
+### `OmniRating`
+
+```html
+<omni-rating aria-label="Rating" [value]="stars()" (valueChange)="stars.set($event)" />
+```
+
+Stars made of native radios. Inputs: `value` / `defaultValue` (`0` means no rating), `max` (5), `precision` (`1`, `0.5`, `0.25`), `readOnly` (an image named "Rating: 3 out of 5"), `disabled`, `size`, `color`, `name`, `aria-label`; outputs `valueChange` and `activeChange`.
+
 ### `OmniTextField`
 
 `<omni-text-field>`. Inputs: `label`, `helperText`, `error`, `disabled`, `required`, `readOnly`, `variant`, `size`, `color`, `fullWidth`, `multiline`, `rows`, `type`, `placeholder`, `name`, `id`, `value`, `defaultValue`. Output: `valueChange`. Works with `ngModel` and reactive forms. Projection: `[omniStartAdornment]`, `[omniEndAdornment]`.
