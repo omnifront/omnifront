@@ -29,6 +29,19 @@ next  -> react
 
 پکیج `api` اضافه شد و قاعده‌ی `api-imports-core-only` در `.dependency-cruiser.cjs` اجرا می‌شود. هر بسته‌ی جدید باید همین‌جا و در آن فایل قاعده بگیرد.
 
+## به‌روزرسانی (۲۰۲۶-۱۱-۱۲)
+
+ADR-0014 چهار بسته‌ی UI اضافه کرد:
+
+```
+ui          -> core, store   (بدون فریم‌ورک؛ هرگز query یا api)
+ui-react    -> ui, react     (+ peerDependency روی react)
+ui-vue      -> ui, vue       (+ peerDependency روی vue)
+ui-angular  -> ui, angular   (+ peerDependency روی @angular/core و @angular/common)
+```
+
+بسته‌های `ui-*` در رده‌ی آداپتر هستند، پس قاعده‌ی اجباری حالا این است: هیچ پکیجی جز آداپترها و `ui-*` حق import از `react`، `vue` یا `@angular/*` ندارد، و هر `ui-*` فقط فریم‌ورک خودش را. قاعده‌ها در `.dependency-cruiser.cjs` اضافه شده‌اند.
+
 ## گزینه‌های ردشده
 
 - `eslint-plugin-boundaries`: برای این تعداد قاعده، dependency-cruiser مستقل از ESLint و ساده‌تر است.

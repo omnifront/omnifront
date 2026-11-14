@@ -1,0 +1,31 @@
+@layer omnifront {
+	.omni-form-group {
+		display: flex;
+		flex-direction: column;
+		min-inline-size: 0;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		vertical-align: top;
+		font: var(--omni-typography-body1-font);
+		letter-spacing: var(--omni-typography-body1-letter-spacing);
+		color: var(--omni-palette-text-primary);
+	}
+	.omni-form-group__label {
+		padding: 0;
+		margin-block-end: 4px;
+		color: var(--omni-palette-text-secondary);
+	}
+	.omni-form-group[data-error] .omni-form-group__label { color: var(--omni-palette-error-main); }
+	.omni-form-group[data-disabled] .omni-form-group__label { color: var(--omni-palette-text-disabled); }
+	.omni-form-group__items { display: flex; flex-direction: column; align-items: flex-start; }
+	.omni-form-group__items[data-row] { flex-direction: row; flex-wrap: wrap; }
+	.omni-form-group__helper {
+		margin: 3px 0 0;
+		color: var(--omni-palette-text-secondary);
+		font: var(--omni-typography-caption-font);
+		letter-spacing: var(--omni-typography-caption-letter-spacing);
+	}
+	.omni-form-group__helper[data-error] { color: var(--omni-palette-error-main); }
+	.omni-form-group[data-disabled] .omni-form-group__helper { color: var(--omni-palette-text-disabled); }
+}

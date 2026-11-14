@@ -1,0 +1,21 @@
+{
+	"compileOnSave": false,
+	"compilerOptions": {
+		"target": "ES2022",
+		"module": "ES2022",
+		"moduleResolution": "bundler",
+		"strict": true,
+		"noUncheckedIndexedAccess": true,
+		"isolatedModules": true,
+		"experimentalDecorators": true,
+		"skipLibCheck": true,
+		"importHelpers": true,
+		"lib": ["ES2022", "dom"],
+		"paths": { "@omnifront/ui-angular": ["../../packages/ui-angular/dist"] }
+	},
+	"angularCompilerOptions": {
+		"strictInjectionParameters": true,
+		"strictInputAccessModifiers": true,
+		"strictTemplates": true
+	}
+}

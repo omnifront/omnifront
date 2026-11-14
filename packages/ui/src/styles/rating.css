@@ -1,0 +1,78 @@
+/* Rating: stars drawn with CSS masks. Each step is a native radio laid over its part of the star. */
+@layer omnifront {
+	.omni-rating {
+		--_star: #faaf00;
+		--_empty: var(--omni-palette-action-disabled);
+		--_size: 1.5rem;
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		color: var(--_star);
+		font-size: var(--_size);
+		line-height: 1;
+		-webkit-tap-highlight-color: transparent;
+	}
+	.omni-rating[data-size="small"] { --_size: 1.125rem; }
+	.omni-rating[data-size="large"] { --_size: 1.875rem; }
+	.omni-rating[data-color="primary"] { --_star: var(--omni-palette-primary-main); }
+	.omni-rating[data-color="secondary"] { --_star: var(--omni-palette-secondary-main); }
+	.omni-rating[data-color="error"] { --_star: var(--omni-palette-error-main); }
+
+	.omni-rating__star {
+		position: relative;
+		display: inline-block;
+		inline-size: 1em;
+		block-size: 1em;
+		cursor: pointer;
+	}
+	.omni-rating[data-readonly] .omni-rating__star,
+	.omni-rating[data-disabled] .omni-rating__star { cursor: default; pointer-events: none; }
+	.omni-rating__icon,
+	.omni-rating__fill {
+		position: absolute;
+		inset-block: 0;
+		inset-inline-start: 0;
+		inline-size: 1em;
+		block-size: 1em;
+		-webkit-mask: center / contain no-repeat;
+		mask: center / contain no-repeat;
+	}
+	.omni-rating__icon {
+		background-color: var(--_empty);
+		-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z'/%3E%3C/svg%3E");
+		mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M22 9.24l-7.19-.62L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21 12 17.27 18.18 21l-1.63-7.03L22 9.24zM12 15.4l-3.76 2.27 1-4.28-3.32-2.88 4.38-.38L12 6.1l1.71 4.04 4.38.38-3.32 2.88 1 4.28L12 15.4z'/%3E%3C/svg%3E");
+	}
+	.omni-rating__fill-box { position: absolute; inset-block: 0; inset-inline-start: 0; overflow: hidden; inline-size: 0; }
+	.omni-rating__star[data-fill="25"] .omni-rating__fill-box { inline-size: 25%; }
+	.omni-rating__star[data-fill="50"] .omni-rating__fill-box { inline-size: 50%; }
+	.omni-rating__star[data-fill="75"] .omni-rating__fill-box { inline-size: 75%; }
+	.omni-rating__star[data-fill="100"] .omni-rating__fill-box { inline-size: 100%; }
+	.omni-rating__fill {
+		background-color: var(--_star);
+		-webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+		mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z'/%3E%3C/svg%3E");
+	}
+
+	/* the radios: transparent, over their part of the star */
+	.omni-rating__radio {
+		position: absolute;
+		inset-block: 0;
+		z-index: 1;
+		inline-size: 100%;
+		margin: 0;
+		opacity: 0;
+		cursor: inherit;
+	}
+	.omni-rating__radio[data-slots="2"] { inline-size: 50%; }
+	.omni-rating__radio[data-slots="4"] { inline-size: 25%; }
+	.omni-rating__radio[data-slots="2"][data-slot="2"] { inset-inline-start: 50%; }
+	.omni-rating__radio[data-slots="4"][data-slot="2"] { inset-inline-start: 25%; }
+	.omni-rating__radio[data-slots="4"][data-slot="3"] { inset-inline-start: 50%; }
+	.omni-rating__radio[data-slots="4"][data-slot="4"] { inset-inline-start: 75%; }
+	.omni-rating__star:has(:focus-visible) { outline: 2px solid var(--_star); outline-offset: 2px; border-radius: 2px; }
+
+	/* the "no rating" radio: reachable with the arrow keys, not seen */
+	.omni-rating__clear { position: absolute; inline-size: 1px; block-size: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); border: 0; white-space: nowrap; }
+
+	.omni-rating[data-disabled] { opacity: var(--omni-palette-action-disabled-opacity); }
+}

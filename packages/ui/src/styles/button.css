@@ -1,0 +1,132 @@
+@layer omnifront {
+	.omni-button {
+		--_main: var(--omni-palette-primary-main);
+		--_dark: var(--omni-palette-primary-dark);
+		--_contrast: var(--omni-palette-primary-contrast-text);
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		min-inline-size: 64px;
+		margin: 0;
+		padding: 6px 16px;
+		border: 0;
+		border-radius: var(--omni-shape-border-radius);
+		outline: 0;
+		overflow: hidden; /* clips the ripple */
+		cursor: pointer;
+		user-select: none;
+		vertical-align: middle;
+		text-decoration: none;
+		font: var(--omni-typography-button-font);
+		letter-spacing: var(--omni-typography-button-letter-spacing);
+		text-transform: var(--omni-typography-button-text-transform);
+		color: var(--_main);
+		background-color: transparent;
+		-webkit-tap-highlight-color: transparent;
+		transition:
+			background-color var(--omni-duration-short) var(--omni-easing-ease-in-out),
+			box-shadow var(--omni-duration-short) var(--omni-easing-ease-in-out),
+			border-color var(--omni-duration-short) var(--omni-easing-ease-in-out);
+	}
+
+	.omni-button[data-color="inherit"] { --_main: currentColor; --_dark: currentColor; --_contrast: inherit; }
+	.omni-button[data-color="secondary"] { --_main: var(--omni-palette-secondary-main); --_dark: var(--omni-palette-secondary-dark); --_contrast: var(--omni-palette-secondary-contrast-text); }
+	.omni-button[data-color="success"] { --_main: var(--omni-palette-success-main); --_dark: var(--omni-palette-success-dark); --_contrast: var(--omni-palette-success-contrast-text); }
+	.omni-button[data-color="error"] { --_main: var(--omni-palette-error-main); --_dark: var(--omni-palette-error-dark); --_contrast: var(--omni-palette-error-contrast-text); }
+	.omni-button[data-color="info"] { --_main: var(--omni-palette-info-main); --_dark: var(--omni-palette-info-dark); --_contrast: var(--omni-palette-info-contrast-text); }
+	.omni-button[data-color="warning"] { --_main: var(--omni-palette-warning-main); --_dark: var(--omni-palette-warning-dark); --_contrast: var(--omni-palette-warning-contrast-text); }
+
+	/* text (default) */
+	.omni-button:hover { background-color: color-mix(in srgb, var(--_main) 4%, transparent); }
+	.omni-button:focus-visible {
+		background-color: color-mix(in srgb, var(--_main) 12%, transparent);
+		/* the tint lowers the label's contrast, so the label moves towards the text colour (AA, 4.5:1) */
+		color: color-mix(in srgb, var(--_main), var(--omni-palette-text-primary) 30%);
+	}
+
+	/* outlined */
+	.omni-button[data-variant="outlined"] { padding: 5px 15px; border: 1px solid color-mix(in srgb, var(--_main) 50%, transparent); }
+	.omni-button[data-variant="outlined"]:hover { border-color: var(--_main); }
+
+	/* contained */
+	.omni-button[data-variant="contained"] {
+		color: var(--_contrast);
+		background-color: var(--_main);
+		box-shadow: var(--omni-shadow-2);
+	}
+	.omni-button[data-variant="contained"]:hover { background-color: var(--_dark); box-shadow: var(--omni-shadow-4); }
+	.omni-button[data-variant="contained"]:focus-visible { color: var(--_contrast); background-color: var(--_dark); box-shadow: var(--omni-shadow-6); }
+	.omni-button[data-variant="contained"]:active { box-shadow: var(--omni-shadow-8); }
+	.omni-button[data-variant="contained"][data-disable-elevation],
+	.omni-button[data-variant="contained"][data-disable-elevation]:hover,
+	.omni-button[data-variant="contained"][data-disable-elevation]:focus-visible,
+	.omni-button[data-variant="contained"][data-disable-elevation]:active { box-shadow: none; }
+
+	/* sizes */
+	.omni-button[data-size="small"] { padding: 4px 10px; font-size: 0.8125rem; }
+	.omni-button[data-size="small"][data-variant="outlined"] { padding: 3px 9px; }
+	.omni-button[data-size="large"] { padding: 8px 22px; font-size: 0.9375rem; }
+	.omni-button[data-size="large"][data-variant="outlined"] { padding: 7px 21px; }
+
+	.omni-button[data-full-width] { inline-size: 100%; }
+
+	/* disabled and loading */
+	.omni-button:disabled,
+	.omni-button[data-disabled],
+	.omni-button[aria-disabled="true"] { pointer-events: none; cursor: default; }
+	.omni-button:disabled,
+	.omni-button[data-disabled] { color: var(--omni-palette-action-disabled); }
+	.omni-button[data-variant="outlined"]:disabled,
+	.omni-button[data-variant="outlined"][data-disabled] { border-color: var(--omni-palette-action-disabled-background); }
+	.omni-button[data-variant="contained"]:disabled,
+	.omni-button[data-variant="contained"][data-disabled] {
+		color: var(--omni-palette-action-disabled);
+		background-color: var(--omni-palette-action-disabled-background);
+		box-shadow: none;
+	}
+	.omni-button[data-loading] { color: transparent; }
+	.omni-button[data-loading]::after {
+		content: "";
+		position: absolute;
+		inset-block-start: 50%;
+		inset-inline-start: 50%;
+		inline-size: 1.25em;
+		block-size: 1.25em;
+		margin: -0.625em 0 0 -0.625em;
+		border: 2px solid var(--_main);
+		border-inline-end-color: transparent;
+		border-radius: 50%;
+		animation: omni-spin 0.8s linear infinite;
+	}
+	.omni-button[data-variant="contained"][data-loading]::after { border-color: var(--omni-palette-action-disabled); border-inline-end-color: transparent; }
+	[dir="rtl"] .omni-button[data-loading]::after { margin: -0.625em -0.625em 0 0; }
+
+	/* start / end icons */
+	.omni-button__start { display: inherit; margin-inline: -4px 8px; }
+	.omni-button__end { display: inherit; margin-inline: 8px -4px; }
+	/* Angular always renders the wrappers; empty ones take no space */
+	.omni-button__start:empty, .omni-button__end:empty { display: none; }
+
+	/* ripple (added by attachRipple) */
+	.omni-ripple {
+		position: absolute;
+		pointer-events: none;
+		border-radius: 50%;
+		background-color: currentColor;
+		opacity: 0;
+		transform: scale(0);
+		animation: omni-ripple 550ms var(--omni-easing-ease-in-out);
+	}
+	@keyframes omni-ripple {
+		0% { transform: scale(0); opacity: 0.3; }
+		100% { transform: scale(1); opacity: 0; }
+	}
+	@keyframes omni-spin { to { transform: rotate(360deg); } }
+	@media (prefers-reduced-motion: reduce) {
+		.omni-button { transition: none; }
+		.omni-ripple { animation: none; }
+		.omni-button[data-loading]::after { animation-duration: 2s; }
+	}
+}

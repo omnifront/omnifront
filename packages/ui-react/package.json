@@ -1,0 +1,45 @@
+{
+	"name": "@omnifront/ui-react",
+	"version": "0.0.0",
+	"description": "React components for the omnifront UI kit: Material-style Button, TextField, Dialog, Menu and Tabs.",
+	"license": "MIT",
+	"keywords": ["omnifront", "ui", "react", "material", "components"],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
+		"directory": "packages/ui-react"
+	},
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/ui-react#readme",
+	"bugs": { "url": "https://github.com/omnifront/omnifront/issues" },
+	"type": "module",
+	"sideEffects": false,
+	"engines": { "node": ">=18" },
+	"exports": {
+		".": {
+			"import": { "types": "./dist/index.d.ts", "default": "./dist/index.js" },
+			"require": { "types": "./dist/index.d.cts", "default": "./dist/index.cjs" }
+		}
+	},
+	"files": ["dist"],
+	"scripts": {
+		"build": "tsup src/index.ts --format esm,cjs --dts --clean",
+		"test": "vitest run --coverage",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@omnifront/core": "workspace:*",
+		"@omnifront/store": "workspace:*",
+		"@omnifront/ui": "workspace:*"
+	},
+	"peerDependencies": { "react": ">=18", "react-dom": ">=18" },
+	"devDependencies": {
+		"@omnifront/conformance": "workspace:*",
+		"@testing-library/dom": "^10.4.2",
+		"@testing-library/react": "^16.3.3",
+		"@types/react": "^19.3.0",
+		"@types/react-dom": "^19.3.0",
+		"jsdom": "^31.0.0",
+		"react": ">=18",
+		"react-dom": "^19.3.1"
+	}
+}

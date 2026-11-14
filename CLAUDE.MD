@@ -13,6 +13,8 @@ Goals, in priority order:
 
 Differentiation angle (pick this when making product decisions): **multi-framework teams and gradual migration** (for example, moving from Angular to React without rewriting data logic). Secondary angles: small bundle size (core + query is about 5KB gzip, and every extra is an opt-in entry with its own budget) and one unified mental model for query + store.
 
+A second layer sits on top of the data layer: a MUI-style component library (`@omnifront/ui` plus `ui-react`, `ui-vue`, `ui-angular`, ADR-0014) with one theme and one behaviour implementation shared by all frameworks. The small-bundle angle applies to the data layer only.
+
 Non-goals for v1: forms/validation, Svelte/Solid/Qwik adapters, a custom GraphQL client, a full DevTools extension.
 
 ## 2. Tech decisions (settled)
@@ -51,6 +53,8 @@ omnifront/
 │   ├─ vue/                    # composables
 │   ├─ angular/                # inject* / provide*
 │   ├─ next/                   # SSR helpers, built on react
+│   ├─ ui/                     # ADR-0014: createTheme, behaviour machines (Subscribable), a11y utils, static CSS. No framework
+│   ├─ ui-react/ ui-vue/ ui-angular/   # ADR-0014: components, rendering only
 │   └─ conformance/            # shared adapter test suite (private)
 ├─ apps/docs/                  # VitePress or Starlight
 ├─ examples/{react,vue,angular,next}/
@@ -73,9 +77,11 @@ api   → core   (never query or store: integration is structural, ADR-0009)
 query-infinite / persist / devtools → query, core
 react / vue / angular → query, store, core   (+ peerDependency on the framework)
 next  → react
+ui    → core, store   (never query or api; ADR-0014)
+ui-react → ui, react    ui-vue → ui, vue    ui-angular → ui, angular
 ```
 
-**Hard rule:** no package except the adapters may import from `react`, `vue`, or `@angular/*`. This is the most important invariant in the project.
+**Hard rule:** no package except the adapters and the `ui-*` packages (each only its own framework) may import from `react`, `vue`, or `@angular/*`. This is the most important invariant in the project.
 
 ### Root files
 
@@ -234,6 +240,8 @@ Rule: do not start a phase until the previous one meets its exit criteria.
 **Status (2026-11-11):** Phases 0 to 6 are done (core, query, store, api, query-infinite, persist, devtools, React/Vue/Angular/Next adapters with SSR, conformance suite, docs, benchmarks, examples). Nothing has been published to npm. **Phase 7 (launch) is on hold: do not publish to npm, make the repo public or post anything until the owner says so.**
 
 Current work, on branch `feat/parity-phases-1-2` (not pushed): closing the gap to TanStack Query and axios, following ADR-0013 and `docs/parity-plan.md`. Plan phases 0 to 4 are done: typed errors (`TError` is the second type argument), result flags, `select`, `defaultOptions`, `refetchOnMount`, network modes and paused fetches, mutation options, scopes and persisted waiting mutations (`@omnifront/query/offline`), the axios options in `api`, and the opt-in entries `/filters`, `/events`, `/options`, `/serialize`, `/progress`. Next is plan phase 5 (adapter-only items such as `throwOnError`, `useSuspenseQueries`, streamed pending queries); the leftovers and what was dropped are listed in the plan and in ADR-0013 section 9. The Devtools UI (ADR-0012) is separate work in progress.
+
+**UI library (ADR-0014, Accepted 2026-11-12; wave 0 is built and verified (conformance, axe, pixel comparison across frameworks, hydration; branch `feat/ui-wave-0`, not pushed); the ADR's "wave 0 outcome" lists what remains):** starts before phase 7. Settled: headless machines + static CSS with CSS variables in `@omnifront/ui`, thin `ui-react` / `ui-vue` / `ui-angular`; Material Design 2 as the default look; no `styled()` and no full `sx` (system props on layout components only); Vue as SFCs built with Vite, Angular with `ng-packagr`; no hard size cap for `ui*` (sizes are recorded). Work goes in waves; wave 0 is the foundation plus Button, TextField, Dialog, Menu and Tabs in all three frameworks, and a wave is done only when all three frameworks, the conformance tests and the docs are done. Real-browser checks live in `tooling/e2e-ui` (`pnpm --filter @omnifront/e2e-ui build:examples` then `e2e`).
 
 **Size budgets are nearly spent:** the main entry of `@omnifront/query` is at 3.975 KB of 4 KB (and `api` at 2.83 of 3 KB). The cap does not go up without an ADR; a new feature goes to an opt-in entry, an adapter or its own package (ADR-0013 section 1), or is paid for by removing something. `Mutation`'s `wrap` option is the extension point for behaviour that needs to sit around sending.
 

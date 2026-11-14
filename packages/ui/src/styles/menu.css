@@ -1,0 +1,61 @@
+@layer omnifront {
+	.omni-menu {
+		position: fixed;
+		inset-block-start: 0;
+		inset-inline-start: 0;
+		z-index: var(--omni-z-modal);
+		box-sizing: border-box;
+		min-inline-size: 16px;
+		max-block-size: min(calc(100vh - 32px), var(--omni-available-height, 100vh));
+		overflow-y: auto;
+		margin: 0;
+		padding: 8px 0;
+		list-style: none;
+		outline: 0;
+		border-radius: var(--omni-shape-border-radius);
+		color: var(--omni-palette-text-primary);
+		background-color: var(--omni-palette-background-paper);
+		background-image: var(--omni-overlay-8);
+		box-shadow: var(--omni-shadow-8);
+		font: var(--omni-typography-body1-font);
+		letter-spacing: var(--omni-typography-body1-letter-spacing);
+		transform-origin: top;
+		animation: omni-menu-in var(--omni-duration-shorter) var(--omni-easing-ease-out) both;
+	}
+	.omni-menu[data-state="closed"] { animation: omni-menu-out var(--omni-duration-shortest) var(--omni-easing-ease-in) both; }
+	@keyframes omni-menu-in { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: none; } }
+	@keyframes omni-menu-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: scale(0.95); } }
+	.omni-menu[data-placement^="top"] { transform-origin: bottom; }
+
+	.omni-menu[hidden] { display: none; }
+	.omni-menu__item {
+		position: relative;
+		display: flex;
+		align-items: center;
+		box-sizing: border-box;
+		inline-size: 100%;
+		min-block-size: 48px;
+		padding: 6px 16px;
+		margin: 0;
+		border: 0;
+		outline: 0;
+		cursor: pointer;
+		user-select: none;
+		white-space: nowrap;
+		text-align: start;
+		text-decoration: none;
+		color: inherit;
+		background: none;
+		font: var(--omni-typography-body1-font);
+		letter-spacing: var(--omni-typography-body1-letter-spacing);
+		overflow: hidden;
+		transition: background-color var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
+	}
+	.omni-menu__item:hover { background-color: var(--omni-palette-action-hover); }
+	.omni-menu__item:focus-visible, .omni-menu__item:focus { background-color: var(--omni-palette-action-focus); }
+	.omni-menu__item[data-selected] { background-color: color-mix(in srgb, var(--omni-palette-primary-main) 8%, transparent); }
+	.omni-menu__item[data-disabled] { opacity: var(--omni-palette-action-disabled-opacity); pointer-events: none; cursor: default; }
+	.omni-menu__item[data-dense] { min-block-size: 32px; padding-block: 4px; font: var(--omni-typography-body2-font); }
+	.omni-menu__divider { margin: 8px 0; border: 0; border-block-end: 1px solid var(--omni-palette-divider); list-style: none; }
+	@media (prefers-reduced-motion: reduce) { .omni-menu { animation-duration: 1ms !important; } .omni-menu__item { transition: none; } }
+}

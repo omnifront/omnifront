@@ -1,0 +1,13 @@
+/* CssBaseline: a light reset in the same spirit as MUI's. Import once. */
+@layer omnifront {
+	*, *::before, *::after { box-sizing: border-box; }
+	html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; -webkit-text-size-adjust: 100%; }
+	body {
+		margin: 0;
+		color: var(--omni-palette-text-primary);
+		background-color: var(--omni-palette-background-default);
+		font: var(--omni-typography-body1-font);
+		letter-spacing: var(--omni-typography-body1-letter-spacing);
+	}
+	@media print { body { background-color: #fff; } }
+}

@@ -379,5 +379,71 @@
 			"@omnifront/query",
 			"@omnifront/core"
 		]
+	},
+	{
+		"name": "@omnifront/ui",
+		"path": "packages/ui/dist/index.js",
+		"limit": "11.5 KB",
+		"gzip": true,
+		"ignore": [
+			"@omnifront/core",
+			"@omnifront/store"
+		]
+	},
+	{
+		"name": "@omnifront/ui/position",
+		"path": "packages/ui/dist/position.js",
+		"limit": "8 KB",
+		"gzip": true
+	},
+	{
+		"name": "@omnifront/ui/styles.css",
+		"path": "packages/ui/dist/styles.css",
+		"limit": "9.5 KB",
+		"gzip": true
+	},
+	{
+		"name": "@omnifront/ui-react",
+		"path": "packages/ui-react/dist/index.js",
+		"limit": "7.75 KB",
+		"gzip": true,
+		"ignore": [
+			"react",
+			"react-dom",
+			"@omnifront/core",
+			"@omnifront/store",
+			"@omnifront/ui",
+			"@omnifront/ui/position"
+		]
+	},
+	{
+		"name": "@omnifront/ui-vue",
+		"path": "packages/ui-vue/dist/index.js",
+		"limit": "9.5 KB",
+		"gzip": true,
+		"ignore": [
+			"vue",
+			"@omnifront/core",
+			"@omnifront/store",
+			"@omnifront/ui",
+			"@omnifront/ui/position"
+		]
+	},
+	{
+		"name": "@omnifront/ui-angular",
+		"path": "packages/ui-angular/dist/fesm2022/omnifront-ui-angular.mjs",
+		"limit": "13.5 KB",
+		"gzip": true,
+		"ignore": [
+			"@angular/core",
+			"@angular/common",
+			"@angular/forms",
+			"rxjs",
+			"tslib",
+			"@omnifront/core",
+			"@omnifront/store",
+			"@omnifront/ui",
+			"@omnifront/ui/position"
+		]
 	}
 ]

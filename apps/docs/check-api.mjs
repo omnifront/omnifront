@@ -22,6 +22,10 @@ const pages = {
 	next: ["next", ["index.d.ts", "client.d.ts"]],
 	persist: ["persist", ["index.d.ts", "indexeddb.d.ts"]],
 	devtools: ["devtools", ["index.d.ts", "panel.d.ts"]],
+	ui: ["ui", ["index.d.ts", "position.d.ts"]],
+	"ui-react": ["ui-react", ["index.d.ts"]],
+	"ui-vue": ["ui-vue", ["index.d.ts"]],
+	"ui-angular": ["ui-angular", ["types/omnifront-ui-angular.d.ts"]],
 }
 
 function exportsOf(file) {

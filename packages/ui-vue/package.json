@@ -1,0 +1,59 @@
+{
+	"name": "@omnifront/ui-vue",
+	"version": "0.0.0",
+	"description": "Vue components for the omnifront UI kit: Material-style Button, TextField, Dialog, Menu and Tabs.",
+	"license": "MIT",
+	"keywords": [
+		"omnifront",
+		"ui",
+		"vue",
+		"material",
+		"components"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/omnifront/omnifront.git",
+		"directory": "packages/ui-vue"
+	},
+	"homepage": "https://github.com/omnifront/omnifront/tree/main/packages/ui-vue#readme",
+	"bugs": {
+		"url": "https://github.com/omnifront/omnifront/issues"
+	},
+	"type": "module",
+	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "vite build && vue-tsc -p tsconfig.build.json",
+		"test": "vitest run --coverage",
+		"typecheck": "vue-tsc --noEmit"
+	},
+	"dependencies": {
+		"@omnifront/core": "workspace:*",
+		"@omnifront/store": "workspace:*",
+		"@omnifront/ui": "workspace:*"
+	},
+	"peerDependencies": {
+		"vue": ">=3.3"
+	},
+	"devDependencies": {
+		"@omnifront/conformance": "workspace:*",
+		"@testing-library/dom": "^10.4.2",
+		"@vitejs/plugin-vue": "^6.0.10",
+		"jsdom": "^31.0.0",
+		"vite": "^8.3.6",
+		"vue": ">=3.3",
+		"vue-tsc": "^3.3.14"
+	}
+}
