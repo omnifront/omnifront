@@ -244,6 +244,42 @@ ui-angular  → ui, angular (+ peer: @angular/core, @angular/common)
 
 **انجام‌نشده (آگاهانه):** `CardActionArea`، `AvatarGroup`، `TableSortLabel`، `TablePagination`، گروه آکاردئون، `arrow` و لمس برای Tooltip، `deleteIcon` سفارشی برای Chip، محتوای غنی در Tooltip برای Angular (Popover در موج ۳)، ورودی‌های `alignItems` و `ListItemAvatar` در List، و `component` برای Table (عنصرها بومی‌اند و تغییر نمی‌کنند). هیچ‌کدام برای تمام شدن موج لازم نبود و هر کدام یک تصمیم جداگانه می‌خواهد.
 
+## موج ۳: بازخورد و ناوبری (2026-11-16)
+
+دامنه: هر ۱۴ قلم موج (Alert، Snackbar، Backdrop، CircularProgress، LinearProgress، Skeleton، Drawer، Popover، Breadcrumbs، Link، Pagination، Stepper، BottomNavigation، SpeedDial) **به‌علاوه‌ی** نُه موردی که موج ۲ آگاهانه عقب انداخت: `CardActionArea`، `AvatarGroup`، `TableSortLabel`، `TablePagination`، گروه آکاردئون، `arrow` و لمس برای Tooltip، `deleteIcon` سفارشی برای Chip، محتوای غنی Tooltip در Angular، و `ListItemAvatar` با `alignItems`. هر سه فریم‌ورک، همان قاعده‌ی موج ۲: چیزی که حالت یا رفتار ندارد فقط CSS و `Part` است؛ بقیه ماشین می‌گیرند.
+
+**چه چیزی ماشین دارد.** پنج ماشین تازه: `createSnackbar` (باز و بسته با تایمر خودکار از `Scheduler`، مکث با hover و فوکوس)، `createPopover` (باز بودن، Escape، کلیک بیرون، فوکوس، جای‌گذاری)، `createPagination` (صفحه‌ی کنترل‌شده یا نه، فهرست دکمه‌ها با `ellipsis`)، `createAccordionGroup` (کدام پنل باز است) و `createSpeedDial` (باز بودن با hover و کلیک، جهت‌های پیکان، Escape). Drawer ماشین جدید ندارد: `temporary` همان `createDialog` است (تله‌ی فوکوس، قفل اسکرول، Escape)، `persistent` و `permanent` فقط CSS و `data-state`‌اند. Tooltip برای لمس و `arrow` گسترش یافت، نه ماشین جدید. بقیه فقط `Part` و تابع‌های خالص‌اند: `alertPart`، `progressPart`، `skeletonPart`، `linkPart`، `breadcrumbItems`، `stepPart`، `bottomNavigationActionPart` و `tablePaginationState`.
+
+**تصمیم‌های هر قلم:**
+
+- **Alert:** `severity` (پیش‌فرض `success`، مثل MUI)، `variant` (`standard`، `filled`، `outlined`)، `icon` سفارشی یا `false`، `action` و `onClose` (دکمه‌ی بستن با `aria-label="Close"`)، `AlertTitle`. نقش برای `error` و `warning` `alert` و برای `info` و `success` `status` است، تا پیام‌های غیرفوری صفحه‌خوان را قطع نکنند.
+- **Snackbar:** `open`، `autoHideDuration` (پیش‌فرض بدون بسته شدن خودکار)، `onClose(event, reason)` با دلیل‌های `timeout`، `clickaway` و `escapeKeyDown`، `anchorOrigin`، `message`، `action`. تایمر با hover یا فوکوس داخل متوقف می‌شود و پایان مکث نصف مدت را دوباره می‌شمارد (WCAG 2.2.1). بدون صف داخلی: صف‌کردن پیام‌ها کار برنامه است (یک `key` که عوض شود کافی است). محتوا `role="status"` است، چون `alert` برای پیام موقت خیلی تهاجمی است؛ `Alert` داخل Snackbar نقش خود را دارد.
+- **Backdrop:** یک `div` تزئینی (`aria-hidden`) با گذار `opacity` و `visibility`، `invisible`، `onClick`. Dialog و Drawer پس‌زمینه‌ی خودشان را دارند و از آن استفاده نمی‌کنند.
+- **CircularProgress و LinearProgress:** `role="progressbar"`؛ با `value` قطعی (`aria-valuenow`) و بدون آن نامعین (بدون `aria-valuenow`). `LinearProgress` حالت `buffer` را هم دارد (`valueBuffer`)؛ `query` نیامد. چرخش و حرکت با reduced motion به یک گردش کند تبدیل می‌شود نه ایستا، چون ایستا یعنی «قفل کرده» به نظر می‌آید.
+- **Skeleton:** `variant` (`text`، `circular`، `rectangular`، `rounded`)، `animation` (`pulse`، `wave`، `false`)، `width` و `height` به متغیر CSS تبدیل می‌شوند. `aria-hidden`؛ ظاهر خود را با `aria-busy` روی پدر اعلام می‌کند، نه روی Skeleton.
+- **Drawer:** `anchor` (چهار جهت منطقی: `start` و `end` در RTL آینه می‌شوند، `top`، `bottom`) و `variant`. `temporary` یک Dialog است (modal، Escape، کلیک روی پس‌زمینه)؛ `persistent` یک `<aside>` است که باز و بسته می‌شود و فوکوس را نمی‌گیرد؛ `permanent` فقط یک `<aside>`.
+- **Popover:** عنصر لنگر را کاربر می‌دهد (`anchorEl` در React، `anchor` در Vue و Angular)، `placement`، و غیرمودال است: صفحه قفل نمی‌شود، فقط Escape، کلیک بیرون و فوکوس. `role="dialog"` با `aria-label` اجباری. همین Popover جایگزینی است که ADR موج ۲ برای محتوای غنی Tooltip نام برد.
+- **Breadcrumbs:** `<nav aria-label="breadcrumb">` با `ol`، جداکننده‌ی تزئینی، `maxItems` با `itemsBeforeCollapse` و `itemsAfterCollapse` که وسط را زیر یک دکمه‌ی «Show path» جمع می‌کند. آخرین قلم `aria-current="page"` می‌گیرد. جداکننده در RTL آینه می‌شود.
+- **Link:** `<a>` بومی با `underline` و `color`؛ بدون ماشین.
+- **Pagination:** `<nav aria-label="pagination navigation">` با دکمه‌های واقعی، `aria-current="page"` برای صفحه‌ی فعلی، `aria-label="Go to page 3"`. فهرست دکمه‌ها (`siblingCount`، `boundaryCount`، `showFirstButton`، `showLastButton`، `hidePrevButton`، `hideNextButton`) خروجی `paginationItems` است و در ماشین هر سه فریم‌ورک را یکی می‌کند. `variant` (`text` / `outlined`)، `shape`، `size`، `color`.
+- **Stepper:** `ol` از `Step`ها؛ شمارش با اندیس خود Step در والد (React با context، Vue با رندر تابعی که اندیس را به vnodeها می‌دهد، Angular با `contentChildren`). `activeStep`، `orientation`، `alternativeLabel`، `nonLinear`؛ `Step` وقتی `onClick` دارد یک `button` است. آیکون: عدد، تیک (completed) یا علامت خطا. `aria-current="step"` روی گام فعال. `StepContent` جدا نیامد: محتوای گام عمودی فرزند `Step` است.
+- **BottomNavigation:** `<nav>` از دکمه‌ها با `aria-current="page"`، `showLabels`، **فقط کنترل‌شده** (`value` و `onChange`): حالت داخلی بدون ماشین و بی‌دلیل بود، چون برنامه همیشه route را نگه می‌دارد.
+- **SpeedDial:** دکمه‌ی Fab (`aria-haspopup="menu"`، `aria-expanded`) و فهرست `role="menu"` از `SpeedDialAction` با `role="menuitem"`. با hover و کلیک باز می‌شود؛ Escape می‌بندد و فوکوس را به Fab برمی‌گرداند؛ پیکان‌ها (در جهت چیدمان) بین کنش‌ها می‌روند. برچسب هر کنش `aria-label` و tooltip ایستای CSS است (نه Tooltip ماشینی: داخل یک منوی باز هم‌تراز دو لایه‌ی روی هم لازم نیست).
+
+**موارد موج ۲:**
+
+- **CardActionArea:** یک `<button>` (یا `<a>` با `href`) که محتوای کارت را می‌پوشاند؛ بدون ماشین. فقط وقتی کل کارت یک هدف است، و نباید دکمه‌ی دیگری داخلش باشد (قاعده‌ی HTML، در مستندات).
+- **AvatarGroup:** `max` (پیش‌فرض ۵) و `total`؛ بیشتر از آن یک Avatar «+N» می‌شود. React و Vue فرزندهای اضافه را رندر نمی‌کنند؛ Angular نمی‌تواند فرزند طرح‌ریزی‌شده را حذف کند و آن‌ها را `hidden` می‌کند (دیده نمی‌شوند، ولی در DOM می‌مانند؛ تفاوت آگاهانه و بدون اثر دسترس‌پذیری).
+- **TableSortLabel:** `<button>` در سلول سرستون با پیکان؛ `TableCell` یک `sortDirection` می‌گیرد و `aria-sort` را می‌نویسد. مرتب‌سازی خود داده کار برنامه است.
+- **TablePagination:** سطر پایین جدول: «Rows per page» با `<select>` بومی (نه Select ماشینی: داخل `td` هم‌تراز ساده‌تر و قابل استفاده در موبایل است)، «۱ تا ۱۰ از ۱۰۰» با `aria-live="polite"` و دکمه‌های قبلی و بعدی. همیشه کنترل‌شده (`page`، `rowsPerPage`، `onPageChange`).
+- **AccordionGroup:** ماشین `createAccordionGroup` یک `value` (کلید پنل باز) نگه می‌دارد؛ `Accordion` با prop `value` درون گروه می‌آید و `expanded` را از گروه می‌گیرد. `multiple` چندتا را باز نگه می‌دارد. بیرون از گروه رفتار قبلی است.
+- **Tooltip `arrow`:** پیکان با middleware `arrow` ی floating-ui (`autoPosition` یک گزینه‌ی `arrow` گرفت) تا با `shift` هم به trigger اشاره کند. **لمس:** نگه‌داشتن روی trigger بعد از `enterTouchDelay` (۷۰۰ms) باز می‌کند و `leaveTouchDelay` (۱۵۰۰ms) بعد از رها کردن می‌بندد؛ ضربه‌ی کوتاه همان رفتار عنصر است و چیزی باز نمی‌کند.
+- **Chip `deleteIcon`:** در React پراپ، در Vue اسلات `deleteIcon`، در Angular directive `omniChipDeleteIcon`؛ همان نقش و کلیک آیکون پیش‌فرض را می‌گیرد.
+- **Tooltip غنی در Angular:** `omniTooltip` علاوه بر رشته یک `TemplateRef` می‌پذیرد.
+- **ListItemAvatar و `alignItems`:** `ListItemAvatar` یک `div` با فاصله‌ی ثابت؛ `alignItems="flex-start"` روی `ListItem` و `ListItemButton` متن چندخطی را از بالا تراز می‌کند.
+
+**آزمون و بودجه:** هر قلم یک سناریوی conformance با axe در هر سه فریم‌ورک دارد و صفحه‌ی `?view=feedback` در مثال‌ها اضافه می‌شود (تصویر یکسان بین فریم‌ورک‌ها در روشن، تیره، RTL و reduced motion). اعداد نهایی در بخش «نتیجه‌ی موج ۳» همین سند ثبت می‌شوند.
+
 ## معیار بازبینی
 
 - اگر موج ۰ نشان داد یک ماشین نمی‌تواند در هر سه فریم‌ورک با قرارداد `Subscribable` و `connect` وصل شود (به‌خصوص Dialog یا Menu در Angular)، این ADR و در صورت لزوم ADR-0001 دوباره باز می‌شوند.
