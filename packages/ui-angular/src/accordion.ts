@@ -47,6 +47,7 @@ function requireAccordion(name: string): OmniAccordion {
 	standalone: true,
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	providers: [{ provide: OMNI_ACCORDION, useExisting: forwardRef(() => OmniAccordion) }],
+	host: { class: "omni-accordion" },
 	template: "<ng-content />",
 })
 export class OmniAccordion implements OnInit, OnChanges, OnDestroy {

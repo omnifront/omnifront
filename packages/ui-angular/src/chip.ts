@@ -35,7 +35,7 @@ export class OmniChipIcon {}
 	standalone: true,
 	imports: [OmniPart],
 	changeDetection: ChangeDetectionStrategy.OnPush,
-	host: { "[attr.data-variant]": "variant ?? 'filled'", "[attr.data-color]": "color ?? 'default'", "[attr.data-size]": "size ?? 'medium'" },
+	host: { class: "omni-chip", "[attr.data-variant]": "variant ?? 'filled'", "[attr.data-color]": "color ?? 'default'", "[attr.data-size]": "size ?? 'medium'" },
 	template: `
 		<ng-content select="[omni-avatar]" />
 		@if (icon) {<span class="omni-chip__icon"><ng-content select="[omniChipIcon]" /></span>}

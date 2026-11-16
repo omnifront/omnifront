@@ -140,14 +140,15 @@ export interface DividerOptions {
 	as?: "hr" | "li" | "div" | undefined
 }
 
-/** Attributes for a Divider: a real `<hr>` (or `li` / `div` with `role="separator"`). */
+/** Attributes for a Divider: a real `<hr>`, a `div` with `role="separator"` (when it has text), or a hidden `li` inside a List. */
 export function dividerPart(options: DividerOptions = {}): Part {
 	const { orientation = "horizontal", variant = "fullWidth", flexItem, textAlign = "center", withText, as = "hr" } = options
 	return displayPart(
 		"omni-divider",
 		{ orientation, variant, flexItem, withText: withText || undefined, textAlign: withText ? textAlign : undefined },
 		{
-			...(as === "hr" ? {} : { role: "separator" }),
+			// A `div` separator is announced. A `li` in a list is a line, not an item (axe: a list may only own list items, so no role), so it is hidden from assistive technology.
+			...(as === "div" ? { role: "separator" } : as === "li" ? { "aria-hidden": "true" } : {}),
 			// An `hr` is horizontal by default; only a vertical one needs saying.
 			"aria-orientation": orientation === "vertical" ? "vertical" : undefined,
 		},

@@ -68,7 +68,7 @@ describe("display parts", () => {
 	it("Divider: hr by default, role=separator for li, vertical orientation named", () => {
 		expect(dividerPart().attrs).toMatchObject({ class: "omni-divider", "data-orientation": "horizontal" })
 		expect(dividerPart().attrs.role).toBeUndefined()
-		expect(dividerPart({ as: "li", orientation: "vertical" }).attrs).toMatchObject({ role: "separator", "aria-orientation": "vertical" })
+		expect(dividerPart({ as: "li", orientation: "vertical" }).attrs).toMatchObject({ "aria-hidden": "true", "aria-orientation": "vertical" })
 		expect(dividerPart({ as: "div", withText: true, textAlign: "left" }).attrs).toMatchObject({ role: "separator", "data-with-text": "", "data-text-align": "left" })
 	})
 
