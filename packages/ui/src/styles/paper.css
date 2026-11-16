@@ -1,0 +1,51 @@
+@layer omnifront {
+	.omni-paper {
+		box-sizing: border-box;
+		border-radius: var(--omni-shape-border-radius);
+		color: var(--omni-palette-text-primary);
+		background-color: var(--omni-palette-background-paper);
+		transition: box-shadow var(--omni-duration-standard) var(--omni-easing-ease-in-out);
+	}
+	.omni-paper[data-square] { border-radius: 0; }
+	.omni-paper[data-variant="outlined"] { border: 1px solid var(--omni-palette-divider); }
+	.omni-paper[data-elevation="0"] { box-shadow: var(--omni-shadow-0); }
+	.omni-paper[data-elevation="1"] { box-shadow: var(--omni-shadow-1); }
+	.omni-paper[data-elevation="2"] { box-shadow: var(--omni-shadow-2); }
+	.omni-paper[data-elevation="3"] { box-shadow: var(--omni-shadow-3); }
+	.omni-paper[data-elevation="4"] { box-shadow: var(--omni-shadow-4); }
+	.omni-paper[data-elevation="5"] { box-shadow: var(--omni-shadow-5); }
+	.omni-paper[data-elevation="6"] { box-shadow: var(--omni-shadow-6); }
+	.omni-paper[data-elevation="7"] { box-shadow: var(--omni-shadow-7); }
+	.omni-paper[data-elevation="8"] { box-shadow: var(--omni-shadow-8); background-image: var(--omni-overlay-8); }
+	.omni-paper[data-elevation="9"] { box-shadow: var(--omni-shadow-9); background-image: var(--omni-overlay-8); }
+	.omni-paper[data-elevation="10"] { box-shadow: var(--omni-shadow-10); background-image: var(--omni-overlay-8); }
+	.omni-paper[data-elevation="11"] { box-shadow: var(--omni-shadow-11); background-image: var(--omni-overlay-8); }
+	.omni-paper[data-elevation="12"] { box-shadow: var(--omni-shadow-12); background-image: var(--omni-overlay-8); }
+	.omni-paper[data-elevation="13"] { box-shadow: var(--omni-shadow-13); background-image: var(--omni-overlay-8); }
+	.omni-paper[data-elevation="14"] { box-shadow: var(--omni-shadow-14); background-image: var(--omni-overlay-8); }
+	.omni-paper[data-elevation="15"] { box-shadow: var(--omni-shadow-15); background-image: var(--omni-overlay-8); }
+	.omni-paper[data-elevation="16"] { box-shadow: var(--omni-shadow-16); background-image: var(--omni-overlay-24); }
+	.omni-paper[data-elevation="17"] { box-shadow: var(--omni-shadow-17); background-image: var(--omni-overlay-24); }
+	.omni-paper[data-elevation="18"] { box-shadow: var(--omni-shadow-18); background-image: var(--omni-overlay-24); }
+	.omni-paper[data-elevation="19"] { box-shadow: var(--omni-shadow-19); background-image: var(--omni-overlay-24); }
+	.omni-paper[data-elevation="20"] { box-shadow: var(--omni-shadow-20); background-image: var(--omni-overlay-24); }
+	.omni-paper[data-elevation="21"] { box-shadow: var(--omni-shadow-21); background-image: var(--omni-overlay-24); }
+	.omni-paper[data-elevation="22"] { box-shadow: var(--omni-shadow-22); background-image: var(--omni-overlay-24); }
+	.omni-paper[data-elevation="23"] { box-shadow: var(--omni-shadow-23); background-image: var(--omni-overlay-24); }
+	.omni-paper[data-elevation="24"] { box-shadow: var(--omni-shadow-24); background-image: var(--omni-overlay-24); }
+
+	/* Card */
+	.omni-card { overflow: hidden; }
+	.omni-card__header { display: flex; align-items: center; padding: 16px; }
+	.omni-card__header-avatar { flex: 0 0 auto; margin-inline-end: 16px; }
+	.omni-card__header-content { flex: 1 1 auto; min-inline-size: 0; }
+	.omni-card__title { display: block; margin: 0; font: var(--omni-typography-h5-font); letter-spacing: var(--omni-typography-h5-letter-spacing); }
+	.omni-card__header[data-with-avatar] .omni-card__title { font: var(--omni-typography-body2-font); letter-spacing: var(--omni-typography-body2-letter-spacing); font-weight: 500; }
+	.omni-card__subheader { display: block; margin: 0; color: var(--omni-palette-text-secondary); font: var(--omni-typography-body2-font); letter-spacing: var(--omni-typography-body2-letter-spacing); }
+	.omni-card__header-action { flex: 0 0 auto; align-self: flex-start; margin-block: -4px; margin-inline-end: -8px; }
+	.omni-card__content { padding: 16px; }
+	.omni-card__content:last-child { padding-block-end: 24px; }
+	.omni-card__actions { display: flex; align-items: center; padding: 8px; }
+	.omni-card__actions > :not(:first-child) { margin-inline-start: 8px; }
+	.omni-card__media { display: block; inline-size: 100%; object-fit: cover; background-color: var(--omni-palette-grey-400); }
+}

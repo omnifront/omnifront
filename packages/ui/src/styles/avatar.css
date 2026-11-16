@@ -1,0 +1,25 @@
+@layer omnifront {
+	/* Avatar. Black text on grey 400 (11:1) instead of Material's white (1.9:1), so initials pass AA in both schemes. */
+	.omni-avatar {
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		inline-size: 40px;
+		block-size: 40px;
+		overflow: hidden;
+		border-radius: 50%;
+		user-select: none;
+		font: var(--omni-typography-body1-font);
+		font-size: 1.25rem;
+		line-height: 1;
+		color: var(--omni-palette-common-black);
+		background-color: var(--omni-palette-grey-400);
+	}
+	.omni-avatar[data-variant="rounded"] { border-radius: var(--omni-shape-border-radius); }
+	.omni-avatar[data-variant="square"] { border-radius: 0; }
+	.omni-avatar__img { inline-size: 100%; block-size: 100%; object-fit: cover; text-align: center; color: transparent; text-indent: 10000px; }
+	.omni-avatar__fallback { inline-size: 75%; block-size: 75%; fill: currentColor; }
+}

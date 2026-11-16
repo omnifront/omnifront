@@ -1,0 +1,37 @@
+@layer omnifront {
+	/* Table: a real <table>. `data-size="small"` tightens every cell. */
+	.omni-table-container { inline-size: 100%; overflow-x: auto; }
+	.omni-table {
+		display: table;
+		inline-size: 100%;
+		border-collapse: collapse;
+		border-spacing: 0;
+		font: var(--omni-typography-body2-font);
+		letter-spacing: var(--omni-typography-body2-letter-spacing);
+		color: var(--omni-palette-text-primary);
+	}
+	.omni-table[data-sticky-header] > thead .omni-table__cell { position: sticky; inset-block-start: 0; z-index: 2; background-color: var(--omni-palette-background-paper); }
+	.omni-table__row { color: inherit; vertical-align: middle; outline: 0; }
+	.omni-table__row[data-hover]:hover { background-color: var(--omni-palette-action-hover); }
+	.omni-table__row[data-selected] { background-color: color-mix(in srgb, var(--omni-palette-primary-main) 8%, transparent); }
+	.omni-table__row[data-selected][data-hover]:hover { background-color: color-mix(in srgb, var(--omni-palette-primary-main) 12%, transparent); }
+	.omni-table__cell {
+		padding: 16px;
+		border-block-end: 1px solid var(--omni-palette-divider);
+		text-align: start;
+		vertical-align: inherit;
+		font: inherit;
+		line-height: 1.43;
+		letter-spacing: inherit;
+		color: inherit;
+	}
+	.omni-table[data-size="small"] .omni-table__cell { padding: 6px 16px; }
+	.omni-table__cell[data-variant="head"] { font-weight: 500; line-height: 1.5rem; color: var(--omni-palette-text-primary); }
+	.omni-table__cell[data-variant="footer"] { font-size: 0.75rem; line-height: 1.3; color: var(--omni-palette-text-secondary); }
+	.omni-table__cell[data-padding="checkbox"] { inline-size: 48px; padding: 0 0 0 4px; }
+	.omni-table__cell[data-padding="none"] { padding: 0; }
+	.omni-table__cell[data-align="right"] { text-align: end; }
+	.omni-table__cell[data-align="center"] { text-align: center; }
+	.omni-table__cell[data-align="justify"] { text-align: justify; }
+	.omni-table > tbody > tr:last-child > .omni-table__cell:not([data-variant="footer"]) { border-block-end-color: var(--omni-palette-divider); }
+}

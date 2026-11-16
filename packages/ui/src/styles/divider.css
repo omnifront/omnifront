@@ -1,0 +1,14 @@
+@layer omnifront {
+	/* Divider: an <hr> (or li / div with role="separator"). */
+	.omni-divider { flex-shrink: 0; margin: 0; border: 0; border-block-end: thin solid var(--omni-palette-divider); block-size: auto; list-style: none; }
+	.omni-divider[data-variant="inset"] { margin-inline-start: 72px; }
+	.omni-divider[data-variant="middle"] { margin-inline: 16px; }
+	.omni-divider[data-orientation="vertical"] { inline-size: 0; block-size: 100%; border-block-end: 0; border-inline-end: thin solid var(--omni-palette-divider); }
+	.omni-divider[data-orientation="vertical"][data-variant="middle"] { margin-inline: 0; margin-block: 8px; }
+	.omni-divider[data-flex-item] { align-self: stretch; block-size: auto; }
+	.omni-divider[data-with-text] { display: flex; align-items: center; white-space: nowrap; text-align: center; border-block-end: 0; border-block-start: 0; }
+	.omni-divider[data-with-text]::before, .omni-divider[data-with-text]::after { content: ""; flex: 1 1 auto; border-block-start: thin solid var(--omni-palette-divider); }
+	.omni-divider[data-text-align="left"]::before { flex-basis: 10%; flex-grow: 0; }
+	.omni-divider[data-text-align="right"]::after { flex-basis: 10%; flex-grow: 0; }
+	.omni-divider__text { display: inline-block; padding-inline: calc(var(--omni-spacing) * 1.2); }
+}

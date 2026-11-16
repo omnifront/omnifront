@@ -1,0 +1,9 @@
+@layer omnifront {
+	/* The six palette colours as --_main / --_dark / --_contrast for the components that take a `color`. */
+	:is(.omni-badge__mark, .omni-chip, .omni-svg-icon, .omni-app-bar)[data-color="primary"] { --_main: var(--omni-palette-primary-main); --_dark: var(--omni-palette-primary-dark); --_contrast: var(--omni-palette-primary-contrast-text); }
+	:is(.omni-badge__mark, .omni-chip, .omni-svg-icon, .omni-app-bar)[data-color="secondary"] { --_main: var(--omni-palette-secondary-main); --_dark: var(--omni-palette-secondary-dark); --_contrast: var(--omni-palette-secondary-contrast-text); }
+	:is(.omni-badge__mark, .omni-chip, .omni-svg-icon, .omni-app-bar)[data-color="error"] { --_main: var(--omni-palette-error-main); --_dark: var(--omni-palette-error-dark); --_contrast: var(--omni-palette-error-contrast-text); }
+	:is(.omni-badge__mark, .omni-chip, .omni-svg-icon, .omni-app-bar)[data-color="info"] { --_main: var(--omni-palette-info-main); --_dark: var(--omni-palette-info-dark); --_contrast: var(--omni-palette-info-contrast-text); }
+	:is(.omni-badge__mark, .omni-chip, .omni-svg-icon, .omni-app-bar)[data-color="success"] { --_main: var(--omni-palette-success-main); --_dark: var(--omni-palette-success-dark); --_contrast: var(--omni-palette-success-contrast-text); }
+	:is(.omni-badge__mark, .omni-chip, .omni-svg-icon, .omni-app-bar)[data-color="warning"] { --_main: var(--omni-palette-warning-main); --_dark: var(--omni-palette-warning-dark); --_contrast: var(--omni-palette-warning-contrast-text); }
+}

@@ -1,0 +1,43 @@
+@layer omnifront {
+	/* Badge: a number or dot pinned to a corner of its child. */
+	.omni-badge { position: relative; display: inline-flex; flex-shrink: 0; vertical-align: middle; }
+	[dir="rtl"] .omni-badge { --_dir: -1; }
+	.omni-badge__mark {
+		--_main: var(--omni-palette-text-secondary);
+		--_contrast: var(--omni-palette-background-paper);
+		--_x: 50%;
+		position: absolute;
+		z-index: 1;
+		display: flex;
+		flex-flow: row wrap;
+		align-content: center;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		min-inline-size: 20px;
+		block-size: 20px;
+		padding: 0 6px;
+		border-radius: 10px;
+		font-family: var(--omni-font-family);
+		font-size: 0.75rem;
+		font-weight: 500;
+		line-height: 1;
+		color: var(--_contrast);
+		background-color: var(--_main);
+		scale: 1;
+		transition: scale var(--omni-duration-entering-screen) var(--omni-easing-ease-in-out);
+	}
+	.omni-badge__mark[data-variant="dot"] { min-inline-size: 8px; block-size: 8px; padding: 0; border-radius: 4px; }
+	.omni-badge__mark[data-invisible] { scale: 0; transition-duration: var(--omni-duration-leaving-screen); }
+	/* corners; the shift towards the outside flips with the writing direction */
+	.omni-badge__mark[data-anchor="top-right"] { inset-block-start: 0; inset-inline-end: 0; translate: calc(var(--_x) * var(--_dir, 1)) -50%; transform-origin: 100% 0; }
+	.omni-badge__mark[data-anchor="top-left"] { inset-block-start: 0; inset-inline-start: 0; translate: calc(var(--_x) * var(--_dir, 1) * -1) -50%; transform-origin: 0 0; }
+	.omni-badge__mark[data-anchor="bottom-right"] { inset-block-end: 0; inset-inline-end: 0; translate: calc(var(--_x) * var(--_dir, 1)) 50%; transform-origin: 100% 100%; }
+	.omni-badge__mark[data-anchor="bottom-left"] { inset-block-end: 0; inset-inline-start: 0; translate: calc(var(--_x) * var(--_dir, 1) * -1) 50%; transform-origin: 0 100%; }
+	/* a round child: the corner of its box is outside the circle, so pull the badge in */
+	.omni-badge__mark[data-overlap="circular"][data-anchor="top-right"] { inset-block-start: 14%; inset-inline-end: 14%; }
+	.omni-badge__mark[data-overlap="circular"][data-anchor="top-left"] { inset-block-start: 14%; inset-inline-start: 14%; }
+	.omni-badge__mark[data-overlap="circular"][data-anchor="bottom-right"] { inset-block-end: 14%; inset-inline-end: 14%; }
+	.omni-badge__mark[data-overlap="circular"][data-anchor="bottom-left"] { inset-block-end: 14%; inset-inline-start: 14%; }
+	@media (prefers-reduced-motion: reduce) { .omni-badge__mark { transition: none; } }
+}
