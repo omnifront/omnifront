@@ -112,13 +112,34 @@ const ToggleGroupView = defineComponent({
 	},
 })
 
+const RangeSliderView = defineComponent({
+	props: { log: { type: Function, required: true }, disabled: Boolean, vertical: Boolean },
+	setup(props) {
+		const value = ref<[number, number]>([20, 80])
+		const log = props.log as Log
+		return () =>
+			h(Slider as never, {
+				"aria-label": "Price",
+				range: true,
+				min: 0,
+				max: 100,
+				step: 10,
+				modelValue: value.value,
+				valueLabelDisplay: "on",
+				orientation: props.vertical ? "vertical" : "horizontal",
+				disabled: props.disabled,
+				"onUpdate:modelValue": (v: [number, number]) => { log(`change:${v.join(",")}`); value.value = v },
+			})
+	},
+})
+
 const SliderView = defineComponent({
 	props: { log: { type: Function, required: true }, disabled: Boolean },
 	setup(props) {
 		const value = ref(30)
 		const log = props.log as Log
 		return () =>
-			h(Slider, { "aria-label": "Volume", min: 0, max: 100, step: 10, modelValue: value.value, valueLabelDisplay: "auto", disabled: props.disabled, "onUpdate:modelValue": (v: number) => { log(`change:${v}`); value.value = v } })
+			h(Slider, { "aria-label": "Volume", min: 0, max: 100, step: 10, modelValue: value.value, valueLabelDisplay: "auto", disabled: props.disabled, "onUpdate:modelValue": (v: number | readonly [number, number]) => { log(`change:${v as number}`); value.value = v as number } })
 	},
 })
 
@@ -182,6 +203,31 @@ const SelectView = defineComponent({
 	},
 })
 
+const groupedFood = [
+	{ label: "Fruit", options: [{ value: "a", label: "Apple" }, { value: "b", label: "Banana", disabled: true }] },
+	{ label: "Vegetables", options: [{ value: "c", label: "Carrot" }, { value: "d", label: "Daikon" }] },
+]
+
+const SelectGroupsView = defineComponent({
+	props: { log: { type: Function, required: true } },
+	setup(props) {
+		const value = ref("")
+		const log = props.log as Log
+		return () =>
+			h(
+				Select as never,
+				{
+					label: "Food",
+					options: groupedFood,
+					modelValue: value.value as never,
+					"onUpdate:modelValue": (v: string | readonly string[]) => { log(`change:${v as string}`); value.value = v as string },
+					onClose: (reason: string) => log(`close:${reason}`),
+				},
+				{ option: ({ option }: { option: { label: string; value: string } }) => [h("span", { "data-rich": "" }, option.label), h("small", option.value)] },
+			)
+	},
+})
+
 const TabsView = defineComponent({
 	props: { log: { type: Function, required: true }, selectionFollowsFocus: Boolean },
 	setup(props) {
@@ -208,10 +254,12 @@ const harness: UiHarness = {
 	switch: (props, log) => mountWith(props, (p) => h(SwitchView, { log, disabled: p.disabled ?? false, error: p.error ?? false })),
 	radioGroup: (props, log) => mountWith(props, (p) => h(RadioGroupView, { log, disabled: p.disabled ?? false, error: p.error ?? false })),
 	select: (props, log) => mountWith(props, (p) => h(SelectView, { log, error: p.error ?? false, disabled: p.disabled ?? false, multiple: props.multiple ?? false })),
+	selectGroups: (_props, log) => mountWith({}, () => h(SelectGroupsView, { log })),
 	iconButtons: (props, log) => mountWith(props, (p) => h(IconButtonsView, { log, disabled: p.disabled ?? false })),
 	buttonGroup: (props, log) => mountWith(props, (p) => h(ButtonGroupView, { log, disabled: p.disabled ?? false })),
 	toggleGroup: (props, log) => mountWith(props, (p) => h(ToggleGroupView, { log, exclusive: p.exclusive ?? false })),
 	slider: (props, log) => mountWith(props, (p) => h(SliderView, { log, disabled: p.disabled ?? false })),
+	rangeSlider: (props, log) => mountWith(props, (p) => h(RangeSliderView, { log, disabled: p.disabled ?? false, vertical: props.vertical ?? false })),
 	rating: (props, log) => mountWith(props, (p) => h(RatingView, { log, readOnly: p.readOnly ?? false, disabled: p.disabled ?? false })),
 	tabs: (props, log) => mountWith(props, (p) => h(TabsView, { log, selectionFollowsFocus: p.selectionFollowsFocus ?? false })),
 	settle: async () => {

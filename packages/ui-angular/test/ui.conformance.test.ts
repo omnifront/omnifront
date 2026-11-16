@@ -179,6 +179,18 @@ class SliderView {
 
 @Component({
 	standalone: true,
+	imports: [OmniSlider],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `<omni-slider aria-label="Price" range [min]="0" [max]="100" [step]="10" [value]="value()" valueLabelDisplay="on" [orientation]="p().vertical ? 'vertical' : 'horizontal'" [disabled]="!!p().disabled" (valueChange)="log('change:' + $event); value.set($any($event))" />`,
+})
+class RangeSliderView {
+	value = signal<[number, number]>([20, 80])
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+}
+
+@Component({
+	standalone: true,
 	imports: [OmniRating],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `<omni-rating aria-label="Rating" [value]="p().readOnly ? 3 : value()" [readOnly]="!!p().readOnly" [disabled]="!!p().disabled" (valueChange)="log('change:' + $event); value.set($event)" />`,
@@ -254,6 +266,29 @@ class SelectView {
 
 @Component({
 	standalone: true,
+	imports: [OmniSelect],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `
+		<omni-select label="Food" [options]="food" [value]="value()" [optionTemplate]="rich" (valueChange)="pick($event)" (closed)="log('close:' + $event.reason)" />
+		<ng-template #rich let-option><span data-rich>{{ option.label }}</span><small>{{ option.value }}</small></ng-template>
+	`,
+})
+class SelectGroupsView {
+	food = [
+		{ label: "Fruit", options: [{ value: "a", label: "Apple" }, { value: "b", label: "Banana", disabled: true }] },
+		{ label: "Vegetables", options: [{ value: "c", label: "Carrot" }, { value: "d", label: "Daikon" }] },
+	]
+	value = signal("")
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+	pick(v: string | string[]): void {
+		this.log("change:" + v)
+		this.value.set(v as string)
+	}
+}
+
+@Component({
+	standalone: true,
 	imports: [OmniTabContext, OmniTabList, OmniTab, OmniTabPanel],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	template: `
@@ -310,10 +345,12 @@ const harness: UiHarness = {
 	switch: (props, log) => mountView(SwitchView, props, log),
 	radioGroup: (props, log) => mountView(RadioGroupView, props, log),
 	select: (props, log) => mountView(SelectView, props, log),
+	selectGroups: (_props, log) => mountView(SelectGroupsView, {}, log),
 	iconButtons: (props, log) => mountView(IconButtonsView, props, log),
 	buttonGroup: (props, log) => mountView(ButtonGroupView, props, log),
 	toggleGroup: (props, log) => mountView(ToggleGroupView, props, log),
 	slider: (props, log) => mountView(SliderView, props, log),
+	rangeSlider: (props, log) => mountView(RangeSliderView, props, log),
 	rating: (props, log) => mountView(RatingView, props, log),
 	tabs: (props, log) => mountView(TabsView, props, log),
 	settle: async () => {

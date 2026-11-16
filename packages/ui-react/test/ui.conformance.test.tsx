@@ -89,6 +89,24 @@ function SliderView({ disabled, log }: { disabled: boolean | undefined; log: Log
 	return <Slider aria-label="Volume" min={0} max={100} step={10} value={value} valueLabelDisplay="auto" disabled={disabled} onChange={(_e, v) => { log(`change:${v}`); setValue(v) }} />
 }
 
+function RangeSliderView({ vertical, disabled, log }: { vertical: boolean | undefined; disabled: boolean | undefined; log: Log }) {
+	const [value, setValue] = useState<[number, number]>([20, 80])
+	return (
+		<Slider
+			aria-label="Price"
+			range
+			min={0}
+			max={100}
+			step={10}
+			value={value}
+			valueLabelDisplay="on"
+			orientation={vertical ? "vertical" : "horizontal"}
+			disabled={disabled}
+			onChange={(_e, v) => { log(`change:${v.join(",")}`); setValue(v) }}
+		/>
+	)
+}
+
 function RatingView({ readOnly, disabled, log }: { readOnly: boolean | undefined; disabled: boolean | undefined; log: Log }) {
 	const [value, setValue] = useState(0)
 	return <Rating aria-label="Rating" value={readOnly ? 3 : value} readOnly={readOnly} disabled={disabled} onChange={(_e, v) => { log(`change:${v}`); setValue(v) }} />
@@ -132,6 +150,25 @@ function SelectView({ error, disabled, multiple, log }: { error: boolean | undef
 	)
 }
 
+const groupedFood = [
+	{ label: "Fruit", options: [{ value: "a", label: "Apple" }, { value: "b", label: "Banana", disabled: true }] },
+	{ label: "Vegetables", options: [{ value: "c", label: "Carrot" }, { value: "d", label: "Daikon" }] },
+]
+
+function SelectGroupsView({ log }: { log: Log }) {
+	const [value, setValue] = useState("")
+	return (
+		<Select
+			label="Food"
+			options={groupedFood}
+			value={value}
+			onChange={(_e, v) => { log(`change:${v}`); setValue(v) }}
+			onOpenChange={(open, reason) => { if (!open) log(`close:${reason}`) }}
+			renderOption={(o) => (<><span data-rich>{o.label}</span><small>{o.value}</small></>)}
+		/>
+	)
+}
+
 function TabsView({ selectionFollowsFocus, log }: { selectionFollowsFocus: boolean | undefined; log: Log }) {
 	const [value, setValue] = useState("one")
 	return (
@@ -165,10 +202,12 @@ const harness: UiHarness = {
 	switch: (props, log) => mountWith(props, (p) => <SwitchView disabled={p.disabled} error={p.error} log={log} />),
 	radioGroup: (props, log) => mountWith(props, (p) => <RadioGroupView disabled={p.disabled} error={p.error} log={log} />),
 	select: (props, log) => mountWith(props, (p) => <SelectView error={p.error} disabled={p.disabled} multiple={props.multiple} log={log} />),
+	selectGroups: (_props, log) => mountWith({}, () => <SelectGroupsView log={log} />),
 	iconButtons: (props, log) => mountWith(props, (p) => <IconButtonsView disabled={p.disabled} log={log} />),
 	buttonGroup: (props, log) => mountWith(props, (p) => <ButtonGroupView disabled={p.disabled} log={log} />),
 	toggleGroup: (props, log) => mountWith(props, (p) => <ToggleGroupView exclusive={p.exclusive} log={log} />),
 	slider: (props, log) => mountWith(props, (p) => <SliderView disabled={p.disabled} log={log} />),
+	rangeSlider: (props, log) => mountWith(props, (p) => <RangeSliderView vertical={props.vertical} disabled={p.disabled} log={log} />),
 	rating: (props, log) => mountWith(props, (p) => <RatingView readOnly={p.readOnly} disabled={p.disabled} log={log} />),
 	tabs: (props, log) => mountWith(props, (p) => <TabsView selectionFollowsFocus={p.selectionFollowsFocus} log={log} />),
 	settle: async () => void (await act(async () => { await new Promise((r) => setTimeout(r, 0)) })),

@@ -12,7 +12,7 @@ import {
 	signal,
 } from "@angular/core"
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from "@angular/forms"
-import { createSlider } from "@omnifront/ui"
+import { createSlider, type Part } from "@omnifront/ui"
 import { bindMachine } from "./machine"
 import { OmniPart, withAttrs } from "./part"
 import { OmniIds, injectDefaults } from "./theme"
@@ -39,13 +39,22 @@ export interface SliderMark {
 		<span
 			class="omni-slider"
 			[style.--omni-slider-percent]="state().percent"
+			[style.--omni-slider-start]="state().start"
+			[style.--omni-slider-length]="lengthCss()"
 			[attr.data-size]="size ?? 'medium'"
 			[attr.data-color]="color ?? 'primary'"
 			[attr.data-label]="valueLabelDisplay ?? 'off'"
+			[attr.data-orientation]="state().orientation"
+			[attr.data-range]="state().range ? '' : null"
 			[attr.data-disabled]="state().disabled ? '' : null"
 			[attr.data-marks-labels]="hasMarkLabels() ? '' : null"
 		>
-			<input class="omni-slider__input" [omniPart]="inputPart()" [attr.name]="name" (blur)="onTouched()" />
+			@if (state().range) {
+				<span class="omni-slider__rail" aria-hidden="true"><span class="omni-slider__fill"></span></span>
+			}
+			@for (thumb of thumbs(); track $index) {
+				<input class="omni-slider__input" [omniPart]="inputPart($index)" [attr.name]="name" (blur)="onTouched()" />
+			}
 			@if (markList().length > 0) {
 				<span class="omni-slider__marks" aria-hidden="true">
 					@for (mark of markList(); track mark.value) {
@@ -59,20 +68,28 @@ export interface SliderMark {
 				</span>
 			}
 			@if ((valueLabelDisplay ?? 'off') !== 'off') {
-				<span class="omni-slider__label" aria-hidden="true">{{ valueLabelFormat ? valueLabelFormat(state().value) : state().value }}</span>
+				@for (v of thumbs(); track $index) {
+					<span class="omni-slider__label" aria-hidden="true" [style.--omni-slider-percent]="percentOf(v)">{{ valueLabelFormat ? valueLabelFormat(v) : v }}</span>
+				}
 			}
 		</span>
 	`,
 })
-export class OmniSlider implements ControlValueAccessor, OnInit, OnChanges {
-	/** The value. Use `[(value)]` for two-way binding. */
-	@Input() set value(v: number | null | undefined) {
-		if (v !== null && v !== undefined) this.current.set(Number(v))
+export class OmniSlider<T extends number | readonly [number, number] = number> implements ControlValueAccessor, OnInit, OnChanges {
+	/** The value: a number, or with `range` a `[lower, upper]` pair. Use `[(value)]` for two-way binding. */
+	@Input() set value(v: T | null | undefined) {
+		this.store(v)
 	}
 	/** The value an uncontrolled slider starts with. */
-	@Input() set defaultValue(v: number | undefined) {
-		if (v !== undefined && !this.touchedValue) this.current.set(v)
+	@Input() set defaultValue(v: T | undefined) {
+		if (v !== undefined && !this.touchedValue) this.store(v)
 	}
+	/** Two thumbs: a lower and an upper value. The lower one cannot pass the upper one. */
+	@Input({ transform: booleanAttribute }) range = false
+	/** `vertical` puts the smallest value at the bottom. */
+	@Input() orientation: "horizontal" | "vertical" | undefined
+	/** The height of a vertical slider (a number is pixels, or any CSS length). Default 200px. */
+	@Input() length: number | string | undefined
 	@Input() min: number | undefined
 	@Input() max: number | undefined
 	@Input() step: number | undefined
@@ -90,11 +107,12 @@ export class OmniSlider implements ControlValueAccessor, OnInit, OnChanges {
 	@Input() id: string | undefined
 	@Input("aria-label") ariaLabel: string | undefined
 	@Input("aria-labelledby") ariaLabelledby: string | undefined
-	@Output() valueChange = new EventEmitter<number>()
+	@Output() valueChange = new EventEmitter<T>()
 
 	private readonly current = signal<number | undefined>(undefined)
+	private readonly currentPair = signal<[number, number] | undefined>(undefined)
 	private touchedValue = false
-	private onChange: (value: number) => void = () => {}
+	private onChange: (value: T) => void = () => {}
 	onTouched: () => void = () => {}
 
 	private readonly defaults = injectDefaults()
@@ -105,18 +123,29 @@ export class OmniSlider implements ControlValueAccessor, OnInit, OnChanges {
 			this.touchedValue = true
 			this.current.set(value)
 			this.sync() // the machine is always controlled by this component: hand it the new value
-			this.onChange(value)
-			this.valueChange.emit(value)
+			this.onChange(value as T)
+			this.valueChange.emit(value as T)
+		},
+		onValuesChange: (values) => {
+			this.touchedValue = true
+			this.currentPair.set(values)
+			this.sync()
+			this.onChange(values as unknown as T)
+			this.valueChange.emit(values as unknown as T)
 		},
 	})
 	private readonly bound = bindMachine(this.machine, (m) => m.connect())
 	readonly state = this.bound.state
-	protected readonly inputPart = () => {
-		const part = this.bound.parts().input
+	/** The value of each thumb: one, or two for a range. */
+	protected readonly thumbs = (): number[] => (this.state().range ? this.state().values : [this.state().value])
+	protected readonly lengthCss = (): string | null => (this.length === undefined ? null : typeof this.length === "number" ? `${this.length}px` : this.length)
+	protected readonly inputPart = (index: number) => {
+		const part = this.bound.parts().inputs[index] as Part
+		const label = this.state().range && this.ariaLabel ? `${this.ariaLabel} ${index === 0 ? "minimum" : "maximum"}` : this.ariaLabel
 		return withAttrs(part, {
-			"aria-label": this.ariaLabel,
+			"aria-label": label,
 			"aria-labelledby": this.ariaLabelledby,
-			"aria-valuetext": this.getAriaValueText?.(this.state().value),
+			"aria-valuetext": this.getAriaValueText?.(this.thumbs()[index] as number),
 		})
 	}
 	protected readonly markList = (): SliderMark[] => {
@@ -145,7 +174,10 @@ export class OmniSlider implements ControlValueAccessor, OnInit, OnChanges {
 		this.valueLabelDisplay = p.valueLabelDisplay
 		this.machine.setProps({
 			id: this.id ?? this.fieldId,
-			value: this.current() ?? this.min ?? 0,
+			range: this.range || undefined,
+			value: this.range ? undefined : (this.current() ?? this.min ?? 0),
+			values: this.range ? (this.currentPair() ?? [this.min ?? 0, this.max ?? 100]) : undefined,
+			orientation: this.orientation,
 			min: this.min,
 			max: this.max,
 			step: this.step,
@@ -153,14 +185,22 @@ export class OmniSlider implements ControlValueAccessor, OnInit, OnChanges {
 		})
 	}
 
+	/** Keep a value from `[value]`, `[defaultValue]` or a form: a number, or a pair for `range`. */
+	private store(v: T | null | undefined): void {
+		if (Array.isArray(v)) this.currentPair.set([Number(v[0]), Number(v[1])])
+		else if (v !== null && v !== undefined) this.current.set(Number(v))
+	}
+
 	// ControlValueAccessor: how Angular forms read and write the value.
-	writeValue(value: number | null | undefined): void {
+	writeValue(value: T | null | undefined): void {
 		this.touchedValue = true
-		this.current.set(value === null || value === undefined ? undefined : Number(value))
+		this.current.set(undefined)
+		this.currentPair.set(undefined)
+		this.store(value)
 		this.sync()
 	}
 
-	registerOnChange(fn: (value: number) => void): void {
+	registerOnChange(fn: (value: T) => void): void {
 		this.onChange = fn
 	}
 

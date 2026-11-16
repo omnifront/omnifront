@@ -1,23 +1,27 @@
 /* Slider: a native <input type="range"> (drag, arrows, Home, End, Page Up and Down are the browser's own), restyled.
-   The component sets --omni-slider-percent (0 to 100) on the root so the filled part of the track and the value label follow the thumb. */
+   The component sets --omni-slider-percent (0 to 100, where the last thumb is) and --omni-slider-start (where the filled part begins:
+   0 for one thumb, the lower thumb for a range) on the root, so the filled part of the track and the value label follow the thumbs.
+   A range is two stacked inputs over a drawn rail; only their thumbs take the pointer. Vertical turns the same horizontal layout a quarter turn. */
 @layer omnifront {
 	.omni-slider {
 		--_main: var(--omni-palette-primary-main);
 		--_p: calc(var(--omni-slider-percent, 0) / 100);
+		--_p0: calc(var(--omni-slider-start, 0) / 100);
 		--_thumb: 20px;
 		--_track: 4px;
+		--_pad: 13px;
 		--_to: right;
 		position: relative;
 		display: inline-block;
 		box-sizing: border-box;
 		inline-size: 100%;
-		padding-block: 13px;
+		padding-block: var(--_pad);
 		color: var(--_main);
 		touch-action: none;
 		-webkit-tap-highlight-color: transparent;
 	}
 	[dir="rtl"] .omni-slider { --_to: left; }
-	.omni-slider[data-size="small"] { --_thumb: 12px; --_track: 2px; padding-block: 15px; }
+	.omni-slider[data-size="small"] { --_thumb: 12px; --_track: 2px; --_pad: 15px; }
 	.omni-slider[data-color="secondary"] { --_main: var(--omni-palette-secondary-main); }
 	.omni-slider[data-color="success"] { --_main: var(--omni-palette-success-main); }
 	.omni-slider[data-color="error"] { --_main: var(--omni-palette-error-main); }
@@ -25,7 +29,7 @@
 	.omni-slider[data-color="warning"] { --_main: var(--omni-palette-warning-main); }
 	.omni-slider[data-marks-labels] { padding-block-end: 36px; }
 
-	/* where the thumb's centre is, along the track */
+	/* where a thumb's centre is, along the track */
 	.omni-slider__input {
 		--_x: calc(var(--_thumb) / 2 + (100% - var(--_thumb)) * var(--_p));
 		-webkit-appearance: none;
@@ -72,15 +76,43 @@
 	.omni-slider__input:hover::-moz-range-thumb { box-shadow: 0 0 0 8px color-mix(in srgb, var(--_main) 16%, transparent); }
 	.omni-slider__input:focus-visible::-moz-range-thumb { box-shadow: 0 0 0 12px color-mix(in srgb, var(--_main) 24%, transparent); }
 
-	/* value label: a small bubble above the thumb */
+	/* range: the rail and its filled part are drawn; the two inputs lie over it with a see-through track and only their thumbs take the pointer */
+	.omni-slider__rail {
+		position: absolute;
+		inset-inline: 0;
+		inset-block-start: calc(var(--_pad) + (var(--_thumb) - var(--_track)) / 2);
+		block-size: var(--_track);
+		border-radius: var(--_track);
+		background-color: color-mix(in srgb, var(--_main) 38%, transparent);
+		pointer-events: none;
+	}
+	.omni-slider__fill {
+		position: absolute;
+		inset-block: 0;
+		inset-inline-start: calc(var(--_thumb) / 2 + (100% - var(--_thumb)) * var(--_p0));
+		inline-size: calc((100% - var(--_thumb)) * (var(--_p) - var(--_p0)));
+		background-color: var(--_main);
+	}
+	.omni-slider[data-range] .omni-slider__input { position: absolute; inset-inline: 0; inset-block-start: var(--_pad); pointer-events: none; }
+	.omni-slider[data-range] .omni-slider__input::-webkit-slider-runnable-track { background: none; }
+	.omni-slider[data-range] .omni-slider__input::-moz-range-track,
+	.omni-slider[data-range] .omni-slider__input::-moz-range-progress { background: transparent; }
+	.omni-slider[data-range] .omni-slider__input::-webkit-slider-thumb { pointer-events: auto; }
+	.omni-slider[data-range] .omni-slider__input::-moz-range-thumb { pointer-events: auto; }
+	.omni-slider[data-range] .omni-slider__input[data-front] { z-index: 1; }
+
+	/* value label: a small bubble by the thumb (above it; beside it when vertical) */
 	.omni-slider__label {
+		--_p: calc(var(--omni-slider-percent, 0) / 100); /* each label has its own thumb */
+		--_shift: translateX(-50%);
+		--_show: 0;
 		position: absolute;
 		inset-inline-start: calc(var(--_thumb) / 2 + (100% - var(--_thumb)) * var(--_p));
-		inset-block-start: -8px;
-		z-index: 1;
+		inset-block-start: calc(var(--_pad) - 21px);
+		z-index: 2;
 		padding: 2px 8px;
 		border-radius: 2px;
-		transform: translateX(-50%) scale(0);
+		transform: var(--_shift) scale(var(--_show));
 		transform-origin: bottom center;
 		color: var(--omni-palette-common-white);
 		background-color: var(--omni-palette-grey-600);
@@ -90,19 +122,15 @@
 		pointer-events: none;
 		transition: transform var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
 	}
-	[dir="rtl"] .omni-slider__label { transform: translateX(50%) scale(0); }
+	[dir="rtl"] .omni-slider__label { --_shift: translateX(50%); }
 	.omni-slider[data-label="on"] .omni-slider__label,
 	.omni-slider[data-label="auto"]:hover .omni-slider__label,
 	.omni-slider[data-label="auto"]:has(:focus-visible) .omni-slider__label,
-	.omni-slider[data-label="auto"]:has(:active) .omni-slider__label { transform: translateX(-50%) scale(1); }
-	[dir="rtl"] .omni-slider[data-label="on"] .omni-slider__label,
-	[dir="rtl"] .omni-slider[data-label="auto"]:hover .omni-slider__label,
-	[dir="rtl"] .omni-slider[data-label="auto"]:has(:focus-visible) .omni-slider__label,
-	[dir="rtl"] .omni-slider[data-label="auto"]:has(:active) .omni-slider__label { transform: translateX(50%) scale(1); }
+	.omni-slider[data-label="auto"]:has(:active) .omni-slider__label { --_show: 1; }
 
 	/* marks: ticks over the track, and optional labels below it */
 	.omni-slider__marks { position: absolute; inset-inline: calc(var(--_thumb) / 2); inset-block-start: 50%; block-size: 0; pointer-events: none; }
-	.omni-slider[data-marks-labels] .omni-slider__marks { inset-block-start: calc(13px + var(--_thumb) / 2); }
+	.omni-slider[data-marks-labels] .omni-slider__marks { inset-block-start: calc(var(--_pad) + var(--_thumb) / 2); }
 	.omni-slider__mark {
 		position: absolute;
 		inset-inline-start: calc(var(--omni-mark, 0) * 1%);
@@ -112,7 +140,6 @@
 		margin-inline-start: -1px;
 		background-color: color-mix(in srgb, var(--omni-palette-common-white) 60%, transparent);
 	}
-	.omni-slider__mark[data-passed] { background-color: color-mix(in srgb, var(--omni-palette-common-white) 60%, transparent); }
 	.omni-slider__mark-label {
 		position: absolute;
 		inset-inline-start: calc(var(--omni-mark, 0) * 1%);
@@ -124,6 +151,61 @@
 		white-space: nowrap;
 	}
 	[dir="rtl"] .omni-slider__mark-label { transform: translateX(50%); }
+
+	/* vertical: the same layout turned a quarter turn, the smallest value at the bottom whatever the text direction.
+	   Physical left and top are on purpose here: a rotation does not follow the writing direction. */
+	.omni-slider[data-orientation="vertical"] {
+		--_len: var(--omni-slider-length, 200px);
+		--_to: right;
+		inline-size: auto;
+		block-size: var(--_len);
+		padding-block: 0;
+		padding-inline: var(--_pad);
+	}
+	.omni-slider[data-orientation="vertical"][data-marks-labels] { padding-block-end: 0; padding-inline-end: 56px; }
+	.omni-slider[data-orientation="vertical"] .omni-slider__input,
+	.omni-slider[data-orientation="vertical"] .omni-slider__rail {
+		position: absolute;
+		inset: auto;
+		left: calc(var(--_pad) + var(--_thumb) / 2);
+		top: 50%;
+		inline-size: var(--_len);
+		direction: ltr;
+		transform: translate(-50%, -50%) rotate(-90deg);
+	}
+	.omni-slider[data-orientation="vertical"] .omni-slider__input { block-size: var(--_thumb); }
+	.omni-slider[data-orientation="vertical"] .omni-slider__rail { block-size: var(--_track); }
+	.omni-slider[data-orientation="vertical"] .omni-slider__label {
+		--_shift: translateY(50%);
+		inset-inline-start: calc(var(--_pad) + var(--_thumb) + 6px);
+		inset-block-start: auto;
+		inset-block-end: calc(var(--_thumb) / 2 + (100% - var(--_thumb)) * var(--_p));
+		transform-origin: left center;
+	}
+	[dir="rtl"] .omni-slider[data-orientation="vertical"] .omni-slider__label { --_shift: translateY(50%); }
+	.omni-slider[data-orientation="vertical"] .omni-slider__marks,
+	.omni-slider[data-orientation="vertical"][data-marks-labels] .omni-slider__marks {
+		inset-block: calc(var(--_thumb) / 2);
+		inset-inline-start: calc(var(--_pad) + var(--_thumb) / 2);
+		inset-inline-end: auto;
+		inline-size: 0;
+		block-size: auto;
+	}
+	.omni-slider[data-orientation="vertical"] .omni-slider__mark {
+		inset-inline-start: auto;
+		inset-block-end: calc(var(--omni-mark, 0) * 1%);
+		inline-size: var(--_track);
+		block-size: 2px;
+		margin-block-start: 0;
+		margin-block-end: -1px;
+		margin-inline-start: calc(var(--_track) / -2);
+	}
+	.omni-slider[data-orientation="vertical"] .omni-slider__mark-label {
+		inset-inline-start: calc(var(--_thumb) / 2 + 8px);
+		inset-block-start: auto;
+		inset-block-end: calc(var(--omni-mark, 0) * 1%);
+		transform: translateY(50%);
+	}
 
 	.omni-slider[data-disabled] { --_main: var(--omni-palette-action-disabled); }
 	.omni-slider[data-disabled] .omni-slider__input { cursor: default; }

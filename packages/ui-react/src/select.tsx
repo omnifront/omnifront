@@ -1,4 +1,4 @@
-import { createField, createSelect, mergeParts, type CloseReason, type SelectOption } from "@omnifront/ui"
+import { createField, createSelect, isSelectGroup, mergeParts, type CloseReason, type SelectItem, type SelectOption } from "@omnifront/ui"
 import { autoPosition } from "@omnifront/ui/position"
 import { forwardRef, useEffect, useId, useState, type ReactNode } from "react"
 import { cx, toReactProps, useMachine } from "./internal"
@@ -8,8 +8,13 @@ export type SelectCloseReason = Extract<CloseReason, "escapeKeyDown" | "outsideP
 
 interface SelectBaseProps {
 	label?: ReactNode | undefined
-	/** What can be chosen. `value` is what `onChange` reports; `label` is what the user sees. */
-	options: readonly SelectOption[]
+	/**
+	 * What can be chosen: options, and groups of options (`{ label, options }`). `value` is what
+	 * `onChange` reports; `label` is what the user sees (in the closed select, and for typing to jump).
+	 */
+	options: readonly SelectItem[]
+	/** What an option looks like in the open list (an icon, a second line). The closed select still shows the `label`. */
+	renderOption?: ((option: SelectOption, state: { selected: boolean }) => ReactNode) | undefined
 	open?: boolean | undefined
 	defaultOpen?: boolean | undefined
 	onOpenChange?: ((open: boolean, reason: SelectCloseReason) => void) | undefined
@@ -56,6 +61,7 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(function Select(ra
 	const {
 		label,
 		options,
+		renderOption,
 		value,
 		defaultValue,
 		onChange,
@@ -112,6 +118,12 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(function Select(ra
 		return select.attach({ content: list, trigger, position: (anchor, floating) => autoPosition(anchor, floating, { matchWidth: true }) })
 	}, [select, state.open, list, trigger])
 
+	const renderItem = (option: SelectOption): ReactNode => (
+		<li key={option.value} {...toReactProps(select.option(option))} className="omni-menu__item">
+			{renderOption ? renderOption(option, { selected: state.multiple ? state.values.includes(option.value) : option.value === state.value }) : option.label}
+		</li>
+	)
+
 	return (
 		<div
 			ref={ref}
@@ -155,11 +167,16 @@ export const Select = forwardRef<HTMLDivElement, SelectProps>(function Select(ra
 			{state.mounted ? (
 				<Portal>
 					<ul {...toReactProps(parts.listbox)} ref={setList} className="omni-menu omni-select__listbox">
-						{options.map((option) => (
-							<li key={option.value} {...toReactProps(select.option(option))} className="omni-menu__item">
-								{option.label}
-							</li>
-						))}
+						{options.map((item, index) => {
+							if (!isSelectGroup(item)) return renderItem(item)
+							const group = select.group(index)
+							return (
+								<li key={`group-${index}`} {...toReactProps(group.root)} className="omni-select__group">
+									<span {...toReactProps(group.label)} className="omni-select__group-label">{item.label}</span>
+									<ul {...toReactProps(group.list)}>{item.options.map(renderItem)}</ul>
+								</li>
+							)
+						})}
 					</ul>
 				</Portal>
 			) : null}

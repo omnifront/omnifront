@@ -84,7 +84,7 @@ for (const framework of Object.keys(frameworks) as Framework[]) {
 			await expect(volume).toHaveValue("100")
 			await page.keyboard.press("Home")
 			await expect(volume).toHaveValue("0")
-			await expect(page.getByRole("slider", { name: "Disabled" })).toBeDisabled()
+			await expect(page.getByRole("slider", { name: "Disabled", exact: true })).toBeDisabled()
 		})
 
 		test("a rating is chosen with the arrow keys and a click, and a read-only one cannot change", async ({ page }) => {
@@ -127,6 +127,64 @@ for (const framework of Object.keys(frameworks) as Framework[]) {
 			expect(await notes.evaluate((el) => el.scrollHeight > el.clientHeight)).toBe(true)
 		})
 
+		
+				test("a range slider has two thumbs; the lower one cannot pass the upper one", async ({ page }) => {
+					await open(page, framework, "")
+					const lower = page.getByRole("slider", { name: "Price minimum" })
+					const upper = page.getByRole("slider", { name: "Price maximum" })
+					await expect(lower).toHaveValue("20")
+					await expect(upper).toHaveValue("60")
+					await lower.focus()
+					await page.keyboard.press("End") // the upper thumb is at 60: the lower one stops there
+					await expect(lower).toHaveValue("60")
+					await page.keyboard.press("ArrowRight")
+					await expect(lower).toHaveValue("60")
+					await upper.focus()
+					await page.keyboard.press("Home") // and the upper one cannot go below the lower thumb
+					await expect(upper).toHaveValue("60")
+					await page.keyboard.press("End")
+					await expect(upper).toHaveValue("100")
+				})
+		
+				test("a vertical slider: arrow keys, and a real mouse drag up the track raises the value", async ({ page }) => {
+					await open(page, framework, "")
+					const level = page.getByRole("slider", { name: "Level" })
+					await expect(level).toHaveAttribute("aria-orientation", "vertical")
+					await level.focus()
+					await page.keyboard.press("ArrowUp")
+					await expect(level).toHaveValue("41")
+					await page.keyboard.press("Home")
+					await expect(level).toHaveValue("0")
+					const box = await page.locator(".omni-slider[data-orientation='vertical']").first().boundingBox()
+					if (!box) throw new Error("no vertical slider")
+					// the track runs bottom (smallest) to top (largest): grab the thumb at the bottom and pull it to the middle
+					const x = box.x + box.width / 2
+					await page.mouse.move(x, box.y + box.height - 10)
+					await page.mouse.down()
+					await page.mouse.move(x, box.y + box.height / 2, { steps: 8 })
+					await page.mouse.up()
+					const value = Number(await level.inputValue())
+					expect(value).toBeGreaterThan(35)
+					expect(value).toBeLessThan(65)
+				})
+		
+				test("grouped select with custom option content: groups are labelled, typing matches the label, the disabled one is skipped", async ({ page }) => {
+					await open(page, framework, "")
+					const select = page.getByRole("combobox", { name: /Grouped/ })
+					await expect(select).toContainText("Carrot") // the label, not the custom content
+					await select.focus()
+					await page.keyboard.press("ArrowDown")
+					await expect(page.getByRole("group", { name: "Fruit" })).toBeVisible()
+					await expect(page.getByRole("group", { name: "Vegetables" })).toBeVisible()
+					await expect(page.getByRole("option", { name: /Carrot/ })).toBeFocused() // the chosen one
+					await page.keyboard.press("ArrowDown") // Daikon is disabled: wraps to Apple
+					await expect(page.getByRole("option", { name: /Apple/ })).toBeFocused()
+					await page.keyboard.press("b") // type-ahead on the label, whatever else the option shows
+					await expect(page.getByRole("option", { name: /Banana/ })).toBeFocused()
+					await page.keyboard.press("Enter")
+					await expect(select).toContainText("Banana")
+				})
+		
 		test("a multiple select keeps the list open and shows every choice", async ({ page }) => {
 			await open(page, framework, "")
 			const select = page.getByRole("combobox", { name: /Several/ })

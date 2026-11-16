@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { attachAutosize, createRating, createSelect, createSlider, createToggleGroup, fabPart, iconButtonPart, toggleButtonPart } from "../src"
+import { attachAutosize, createRating, createSelect, flattenOptions, isSelectGroup, createSlider, createToggleGroup, fabPart, iconButtonPart, toggleButtonPart } from "../src"
 
 afterEach(() => {
 	document.body.innerHTML = ""
@@ -80,7 +80,7 @@ const inputEvent = (value: string): Event => Object.defineProperty(new Event("in
 
 describe("Slider", () => {
 	it("defaults to 0 to 100 in steps of 1, starting at min or defaultValue", () => {
-		expect(createSlider({ id: "s" }).getSnapshot()).toEqual({ id: "s", value: 0, min: 0, max: 100, step: 1, percent: 0, disabled: false })
+		expect(createSlider({ id: "s" }).getSnapshot()).toMatchObject({ id: "s", value: 0, min: 0, max: 100, step: 1, percent: 0, start: 0, disabled: false, range: false, orientation: "horizontal" })
 		expect(createSlider({ id: "s", defaultValue: 25, min: 0, max: 50 }).getSnapshot()).toMatchObject({ value: 25, percent: 50 })
 		expect(createSlider({ id: "s", min: 5, max: 5 }).getSnapshot().percent).toBe(0)
 	})
@@ -311,5 +311,74 @@ describe("Rating accessible name", () => {
 		expect(createRating({ id: "r", label: "Rating", readOnly: true, defaultValue: 3 }).connect().group.attrs["aria-label"]).toBe("Rating: 3 out of 5")
 		expect(createRating({ id: "r", readOnly: true, defaultValue: 2 }).connect().group.attrs["aria-label"]).toBe("2 out of 5")
 		expect(createRating({ id: "r" }).connect().group.attrs["aria-label"]).toBeUndefined()
+	})
+})
+
+describe("Select groups", () => {
+	const items = [
+		{ value: "x", label: "Loose" },
+		{ label: "Fruit", options: [{ value: "a", label: "Apple" }, { value: "b", label: "Banana" }] },
+		{ label: "Veg", options: [{ value: "c", label: "Carrot" }] },
+	]
+
+	it("tells groups from options and lists the options in display order", () => {
+		expect(items.map(isSelectGroup)).toEqual([false, true, true])
+		expect(flattenOptions(items).map((o) => o.value)).toEqual(["x", "a", "b", "c"])
+	})
+
+	it("finds the label of a value inside a group, and keeps multiple labels in display order", () => {
+		const one = createSelect({ id: "s", options: items, defaultValue: "b" })
+		expect(one.getSnapshot().label).toBe("Banana")
+		const many = createSelect({ id: "s", options: items, multiple: true, defaultValues: ["c", "a"] })
+		expect(many.getSnapshot().label).toBe("Apple, Carrot")
+	})
+
+	it("names each group by its heading and gives options their label for type-ahead", () => {
+		const select = createSelect({ id: "s", options: items })
+		const g = select.group(1)
+		expect(g.list.attrs).toMatchObject({ role: "group", "aria-labelledby": "s-group-1" })
+		expect(g.label.attrs).toMatchObject({ id: "s-group-1" })
+		expect(select.option({ value: "a", label: "Apple" }).attrs["data-label"]).toBe("Apple")
+	})
+})
+
+describe("Slider range", () => {
+	it("keeps two ordered values, starts at the whole range, and reports start and percent", () => {
+		const slider = createSlider({ id: "r", range: true, min: 0, max: 200, step: 10, defaultValues: [50, 150] })
+		expect(slider.getSnapshot()).toMatchObject({ range: true, values: [50, 150], value: 50, start: 25, percent: 75 })
+		expect(createSlider({ id: "r", range: true }).getSnapshot().values).toEqual([0, 100])
+		expect(createSlider({ id: "r", range: true, values: [90, 10] }).getSnapshot().values).toEqual([10, 90])
+	})
+
+	it("a thumb stops at the other one, and reports what it ended with", () => {
+		const onValuesChange = vi.fn()
+		const slider = createSlider({ id: "r", range: true, step: 10, defaultValues: [20, 80], onValuesChange })
+		expect(slider.changeAt(0, 95)).toBe(80)
+		expect(onValuesChange).toHaveBeenLastCalledWith([80, 80], undefined)
+		expect(slider.changeAt(1, 5)).toBe(80) // cannot go below the lower thumb: no change
+		expect(onValuesChange).toHaveBeenCalledTimes(1)
+		expect(slider.getSnapshot().values).toEqual([80, 80])
+	})
+
+	it("controlled: reports but does not change until the host does; each thumb is its own input", () => {
+		const onValuesChange = vi.fn()
+		const slider = createSlider({ id: "r", range: true, values: [20, 80], onValuesChange })
+		slider.changeAt(1, 60)
+		expect(onValuesChange).toHaveBeenCalledWith([20, 60], undefined)
+		expect(slider.getSnapshot().values).toEqual([20, 80])
+		const { inputs } = slider.connect()
+		expect(inputs.map((i) => i.attrs["id"])).toEqual(["r", "r-end"])
+		expect(inputs.map((i) => i.attrs["value"])).toEqual(["20", "80"])
+	})
+
+	it("when the thumbs share a value past the middle, the lower one is in front so it can still move", () => {
+		const slider = createSlider({ id: "r", range: true, values: [90, 90] })
+		expect(slider.connect().inputs[0]?.attrs["data-front"]).toBe("")
+		expect(createSlider({ id: "r", range: true, values: [10, 10] }).connect().inputs[0]?.attrs["data-front"]).toBeUndefined()
+	})
+
+	it("vertical says so on the inputs", () => {
+		const input = createSlider({ id: "v", orientation: "vertical" }).connect().input
+		expect(input.attrs["aria-orientation"]).toBe("vertical")
 	})
 })

@@ -7,7 +7,7 @@
 	"scripts": {
 		"build:examples": "pnpm --filter \"@omnifront/example-ui-react...\" --filter \"@omnifront/example-ui-vue...\" --filter \"@omnifront/example-ui-angular...\" --workspace-concurrency=1 build",
 		"e2e": "playwright test",
-		"install-browsers": "playwright install chromium",
+		"install-browsers": "playwright install chromium firefox webkit",
 		"typecheck": "tsc --noEmit"
 	},
 	"devDependencies": {

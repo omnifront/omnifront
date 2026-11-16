@@ -61,7 +61,7 @@ Buttons that stay pressed. Group inputs: `value` / `defaultValue` (a list; with 
 <omni-slider aria-label="Volume" [value]="volume()" (valueChange)="volume.set($event)" valueLabelDisplay="auto" />
 ```
 
-A real `<input type="range">`, so dragging, the keys, forms and screen readers are native. Inputs: `value` / `defaultValue`, `min`, `max`, `step`, `marks` (`true` or a list of `SliderMark`: `{ value, label? }`), `valueLabelDisplay` (`auto`, `on`, `off`), `valueLabelFormat`, `getAriaValueText`, `size`, `color`, `disabled`, `name`, `aria-label`; output `valueChange`. Not yet: two thumbs and a vertical slider.
+A real `<input type="range">`, so dragging, the keys, forms and screen readers are native. Inputs: `value` / `defaultValue` (a number, or with `range` a `[lower, upper]` pair; the lower thumb cannot pass the upper one, and the thumbs are named after `aria-label` with "minimum" and "maximum" added), `range`, `orientation` (`vertical` puts the smallest value at the bottom), `length` (the height of a vertical slider, default 200px), `min`, `max`, `step`, `marks` (`true` or a list of `SliderMark`: `{ value, label? }`), `valueLabelDisplay` (`auto`, `on`, `off`), `valueLabelFormat`, `getAriaValueText`, `size`, `color`, `disabled`, `name`, `aria-label`; output `valueChange`.
 
 ### `OmniRating`
 
@@ -113,7 +113,7 @@ A labelled group of related controls (a `<fieldset>` with a `<legend>`), for exa
 <omni-select label="Fruit" [options]="fruits" [(value)]="fruit" />
 ```
 
-Looks like a text field and opens a list of options. Inputs: `label`, `options` (`SelectOption[]`: `{ value, label, disabled? }`), `value`, `defaultValue`, `open`, `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`), `id`. Outputs: `valueChange`, `openChange`, and `closed` with a `SelectCloseEvent` (`{ reason, event }`; `SelectCloseReason` is `escapeKeyDown`, `outsidePress`, `tab`, `select`, `trigger` or `programmatic`). Works with `ngModel` and reactive forms. The list moves to a portal in `<body>` while it is open. The options are data, not children, so every framework shows the chosen label the same way, including on the server.
+Looks like a text field and opens a list of options. Inputs: `label`, `options` (a list of `SelectItem`: options, `{ value, label, disabled? }`, and `SelectGroup`s of them, `{ label, options }`), `optionTemplate` (a `TemplateRef` of `SelectOptionContext`, which has the option and `selected`, for what an option looks like in the open list: `<ng-template let-option let-selected="selected">`; the closed select and type-ahead still use the `label`), `value`, `defaultValue`, `open`, `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`), `id`. Outputs: `valueChange`, `openChange`, and `closed` with a `SelectCloseEvent` (`{ reason, event }`; `SelectCloseReason` is `escapeKeyDown`, `outsidePress`, `tab`, `select`, `trigger` or `programmatic`). Works with `ngModel` and reactive forms. The list moves to a portal in `<body>` while it is open. The options are data, not children, so every framework shows the chosen label the same way, including on the server.
 
 ### `OmniDialog`
 

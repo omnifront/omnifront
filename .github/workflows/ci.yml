@@ -36,5 +36,5 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @omnifront/e2e-ui build:examples
-      - run: pnpm --filter @omnifront/e2e-ui exec playwright install --with-deps chromium
+      - run: pnpm --filter @omnifront/e2e-ui exec playwright install --with-deps chromium firefox webkit
       - run: pnpm --filter @omnifront/e2e-ui e2e
