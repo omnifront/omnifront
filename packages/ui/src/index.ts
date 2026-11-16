@@ -57,6 +57,42 @@ export type {
 	TypographyOptions as TypographyPartOptions,
 	TypographyVariantName,
 } from "./display"
+export {
+	alertPart,
+	avatarGroupState,
+	bottomNavigationActionPart,
+	breadcrumbItems,
+	breadcrumbsPart,
+	circularProgressParts,
+	linearProgressParts,
+	linkPart,
+	skeletonPart,
+	sortLabelPart,
+	stepPart,
+	stepState,
+	stepperPart,
+	tablePaginationState,
+} from "./feedback"
+export type {
+	AlertOptions,
+	AvatarGroupState,
+	BottomNavigationActionOptions,
+	BreadcrumbsOptions,
+	CircularProgressOptions,
+	CircularProgressParts,
+	LinearProgressOptions,
+	LinearProgressParts,
+	LinkOptions,
+	ProgressColor,
+	Severity,
+	SkeletonOptions,
+	SortLabelOptions,
+	StepOptions,
+	StepState,
+	StepperOptions,
+	TablePaginationOptions,
+	TablePaginationState,
+} from "./feedback"
 export { buttonPart, iconButtonPart, fabPart, toggleButtonPart } from "./button"
 export type {
 	ButtonColor,

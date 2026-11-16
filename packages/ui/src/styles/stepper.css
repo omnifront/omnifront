@@ -1,0 +1,32 @@
+@layer omnifront {
+	/* Stepper: an <ol> of <li class="omni-step">. The connector is drawn between neighbours, so the DOM stays flat. */
+	.omni-stepper { --_icon: 24px; display: flex; margin: 0; padding: 0; list-style: none; font: var(--omni-typography-body2-font); color: var(--omni-palette-text-secondary); }
+	.omni-stepper[data-orientation="vertical"] { flex-direction: column; }
+	.omni-step { --_main: var(--omni-palette-primary-main); position: relative; display: flex; flex: 1 1 auto; align-items: center; min-inline-size: 0; }
+	.omni-stepper[data-orientation="horizontal"] .omni-step:not([data-last])::after { content: ""; flex: 1 1 auto; block-size: 1px; margin-inline: 8px; background-color: var(--omni-palette-grey-400); }
+	.omni-stepper[data-orientation="horizontal"] .omni-step[data-state="completed"]:not([data-last])::after { background-color: var(--_main); }
+	.omni-stepper[data-orientation="horizontal"] .omni-step[data-last] { flex: 0 0 auto; }
+	.omni-step__header { display: flex; flex: 0 0 auto; align-items: center; margin: 0; padding: 0; border: 0; font: inherit; color: inherit; background: none; text-align: start; }
+	.omni-step__header:is(button) { cursor: pointer; padding: 8px 12px; margin-block: -8px; margin-inline: -12px; border-radius: var(--omni-shape-border-radius); -webkit-tap-highlight-color: transparent; }
+	.omni-step__header:is(button):hover { background-color: var(--omni-palette-action-hover); }
+	.omni-step__header:is(button):focus-visible { outline: 2px solid var(--_main); }
+	.omni-step[data-disabled] .omni-step__header { opacity: 0.38; pointer-events: none; }
+	.omni-step__icon { display: flex; flex: 0 0 auto; align-items: center; justify-content: center; box-sizing: border-box; inline-size: var(--_icon); block-size: var(--_icon); margin-inline-end: 8px; border-radius: 50%; font-size: 0.75rem; font-weight: 500; line-height: 1; color: var(--omni-palette-common-white); background-color: var(--omni-palette-text-secondary); }
+	.omni-step__icon svg { inline-size: 70%; block-size: 70%; fill: currentColor; }
+	.omni-step[data-state="active"] .omni-step__icon, .omni-step[data-state="completed"] .omni-step__icon { background-color: var(--_main); color: var(--_contrast); }
+	.omni-step[data-state="error"] .omni-step__icon { background-color: var(--omni-palette-error-main); color: var(--omni-palette-error-contrast-text); }
+	.omni-step__label { display: block; color: var(--omni-palette-text-secondary); }
+	.omni-step[data-state="active"] .omni-step__label, .omni-step[data-state="completed"] .omni-step__label { color: var(--omni-palette-text-primary); font-weight: 500; }
+	.omni-step[data-state="error"] .omni-step__label { color: var(--omni-palette-error-main); }
+	.omni-step__optional { display: block; font-size: 0.75rem; color: var(--omni-palette-text-secondary); }
+	/* vertical: the line runs down the icon, the step's own content sits under the label */
+	.omni-stepper[data-orientation="vertical"] .omni-step { flex-direction: column; align-items: stretch; }
+	.omni-stepper[data-orientation="vertical"] .omni-step__content { margin-inline-start: calc(var(--_icon) / 2); padding-inline: 20px 8px; padding-block: 8px; border-inline-start: 1px solid var(--omni-palette-grey-400); min-block-size: 16px; }
+	.omni-stepper[data-orientation="vertical"] .omni-step[data-last] .omni-step__content { border-inline-start-color: transparent; }
+	.omni-stepper[data-orientation="vertical"] .omni-step[data-state="completed"] .omni-step__content { border-inline-start-color: var(--_main); }
+	/* alternativeLabel: label under the icon, the line between the icons */
+	.omni-stepper[data-alternative-label] .omni-step { flex-direction: column; align-items: center; }
+	.omni-stepper[data-alternative-label] .omni-step__header { flex-direction: column; text-align: center; }
+	.omni-stepper[data-alternative-label] .omni-step__icon { margin: 0 0 8px; }
+	.omni-stepper[data-alternative-label][data-orientation="horizontal"] .omni-step:not([data-last])::after { position: absolute; inset-block-start: calc(var(--_icon) / 2); inset-inline: calc(50% + var(--_icon) / 2 + 4px) calc(-50% + var(--_icon) / 2 + 4px); margin: 0; block-size: 1px; }
+}

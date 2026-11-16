@@ -1,0 +1,22 @@
+@layer omnifront {
+	.omni-skeleton {
+		display: block;
+		position: relative;
+		overflow: hidden;
+		box-sizing: border-box;
+		inline-size: var(--_w, auto);
+		block-size: var(--_h, auto);
+		background-color: color-mix(in srgb, var(--omni-palette-text-primary) 11%, transparent);
+	}
+	.omni-skeleton[data-variant="text"] { inline-size: var(--_w, 100%); block-size: var(--_h, 1.2em); margin-block: 0; border-radius: 4px; transform: scale(1, 0.6); transform-origin: 0 60%; }
+	[dir="rtl"] .omni-skeleton[data-variant="text"] { transform-origin: 100% 60%; }
+	.omni-skeleton[data-variant="circular"] { inline-size: var(--_w, 40px); block-size: var(--_h, var(--_w, 40px)); border-radius: 50%; }
+	.omni-skeleton[data-variant="rectangular"] { inline-size: var(--_w, 100%); block-size: var(--_h, 118px); }
+	.omni-skeleton[data-variant="rounded"] { inline-size: var(--_w, 100%); block-size: var(--_h, 118px); border-radius: var(--omni-shape-border-radius); }
+	.omni-skeleton[data-animation="pulse"] { animation: omni-pulse 2s ease-in-out 0.5s infinite; }
+	.omni-skeleton[data-animation="wave"]::after { content: ""; position: absolute; inset: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--omni-palette-text-primary) 6%, transparent), transparent); animation: omni-wave 2s linear 0.5s infinite; }
+	[dir="rtl"] .omni-skeleton[data-animation="wave"]::after { animation-direction: reverse; }
+	@keyframes omni-pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+	@keyframes omni-wave { 0% { transform: translateX(-100%); } 50% { transform: translateX(100%); } 100% { transform: translateX(100%); } }
+	@media (prefers-reduced-motion: reduce) { .omni-skeleton[data-animation] , .omni-skeleton[data-animation]::after { animation: none; } }
+}

@@ -1,0 +1,24 @@
+@layer omnifront {
+	/* Alert: a short message with a status icon. The colours come from color.css (--_main, --_dark, --_contrast). */
+	.omni-alert {
+		display: flex;
+		box-sizing: border-box;
+		margin: 0;
+		padding: 6px 16px;
+		border-radius: var(--omni-shape-border-radius);
+		font: var(--omni-typography-body2-font);
+		letter-spacing: var(--omni-typography-body2-letter-spacing);
+		color: color-mix(in srgb, var(--_main) 40%, var(--omni-palette-text-primary));
+		background-color: color-mix(in srgb, var(--_main) 12%, var(--omni-palette-background-paper));
+	}
+	.omni-alert[data-variant="outlined"] { background-color: transparent; border: 1px solid color-mix(in srgb, var(--_main) 70%, transparent); }
+	.omni-alert[data-variant="filled"] { color: var(--_contrast); background-color: var(--_dark); }
+	.omni-alert__icon { display: flex; flex: 0 0 auto; padding: 7px 0; margin-inline-end: 12px; font-size: 22px; opacity: 0.9; }
+	.omni-alert__icon svg { inline-size: 1em; block-size: 1em; fill: currentColor; }
+	.omni-alert:not([data-variant="filled"]) .omni-alert__icon { color: var(--_main); }
+	.omni-alert__icon:empty { display: none; }
+	.omni-alert__message { min-inline-size: 0; padding: 8px 0; }
+	.omni-alert__title { display: block; margin: -2px 0 0; font-weight: 500; font-size: 1rem; line-height: 1.5; letter-spacing: var(--omni-typography-subtitle1-letter-spacing); color: inherit; }
+	.omni-alert__action { display: flex; align-items: flex-start; margin-inline: auto -8px; padding: 4px 0 0 16px; padding-inline: 16px 0; }
+	.omni-alert__action .omni-icon-button { color: inherit; }
+}

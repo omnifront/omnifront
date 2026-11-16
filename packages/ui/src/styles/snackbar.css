@@ -1,0 +1,30 @@
+@layer omnifront {
+	.omni-snackbar { position: fixed; z-index: var(--omni-z-snackbar); display: flex; box-sizing: border-box; max-inline-size: calc(100% - 16px); inset-block-end: 24px; inset-inline-start: 24px; }
+	.omni-snackbar[hidden] { display: none; }
+	.omni-snackbar[data-vertical="top"] { inset-block: 24px auto; }
+	.omni-snackbar[data-horizontal="right"] { inset-inline: auto 24px; }
+	.omni-snackbar[data-horizontal="center"] { inset-inline: 50% auto; transform: translateX(-50%); }
+	[dir="rtl"] .omni-snackbar[data-horizontal="center"] { transform: translateX(50%); }
+	@media (max-width: 599.95px) {
+		.omni-snackbar { inset-inline: 8px; inset-block-end: 8px; }
+		.omni-snackbar[data-vertical="top"] { inset-block: 8px auto; }
+		.omni-snackbar[data-horizontal="center"] { transform: none; }
+	}
+	.omni-snackbar[data-state="open"] .omni-snackbar__content { animation: omni-snackbar-in var(--omni-duration-entering-screen) var(--omni-easing-ease-out) both; }
+	.omni-snackbar[data-state="closed"] .omni-snackbar__content { animation: omni-snackbar-out var(--omni-duration-leaving-screen) var(--omni-easing-ease-in) both; }
+	.omni-snackbar__content {
+		display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; box-sizing: border-box; min-inline-size: 288px; padding: 6px 16px;
+		border-radius: var(--omni-shape-border-radius); box-shadow: var(--omni-shadow-6);
+		font: var(--omni-typography-body2-font); letter-spacing: var(--omni-typography-body2-letter-spacing);
+		color: var(--omni-palette-common-white); background-color: #323232;
+	}
+	/* an Alert inside draws its own surface */
+	.omni-snackbar__content:has(> .omni-alert) { padding: 0; min-inline-size: 0; background: none; box-shadow: none; }
+	.omni-snackbar__content > .omni-alert { flex: 1 1 auto; box-shadow: var(--omni-shadow-6); }
+	.omni-snackbar__message { padding: 8px 0; }
+	.omni-snackbar__action { display: flex; align-items: center; margin-inline: auto -8px; padding-inline-start: 16px; }
+	.omni-snackbar__action .omni-button { color: #90caf9; }
+	@keyframes omni-snackbar-in { from { opacity: 0; transform: translateY(16px) scale(0.95); } to { opacity: 1; transform: none; } }
+	@keyframes omni-snackbar-out { from { opacity: 1; } to { opacity: 0; transform: scale(0.95); } }
+	@media (prefers-reduced-motion: reduce) { .omni-snackbar__content { animation-duration: 1ms !important; } }
+}

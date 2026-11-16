@@ -1,4 +1,4 @@
-import { autoUpdate, computePosition, flip, offset, shift, size, type Placement } from "@floating-ui/dom"
+import { arrow, autoUpdate, computePosition, flip, offset, shift, size, type Placement } from "@floating-ui/dom"
 
 export type { Placement }
 
@@ -8,6 +8,8 @@ export interface PositionOptions {
 	offset?: number
 	/** Copy the anchor's width to `--omni-anchor-width` (menus and selects use it). */
 	matchWidth?: boolean
+	/** Point the `[data-arrow]` element inside the floating one at the anchor (it stays on the anchor even after the box shifted). */
+	arrow?: boolean
 }
 
 /**
@@ -18,6 +20,7 @@ export interface PositionOptions {
  */
 export function autoPosition(anchor: Element, floating: HTMLElement, options: PositionOptions = {}): () => void {
 	floating.style.position = "fixed"
+	const arrowEl = options.arrow ? floating.querySelector<HTMLElement>("[data-arrow]") : null
 	const update = (): void => {
 		void computePosition(anchor, floating, {
 			strategy: "fixed",
@@ -26,6 +29,7 @@ export function autoPosition(anchor: Element, floating: HTMLElement, options: Po
 				offset(options.offset ?? 0),
 				flip({ padding: 8 }),
 				shift({ padding: 8 }),
+				...(arrowEl ? [arrow({ element: arrowEl, padding: 6 })] : []),
 				size({
 					padding: 8,
 					apply({ availableHeight, rects }) {
@@ -34,7 +38,12 @@ export function autoPosition(anchor: Element, floating: HTMLElement, options: Po
 					},
 				}),
 			],
-		}).then(({ x, y, placement }) => {
+		}).then(({ x, y, placement, middlewareData }) => {
+			if (arrowEl) {
+				const a = middlewareData.arrow
+				arrowEl.style.left = a?.x != null ? `${a.x}px` : ""
+				arrowEl.style.top = a?.y != null ? `${a.y}px` : ""
+			}
 			floating.style.left = `${x}px`
 			floating.style.top = `${y}px`
 			floating.setAttribute("data-placement", placement)

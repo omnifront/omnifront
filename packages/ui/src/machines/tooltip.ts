@@ -12,6 +12,10 @@ export interface TooltipProps extends OpenProps {
 	disabled?: boolean | undefined
 	/** The tooltip closes the moment the pointer leaves the trigger, even towards the tooltip (default: it stays while hovered, WCAG 1.4.13). */
 	disableInteractive?: boolean | undefined
+	/** Milliseconds a finger must rest on the trigger before it opens. Default 700. A short tap does nothing. */
+	enterTouchDelay?: number | undefined
+	/** Milliseconds after the finger lifts before it closes. Default 1500. */
+	leaveTouchDelay?: number | undefined
 }
 
 export interface TooltipState extends OpenState {
@@ -30,10 +34,12 @@ export interface TooltipElements {
  * Behaviour of a tooltip: opens when the pointer rests on the trigger (after `enterDelay`) or when it
  * gets keyboard focus; closes on leave, blur or Escape. The tooltip text is a description
  * (`aria-describedby`, set while it is open), not a name. Hoverable: moving onto the tooltip keeps
- * it open. Touch does not open it (there is no hover; a label that matters should be visible text).
+ * it open. Touch: a press held for `enterTouchDelay` opens it and it closes `leaveTouchDelay` after the
+ * finger lifts; a short tap does nothing (a label that matters should still be visible text).
  */
 export class Tooltip extends OpenMachine<TooltipProps, TooltipState> {
 	private delay: TimerHandle | undefined
+	private touchDelay: TimerHandle | undefined
 	/** The pointer is on the tooltip. React tells the tooltip it was entered before the trigger's own `pointerleave`, so a close cannot only be cancelled: it must not start. */
 	private overTooltip = false
 	protected override defaultExitDuration = 120
@@ -50,6 +56,11 @@ export class Tooltip extends OpenMachine<TooltipProps, TooltipState> {
 	private clearDelay(): void {
 		if (this.delay !== undefined) this.scheduler.clearTimeout(this.delay)
 		this.delay = undefined
+	}
+
+	private clearTouch(): void {
+		if (this.touchDelay !== undefined) this.scheduler.clearTimeout(this.touchDelay)
+		this.touchDelay = undefined
 	}
 
 	/** Open after `ms` (0 opens now). A pending close is cancelled. */
@@ -108,12 +119,28 @@ export class Tooltip extends OpenMachine<TooltipProps, TooltipState> {
 			if (tokens.length) trigger.setAttribute("aria-describedby", tokens.join(" "))
 			else trigger.removeAttribute("aria-describedby")
 		}
+		const isTouch = (event: Event): boolean => (event as PointerEvent).pointerType === "touch"
+		const onTouchStart = (event: Event): void => {
+			if (!isTouch(event) || this.props.disabled) return
+			this.clearTouch()
+			this.touchDelay = this.scheduler.setTimeout(() => {
+				this.touchDelay = undefined
+				this.clearDelay()
+				this.request(true, "trigger", event)
+			}, this.props.enterTouchDelay ?? 700)
+		}
+		const onTouchEnd = (event: Event): void => {
+			if (!isTouch(event)) return
+			if (this.touchDelay !== undefined) return this.clearTouch() // released early: a tap, not a hold
+			if (this.getSnapshot().open) this.closeSoon(this.props.leaveTouchDelay ?? 1500, event)
+		}
 		const onEnter = (event: Event): void => {
-			if ((event as PointerEvent).pointerType === "touch") return
+			if (isTouch(event)) return
 			this.overTooltip = false // the pointer is on the trigger now (a tooltip that vanished under it never said it left)
 			this.openSoon(this.props.enterDelay ?? 100, event)
 		}
 		const onLeave = (event: Event): void => {
+			if (isTouch(event)) return // the finger lifting is handled by `onTouchEnd`
 			if (this.overTooltip && !this.props.disableInteractive) return // it already moved onto the tooltip
 			this.closeSoon(this.props.leaveDelay ?? 0, event, true)
 		}
@@ -129,6 +156,9 @@ export class Tooltip extends OpenMachine<TooltipProps, TooltipState> {
 		}
 		const onBlur = (event: Event): void => this.closeSoon(0, event)
 		const sync = (): void => write(this.getSnapshot().mounted ? [...without(), id] : without())
+		trigger.addEventListener("pointerdown", onTouchStart)
+		trigger.addEventListener("pointerup", onTouchEnd)
+		trigger.addEventListener("pointercancel", onTouchEnd)
 		trigger.addEventListener("pointerenter", onEnter)
 		trigger.addEventListener("pointerleave", onLeave)
 		trigger.addEventListener("focus", onFocus)
@@ -136,12 +166,16 @@ export class Tooltip extends OpenMachine<TooltipProps, TooltipState> {
 		const off = this.subscribe(sync)
 		sync()
 		return () => {
+			trigger.removeEventListener("pointerdown", onTouchStart)
+			trigger.removeEventListener("pointerup", onTouchEnd)
+			trigger.removeEventListener("pointercancel", onTouchEnd)
 			trigger.removeEventListener("pointerenter", onEnter)
 			trigger.removeEventListener("pointerleave", onLeave)
 			trigger.removeEventListener("focus", onFocus)
 			trigger.removeEventListener("blur", onBlur)
 			off()
 			this.clearDelay()
+			this.clearTouch()
 			write(without())
 		}
 	}
@@ -161,6 +195,7 @@ export class Tooltip extends OpenMachine<TooltipProps, TooltipState> {
 
 	override dispose(): void {
 		this.clearDelay()
+		this.clearTouch()
 		super.dispose()
 	}
 }

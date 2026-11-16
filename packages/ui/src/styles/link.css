@@ -1,0 +1,12 @@
+@layer omnifront {
+	.omni-link { --_main: var(--omni-palette-primary-main); margin: 0; font: inherit; color: var(--_main); text-decoration-color: color-mix(in srgb, var(--_main) 40%, transparent); text-underline-offset: 0.15em; -webkit-tap-highlight-color: transparent; }
+	.omni-link[data-color="inherit"] { --_main: currentColor; }
+	.omni-link[data-color="text-primary"] { --_main: var(--omni-palette-text-primary); }
+	.omni-link[data-color="text-secondary"] { --_main: var(--omni-palette-text-secondary); }
+	.omni-link[data-underline="none"] { text-decoration: none; }
+	.omni-link[data-underline="hover"] { text-decoration: none; }
+	.omni-link[data-underline="hover"]:hover { text-decoration: underline; }
+	.omni-link[data-underline="always"] { text-decoration: underline; }
+	.omni-link:hover { text-decoration-color: inherit; }
+	.omni-link:focus-visible { outline: 2px solid var(--_main); outline-offset: 2px; border-radius: 2px; }
+}
