@@ -101,17 +101,17 @@ const ITEM_LABEL: Record<"first" | "previous" | "next" | "last", string> = {
 
 /** Page state and the list of buttons for a Pagination bar. The page is 1-based. */
 export class Pagination extends Machine<PaginationProps, PaginationState> {
-	private internal: number
+	/** The page the user chose in an uncontrolled bar; until then `defaultPage` (which an adapter may only learn after construction). */
+	private internal: number | undefined
 
 	constructor(props: PaginationProps) {
 		super(props)
-		this.internal = props.defaultPage ?? 1
 		this.start()
 	}
 
 	protected compute(): PaginationState {
 		const p = this.props
-		const page = p.page ?? this.internal
+		const page = p.page ?? this.internal ?? p.defaultPage ?? 1
 		const items = paginationItems({ ...p, page })
 		return { page, count: p.count, disabled: p.disabled === true, items: this.same(items) }
 	}

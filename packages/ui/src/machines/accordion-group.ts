@@ -19,16 +19,16 @@ const toList = (v: string | string[] | null | undefined): string[] => (v === nul
 
 /** Which Accordion of a group is open: one at a time (like MUI's usual pattern) or any number. */
 export class AccordionGroup extends Machine<AccordionGroupProps, AccordionGroupState> {
-	private internal: string[]
+	/** What the user chose in an uncontrolled group; until then `defaultValue` (which an adapter may only learn after construction). */
+	private internal: string[] | undefined
 
 	constructor(props: AccordionGroupProps = {}) {
 		super(props)
-		this.internal = toList(props.defaultValue)
 		this.start()
 	}
 
 	protected compute(): AccordionGroupState {
-		const open = toList(this.props.value === undefined ? this.internal : this.props.value)
+		const open = toList(this.props.value === undefined ? (this.internal ?? this.props.defaultValue) : this.props.value)
 		return { open: stableList(this.peek()?.open, this.props.multiple ? open : open.slice(0, 1)) }
 	}
 

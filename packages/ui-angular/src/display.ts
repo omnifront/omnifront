@@ -2,12 +2,14 @@ import {
 	AfterContentInit,
 	ChangeDetectionStrategy,
 	Component,
+	ContentChildren,
 	Directive,
 	ElementRef,
 	Input,
 	OnChanges,
 	OnDestroy,
 	OnInit,
+	QueryList,
 	booleanAttribute,
 	inject,
 	signal,
@@ -15,6 +17,7 @@ import {
 import {
 	ICON_PATHS,
 	appBarPart,
+	avatarGroupState,
 	avatarPart,
 	badgeMarkPart,
 	badgeState,
@@ -312,5 +315,67 @@ export class OmniToolbar extends PartHost implements OnChanges {
 	protected part(): Part {
 		const p = this.defaults("OmniToolbar", { variant: this.variant })
 		return displayPart("omni-toolbar", { variant: p.variant === "dense" ? "dense" : undefined, disableGutters: this.disableGutters || undefined })
+	}
+}
+
+/**
+ * The whole card as one press target: `<button omni-card-action-area>` (or `<a … href>`) around the card's content.
+ * Do not put another button or link inside it (HTML forbids interactive content in a button); keep `omni-card-actions` outside.
+ */
+@Directive({ selector: "button[omni-card-action-area], a[omni-card-action-area]", standalone: true })
+export class OmniCardActionArea extends PartHost implements OnChanges {
+	@Input() type: "button" | "submit" | "reset" | undefined
+
+	ngOnChanges(): void {
+		this.apply()
+	}
+
+	protected part(): Part {
+		return displayPart("omni-card__action-area", {}, this.element.tagName === "BUTTON" ? { type: this.type ?? "button" } : {})
+	}
+}
+
+/**
+ * Avatars side by side, overlapping: `<div omni-avatar-group [max]="3"><div omni-avatar>A</div>…</div>`. More than `max`
+ * fold into one "+N" avatar. Angular cannot drop projected content, so the avatars past the limit are `hidden`
+ * (React and Vue do not render them): the page looks the same.
+ */
+@Component({
+	selector: "div[omni-avatar-group]",
+	standalone: true,
+	imports: [OmniAvatar],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `<ng-content />@if (surplus() > 0) {<div omni-avatar [variant]="variant">+{{ surplus() }}</div>}`,
+})
+export class OmniAvatarGroup extends PartHost implements OnChanges, AfterContentInit {
+	/** Most avatars drawn, the last slot being "+N". Default 5. */
+	@Input() max: number | undefined
+	/** How many avatars exist in all, when more than the children. */
+	@Input() total: number | undefined
+	/** Overlap: `medium` (default, 8px), `small` (16px) or `large` (none). */
+	@Input() spacing: "small" | "medium" | "large" | undefined
+	@Input() variant: "circular" | "rounded" | "square" | undefined
+	@ContentChildren(OmniAvatar, { read: ElementRef }) private readonly avatars!: QueryList<ElementRef<HTMLElement>>
+	protected readonly surplus = signal(0)
+
+	ngAfterContentInit(): void {
+		this.fold()
+		this.avatars.changes.subscribe(() => this.fold())
+	}
+
+	ngOnChanges(): void {
+		if (this.avatars) this.fold()
+		this.apply()
+	}
+
+	private fold(): void {
+		const all = this.avatars.toArray()
+		const { shown, surplus } = avatarGroupState(all.length, this.max, this.total)
+		all.forEach((a, i) => (a.nativeElement.hidden = i >= shown))
+		this.surplus.set(surplus)
+	}
+
+	protected part(): Part {
+		return displayPart("omni-avatar-group", { spacing: this.spacing && this.spacing !== "medium" ? this.spacing : undefined }, { role: "group" })
 	}
 }

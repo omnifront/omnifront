@@ -5,6 +5,7 @@
 	.omni-drawer[hidden] { display: none; }
 	.omni-drawer__backdrop { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.5); -webkit-tap-highlight-color: transparent; animation: omni-fade-in var(--omni-duration-entering-screen) var(--omni-easing-ease-in-out) both; }
 	.omni-drawer__backdrop[data-state="closed"] { animation: omni-fade-out var(--omni-duration-leaving-screen) var(--omni-easing-ease-in-out) both; }
+	.omni-drawer__container { position: fixed; inset: 0; z-index: var(--omni-z-drawer); outline: 0; }
 	.omni-drawer__paper {
 		display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; outline: 0;
 		position: fixed; z-index: var(--omni-z-drawer); inset-block: 0; inline-size: var(--_w); max-inline-size: 100%;

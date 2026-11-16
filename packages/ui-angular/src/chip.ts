@@ -20,6 +20,10 @@ import { bindMachine } from "./machine"
 import { OmniPart, PartBinding } from "./part"
 import { injectDefaults } from "./theme"
 
+/** Replaces the cross of a chip's delete icon: `<svg omniChipDeleteIcon …/>`. It keeps the icon's role: a click on it deletes. */
+@Directive({ selector: "[omniChipDeleteIcon]", standalone: true })
+export class OmniChipDeleteIcon {}
+
 /** Marks the icon at the start of a chip: `<svg omni-svg-icon omniChipIcon>`. */
 @Directive({ selector: "[omniChipIcon]", standalone: true })
 export class OmniChipIcon {}
@@ -41,7 +45,11 @@ export class OmniChipIcon {}
 		@if (icon) {<span class="omni-chip__icon"><ng-content select="[omniChipIcon]" /></span>}
 		<span class="omni-chip__label">{{ label }}<ng-content /></span>
 		@if (deleteEvent.observed) {
-			<svg [omniPart]="parts().deleteIcon" viewBox="0 0 24 24" focusable="false"><path [attr.d]="cancelPath" /></svg>
+			@if (customDelete) {
+				<span [omniPart]="parts().deleteIcon"><ng-content select="[omniChipDeleteIcon]" /></span>
+			} @else {
+				<svg [omniPart]="parts().deleteIcon" viewBox="0 0 24 24" focusable="false"><path [attr.d]="cancelPath" /></svg>
+			}
 		}
 	`,
 })
@@ -55,6 +63,7 @@ export class OmniChip implements OnInit, OnChanges, OnDestroy {
 	/** Fires for the delete icon and for Backspace / Delete on the chip. Having a listener is what shows the icon. */
 	@Output("delete") readonly deleteEvent = new EventEmitter<Event>()
 	@ContentChild(OmniChipIcon) protected icon: OmniChipIcon | undefined
+	@ContentChild(OmniChipDeleteIcon) protected customDelete: OmniChipDeleteIcon | undefined
 
 	protected readonly cancelPath = ICON_PATHS.cancel
 	private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement
