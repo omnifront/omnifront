@@ -4,6 +4,22 @@ import { pushLayer, type Layer } from "../dom/layers"
 import { lockScroll } from "../dom/scroll-lock"
 import { OpenMachine, part, type OpenProps, type OpenState, type Part } from "./machine"
 
+/**
+ * The control last pressed with a pointer. Safari does not focus a button on click, so at the moment a
+ * dialog opens `document.activeElement` can be the body; this is where focus goes back to then.
+ */
+let lastPressed: HTMLElement | null = null
+if (typeof document !== "undefined") {
+	document.addEventListener(
+		"pointerdown",
+		(event) => {
+			const target = event.target as Element | null
+			lastPressed = (target?.closest?.("button, a[href], [tabindex]") as HTMLElement | null) ?? null
+		},
+		true,
+	)
+}
+
 export interface DialogProps extends OpenProps {
 	/** Base for the ids of the title, description and content. */
 	id: string
@@ -97,7 +113,8 @@ export class Dialog extends OpenMachine<DialogProps, DialogState> {
 	attach(elements: DialogElements): () => void {
 		const { content } = elements
 		const doc = content.ownerDocument
-		const previous = doc.activeElement as HTMLElement | null
+		const active = doc.activeElement as HTMLElement | null
+		const previous = active && active !== doc.body ? active : lastPressed
 		const layer = (this.layer = pushLayer())
 		const modal = this.props.modal ?? true
 		const cleanups: Array<() => void> = []

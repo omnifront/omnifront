@@ -600,7 +600,7 @@ const harness: UiHarness = {
 	alerts: (_props, log) => mountWith({}, () => h(AlertsView, { log })),
 	snackbar: (props, log) => mountWith(props, (p) => h(SnackbarView, { log, autoHideDuration: p.autoHideDuration } as never)),
 	progress: (props, log) => mountWith(props, (p) => h(ProgressView, { log, value: p.value, open: p.open } as never)),
-	drawer: (props, log) => mountWith(props, (p) => h(DrawerView, { log, variant: props.variant, anchor: props.anchor } as never)),
+	drawer: (props, log) => mountWith(props, () => h(DrawerView, { log, variant: props.variant, anchor: props.anchor } as never)),
 	popover: (_props, log) => mountWith({}, () => h(PopoverView, { log })),
 	breadcrumbs: (props) => mountWith(props, (p) => h(BreadcrumbsView, { maxItems: p.maxItems } as never)),
 	pagination: (props, log) => mountWith(props, (p) => h(PaginationView, { log, count: p.count, disabled: p.disabled } as never)),

@@ -9,7 +9,7 @@ export interface SnackbarProps extends OpenProps {
 	anchorOrigin?: { vertical: "top" | "bottom"; horizontal: "left" | "center" | "right" } | undefined
 }
 
-export interface SnackbarState extends OpenState {}
+export type SnackbarState = OpenState
 
 export interface SnackbarElements {
 	content: HTMLElement

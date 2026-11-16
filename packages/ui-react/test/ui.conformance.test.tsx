@@ -528,7 +528,7 @@ const harness: UiHarness = {
 	speedDial: (_props, log) => mountWith({}, () => <SpeedDialView log={log} />),
 	sortableTable: (_props, log) => mountWith({}, () => <SortableTableView log={log} />),
 	cardsAndLists: (_props, log) => mountWith({}, () => <CardsAndListsView log={log} />),
-	accordionGroup: (props, log) => mountWith(props, (p) => <AccordionGroupView multiple={props.multiple} log={log} />),
+	accordionGroup: (props, log) => mountWith(props, () => <AccordionGroupView multiple={props.multiple} log={log} />),
 	chipDeleteIcon: (_props, log) => mountWith({}, () => <Chip label="Custom delete" onDelete={() => log("delete:custom")} deleteIcon={<svg data-custom-delete="" viewBox="0 0 24 24"><path d="M0 0h24v24H0z" /></svg>} />),
 	richTooltip: (_props, log) => mountWith({}, () => (
 		<Tooltip title={<><strong data-rich="">Rich</strong> content</>} enterDelay={0} leaveDelay={0} onOpen={() => log("open")} onClose={() => log("close")}><button>Info</button></Tooltip>

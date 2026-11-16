@@ -36,5 +36,5 @@
 	.omni-drawer[data-variant="permanent"][data-anchor="end"] .omni-drawer__paper { border-inline-end: 0; border-inline-start: 1px solid var(--omni-palette-divider); }
 	@keyframes omni-drawer-in { from { transform: var(--_from); } to { transform: none; } }
 	@keyframes omni-drawer-out { from { transform: none; } to { transform: var(--_from); } }
-	@media (prefers-reduced-motion: reduce) { .omni-drawer__backdrop, .omni-drawer__paper { animation-duration: 1ms !important; transition-duration: 1ms !important; } }
+	@media (prefers-reduced-motion: reduce) { .omni-drawer__backdrop, .omni-drawer__paper { animation-duration: 1ms !important; transition: none !important; } }
 }
