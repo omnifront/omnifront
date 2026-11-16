@@ -1,6 +1,6 @@
 # @omnifront/ui-vue
 
-Vue components (single-file components) for the UI kit. About 12 KB gzipped (excluding Vue and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui).
+Vue components (single-file components) for the UI kit. About 13.4 KB gzipped (excluding Vue and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui).
 
 Every component also reads `theme.components.Omni<Name>.defaultProps`. Attributes and classes you put on a component reach its main element. Events: `@click` on `Button` and `MenuItem`, `@close` and `v-model:open` on `Dialog` and `Menu`, `v-model` on `TextField` and `TabContext`.
 

@@ -1,6 +1,6 @@
 # @omnifront/ui-react
 
-React components for the UI kit. About 11 KB gzipped (excluding React and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui), so one import covers the common case.
+React components for the UI kit. About 10.3 KB gzipped (excluding React and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui), so one import covers the common case.
 
 Every component also reads `theme.components.Omni<Name>.defaultProps` (`OmniButton`, `OmniTextField`, `OmniDialog`, `OmniMenu`, `OmniTabs`).
 

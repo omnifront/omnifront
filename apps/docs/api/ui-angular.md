@@ -1,6 +1,6 @@
 # @omnifront/ui-angular
 
-Standalone Angular components for the UI kit (Angular 17 or newer; `@angular/forms` is a peer, because `omni-text-field` is a `ControlValueAccessor`). About 17 KB gzipped (excluding Angular and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui).
+Standalone Angular components for the UI kit (Angular 17 or newer; `@angular/forms` is a peer, because `omni-text-field` is a `ControlValueAccessor`). About 19.3 KB gzipped (excluding Angular and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui).
 
 Components that wrap a native element use an attribute selector (`button[omni-button]`, `li[omniMenuItem]`) so the element keeps its HTML meaning. Boolean inputs accept the bare attribute (`<button omni-button disabled>`). Add `@omnifront/ui/styles.css` to your global styles.
 

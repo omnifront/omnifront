@@ -1,6 +1,6 @@
 # @omnifront/ui
 
-The framework-free core of the UI kit: a Material-style theme, behaviour machines, DOM utilities and static CSS. About 12.5 KB gzipped (`@omnifront/ui/position` adds floating-ui, about 6.9 KB, and is only loaded by Menu). See the [UI guide](/guide/ui).
+The framework-free core of the UI kit: a Material-style theme, behaviour machines, DOM utilities and static CSS. About 13.5 KB gzipped (`@omnifront/ui/position` adds floating-ui, about 6.9 KB, and is only loaded by Menu). See the [UI guide](/guide/ui).
 
 CSS entries: `@omnifront/ui/styles.css` (tokens, baseline and every component), or `tokens.css`, `baseline.css`, `button.css`, `text-field.css`, `dialog.css`, `menu.css`, `tabs.css`, `typography.css`, `paper.css`, `list.css`, `table.css`, `chip.css`, `tooltip.css`, `accordion.css`, ... separately (one file per component).
 
@@ -156,23 +156,23 @@ Browser only; call them after mount.
 
 ### `paperPart`, `cardPart`
 
-`paperPart(options?: PaperOptions): Part`: `elevation` (0 to 24, default 1), `variant` (`elevation` or `outlined`), `square`. `cardPart(options?: CardOptions): Part` is a Paper with the `omni-card` class (`variant`, `raised` for elevation 8).
+`paperPart(options?: PaperOptions): Part` (`PaperOptions`): `elevation` (0 to 24, default 1), `variant` (`elevation` or `outlined`), `square`. `cardPart(options?: CardOptions): Part` (`CardOptions`) is a Paper with the `omni-card` class (`variant`, `raised` for elevation 8).
 
 ### `dividerPart`
 
-`dividerPart(options?: DividerOptions): Part`: `orientation`, `variant` (`fullWidth`, `inset`, `middle`), `flexItem`, `textAlign`, `withText`, `as` (`hr`, `li` or `div`). A `div` with text is `role="separator"`; an `li` in a list is `aria-hidden` (a line, not an item: a list may only own list items); an `hr` needs nothing.
+`dividerPart(options?: DividerOptions): Part` (`DividerOptions`): `orientation`, `variant` (`fullWidth`, `inset`, `middle`), `flexItem`, `textAlign`, `withText`, `as` (`hr`, `li` or `div`). A `div` with text is `role="separator"`; an `li` in a list is `aria-hidden` (a line, not an item: a list may only own list items); an `hr` needs nothing.
 
 ### `avatarPart`, `badgeMarkPart`, `badgeState`
 
-`avatarPart(options?: AvatarOptions): Part` (`variant`: `circular`, `rounded`, `square`). `badgeMarkPart(options: BadgeOptions): Part` is the number or dot of a Badge: `badgeContent`, `max` (default 99; `120` shows `99+`), `showZero`, `variant` (`standard` or `dot`), `invisible`, `color`, `anchorOrigin` (`{ vertical, horizontal }`), `overlap` (`rectangular` or `circular`). `badgeState(options): BadgeState` says what it shows: `{ text, invisible }`.
+`avatarPart(options?: AvatarOptions): Part` (`AvatarOptions`) (`variant`: `circular`, `rounded`, `square`). `badgeMarkPart(options: BadgeOptions): Part` is the number or dot of a Badge: `badgeContent`, `max` (default 99; `120` shows `99+`), `showZero`, `variant` (`standard` or `dot`), `invisible`, `color`, `anchorOrigin` (`{ vertical, horizontal }`), `overlap` (`rectangular` or `circular`). `badgeState(options): BadgeState` says what it shows: `{ text, invisible }` (the `BadgeState` type); the options are `BadgeOptions`.
 
 ### `svgIconPart`, `ICON_PATHS`
 
-`svgIconPart(options?: SvgIconOptions): Part` for an `<svg>`: `fontSize` (`small`, `medium`, `large`, `inherit`), `color`, `viewBox`, and `titleAccess` (gives it `role="img"` and that name; without it the icon is `aria-hidden`). `ICON_PATHS` holds the three Material icon paths the components draw themselves (`cancel`, `expandMore`, `person`), 24px grid.
+`svgIconPart(options?: SvgIconOptions): Part` (`SvgIconOptions`) for an `<svg>`: `fontSize` (`small`, `medium`, `large`, `inherit`), `color`, `viewBox`, and `titleAccess` (gives it `role="img"` and that name; without it the icon is `aria-hidden`). `ICON_PATHS` holds the three Material icon paths the components draw themselves (`cancel`, `expandMore`, `person`), 24px grid.
 
 ### `appBarPart`
 
-`appBarPart(options?: AppBarOptions): Part` for a `<header>`: `position` (`fixed` by default, `absolute`, `sticky`, `static`, `relative`), `color` (`primary`, `secondary`, `default`, `transparent`, `inherit`), `elevation` (default 4).
+`appBarPart(options?: AppBarOptions): Part` (`AppBarOptions`) for a `<header>`: `position` (`fixed` by default, `absolute`, `sticky`, `static`, `relative`), `color` (`primary`, `secondary`, `default`, `transparent`, `inherit`), `elevation` (default 4).
 
 ### `createChip`
 
