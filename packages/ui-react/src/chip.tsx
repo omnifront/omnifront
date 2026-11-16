@@ -17,6 +17,8 @@ export interface ChipProps extends Omit<ComponentPropsWithoutRef<"div">, "color"
 	clickable?: boolean | undefined
 	/** Shows a delete icon; Backspace or Delete on the focused chip calls it too. */
 	onDelete?: ((event: Event) => void) | undefined
+	/** Replaces the cross of the delete icon. It keeps the icon's role: a click on it deletes. */
+	deleteIcon?: ReactNode | undefined
 	disabled?: boolean | undefined
 }
 
@@ -25,7 +27,7 @@ export interface ChipProps extends Omit<ComponentPropsWithoutRef<"div">, "color"
  * it shows a delete icon and Backspace / Delete on the focused chip removes it.
  */
 export const Chip = forwardRef<HTMLDivElement, ChipProps>(function Chip(rawProps, ref) {
-	const { label, variant = "filled", color = "default", size = "medium", avatar, icon, onClick, clickable, onDelete, disabled, className, children, ...rest } = useDefaultProps("OmniChip", rawProps)
+	const { label, variant = "filled", color = "default", size = "medium", avatar, icon, onClick, clickable, onDelete, deleteIcon, disabled, className, children, ...rest } = useDefaultProps("OmniChip", rawProps)
 	const [machine, state] = useMachine(() => createChip(), {
 		clickable: clickable ?? onClick !== undefined,
 		deletable: onDelete !== undefined,
@@ -42,11 +44,14 @@ export const Chip = forwardRef<HTMLDivElement, ChipProps>(function Chip(rawProps
 			{avatar}
 			{icon !== undefined && icon !== null && <span className="omni-chip__icon">{icon}</span>}
 			<span className="omni-chip__label">{label ?? children}</span>
-			{onDelete && (
-				<svg {...toReactProps(parts.deleteIcon)} viewBox="0 0 24 24" focusable="false">
-					<path d={ICON_PATHS.cancel} />
-				</svg>
-			)}
+			{onDelete &&
+				(deleteIcon !== undefined && deleteIcon !== null ? (
+					<span {...toReactProps(parts.deleteIcon)}>{deleteIcon}</span>
+				) : (
+					<svg {...toReactProps(parts.deleteIcon)} viewBox="0 0 24 24" focusable="false">
+						<path d={ICON_PATHS.cancel} />
+					</svg>
+				))}
 		</div>
 	)
 })

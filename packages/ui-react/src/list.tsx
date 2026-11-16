@@ -23,15 +23,17 @@ export interface ListItemProps extends ComponentPropsWithoutRef<"li"> {
 	/** No padding: for a row whose ListItemButton does the padding. */
 	disablePadding?: boolean | undefined
 	disableGutters?: boolean | undefined
+	/** `flex-start` aligns the icon, avatar and action with the first line of multi-line text. */
+	alignItems?: "center" | "flex-start" | undefined
 	/** Something at the far end of the row, such as an IconButton. */
 	secondaryAction?: ReactNode | undefined
 }
 
 export const ListItem = forwardRef<HTMLLIElement, ListItemProps>(function ListItem(rawProps, ref) {
-	const { divider, disablePadding, disableGutters, secondaryAction, className, children, ...rest } = useDefaultProps("OmniListItem", rawProps)
+	const { divider, disablePadding, disableGutters, alignItems, secondaryAction, className, children, ...rest } = useDefaultProps("OmniListItem", rawProps)
 	const hasAction = secondaryAction !== undefined && secondaryAction !== null
 	return (
-		<li {...mergeProps(toReactProps(displayPart("omni-list__item", { divider, disablePadding, disableGutters, secondaryAction: hasAction })), { ...rest, className })} ref={ref}>
+		<li {...mergeProps(toReactProps(displayPart("omni-list__item", { divider, disablePadding, disableGutters, secondaryAction: hasAction, alignItems: alignItems === "flex-start" ? alignItems : undefined })), { ...rest, className })} ref={ref}>
 			{children}
 			{hasAction && <div className="omni-list__action">{secondaryAction}</div>}
 		</li>
@@ -40,6 +42,7 @@ export const ListItem = forwardRef<HTMLLIElement, ListItemProps>(function ListIt
 
 export interface ListItemButtonProps extends Omit<ComponentPropsWithoutRef<"button">, "onClick"> {
 	selected?: boolean | undefined
+	alignItems?: "center" | "flex-start" | undefined
 	/** Renders an `<a>` instead of a `<button>`. */
 	href?: string | undefined
 	target?: string | undefined
@@ -49,9 +52,9 @@ export interface ListItemButtonProps extends Omit<ComponentPropsWithoutRef<"butt
 
 /** A row that can be pressed: a real `<button>` (or `<a>` with `href`) that fills the row. */
 export const ListItemButton = forwardRef<HTMLElement, ListItemButtonProps>(function ListItemButton(rawProps, ref) {
-	const { selected, href, disabled, onClick, className, type, ...rest } = useDefaultProps("OmniListItemButton", rawProps)
+	const { selected, alignItems, href, disabled, onClick, className, type, ...rest } = useDefaultProps("OmniListItemButton", rawProps)
 	const Tag = href === undefined ? "button" : "a"
-	const part = displayPart("omni-list__button", { selected, disabled }, {
+	const part = displayPart("omni-list__button", { selected, disabled, alignItems: alignItems === "flex-start" ? alignItems : undefined }, {
 		"aria-current": selected ? "true" : undefined,
 		...(Tag === "button" ? { type: type ?? "button", disabled: disabled || undefined } : { "aria-disabled": disabled ? "true" : undefined, tabindex: disabled ? -1 : undefined }),
 	})
@@ -73,6 +76,11 @@ export const ListItemButton = forwardRef<HTMLElement, ListItemButtonProps>(funct
 
 export const ListItemIcon = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<"div">>(function ListItemIcon({ className, ...rest }, ref) {
 	return <div {...mergeProps(toReactProps(displayPart("omni-list__icon")), { ...rest, className })} ref={ref} />
+})
+
+/** A picture (an Avatar) at the start of a row, with the same gap as ListItemIcon. */
+export const ListItemAvatar = forwardRef<HTMLDivElement, ComponentPropsWithoutRef<"div">>(function ListItemAvatar({ className, ...rest }, ref) {
+	return <div {...mergeProps(toReactProps(displayPart("omni-list__avatar")), { ...rest, className })} ref={ref} />
 })
 
 export interface ListItemTextProps extends Omit<ComponentPropsWithoutRef<"div">, "children"> {

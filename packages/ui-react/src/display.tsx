@@ -1,6 +1,7 @@
 import {
 	ICON_PATHS,
 	appBarPart,
+	avatarGroupState,
 	avatarPart,
 	badgeMarkPart,
 	badgeState,
@@ -22,7 +23,7 @@ import {
 	type TypographyColor,
 	type TypographyVariantName,
 } from "@omnifront/ui"
-import { forwardRef, useEffect, useState, type ComponentPropsWithoutRef, type ElementType, type JSX as ReactJSX, type ReactNode, type Ref } from "react"
+import { Children, forwardRef, useEffect, useState, type ComponentPropsWithoutRef, type ElementType, type JSX as ReactJSX, type ReactNode, type Ref } from "react"
 import { mergeProps, toReactProps } from "./internal"
 import { useDefaultProps } from "./theme"
 
@@ -110,6 +111,22 @@ export const CardActions = forwardRef<HTMLDivElement, CardActionsProps>(function
 	return draw("div", displayPart("omni-card__actions", { disableSpacing }), { ...rest, className }, ref)
 })
 
+export interface CardActionAreaProps extends Omit<ComponentPropsWithoutRef<"button">, "color"> {
+	/** Renders an `<a>` instead of a `<button>`. */
+	href?: string | undefined
+	target?: string | undefined
+	rel?: string | undefined
+}
+
+/**
+ * The whole card as one press target: a real `<button>` (or `<a>` with `href`) around the card's content.
+ * Do not put another button or link inside it (HTML forbids interactive content in a button); keep CardActions outside.
+ */
+export const CardActionArea = forwardRef<HTMLElement, CardActionAreaProps>(function CardActionArea({ href, className, type, ...rest }, ref) {
+	const Tag = href === undefined ? "button" : "a"
+	return draw(Tag, displayPart("omni-card__action-area", {}, Tag === "button" ? { type: type ?? "button" } : {}), { ...rest, href, className }, ref)
+})
+
 export interface CardMediaProps extends Own<"img"> {
 	/** The picture's URL. Give it `alt` (empty when it is only decoration). */
 	image: string
@@ -168,6 +185,29 @@ export const Avatar = forwardRef<HTMLDivElement, AvatarProps>(function Avatar(ra
 					<path d={ICON_PATHS.person} />
 				</svg>
 			)}
+		</div>
+	)
+})
+
+export interface AvatarGroupProps extends Own<"div"> {
+	/** Most avatars drawn, the last slot being "+N". Default 5. */
+	max?: number | undefined
+	/** How many avatars exist in all, when more than the children. Default: the number of children. */
+	total?: number | undefined
+	/** Overlap: `medium` (default, 8px), `small` (16px) or `large` (none). */
+	spacing?: "small" | "medium" | "large" | undefined
+	variant?: AvatarOptions["variant"]
+}
+
+/** Avatars side by side, overlapping. More than `max` fold into one "+N" avatar. Pass Avatar elements as children. */
+export const AvatarGroup = forwardRef<HTMLDivElement, AvatarGroupProps>(function AvatarGroup(rawProps, ref) {
+	const { max, total, spacing, variant, className, children, ...rest } = useDefaultProps("OmniAvatarGroup", rawProps)
+	const items = Children.toArray(children)
+	const { shown, surplus } = avatarGroupState(items.length, max, total)
+	return (
+		<div {...mergeProps(toReactProps(displayPart("omni-avatar-group", { spacing: spacing && spacing !== "medium" ? spacing : undefined })), { ...rest, role: "group", className })} ref={ref}>
+			{items.slice(0, shown)}
+			{surplus > 0 && <Avatar variant={variant}>+{surplus}</Avatar>}
 		</div>
 	)
 })

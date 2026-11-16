@@ -1,14 +1,18 @@
-import { ICON_PATHS, createAccordion, type AccordionParts } from "@omnifront/ui"
-import { createContext, forwardRef, useContext, useId, type ComponentPropsWithoutRef, type ElementType, type ReactNode } from "react"
+import { ICON_PATHS, createAccordion, createAccordionGroup, type AccordionGroup as GroupMachine, type AccordionParts } from "@omnifront/ui"
+import { createContext, forwardRef, useContext, useId, useMemo, type ComponentPropsWithoutRef, type ElementType, type ReactNode } from "react"
 import { cx, mergeProps, toReactProps, useMachine } from "./internal"
 import { useDefaultProps } from "./theme"
 
 const AccordionContext = createContext<AccordionParts | null>(null)
+/** The group an Accordion sits in, with the list of open panels (so a change re-renders the members). */
+const GroupContext = createContext<{ machine: GroupMachine; open: readonly string[] } | null>(null)
 
 export interface AccordionProps extends Omit<ComponentPropsWithoutRef<"div">, "onChange"> {
 	/** Controlled. Leave out to let it keep its own state. */
 	expanded?: boolean | undefined
 	defaultExpanded?: boolean | undefined
+	/** Inside an AccordionGroup: the key that tells the group which panel this is. The group then decides `expanded`. */
+	value?: string | undefined
 	disabled?: boolean | undefined
 	/** `(event, expanded)`, when the user opens or closes it. */
 	onChange?: ((event: Event | undefined, expanded: boolean) => void) | undefined
@@ -19,13 +23,19 @@ export interface AccordionProps extends Omit<ComponentPropsWithoutRef<"div">, "o
  * Stack several in a div; to open one at a time, control `expanded` yourself.
  */
 export const Accordion = forwardRef<HTMLDivElement, AccordionProps>(function Accordion(rawProps, ref) {
-	const { expanded, defaultExpanded, disabled, onChange, className, children, ...rest } = useDefaultProps("OmniAccordion", rawProps)
+	const { expanded: expandedProp, defaultExpanded, value, disabled, onChange, className, children, ...rest } = useDefaultProps("OmniAccordion", rawProps)
+	const group = useContext(GroupContext)
+	const grouped = group !== null && value !== undefined
+	const expanded = grouped ? group.open.includes(value) : expandedProp
 	const id = useId()
 	const [machine] = useMachine(() => createAccordion({ id, defaultExpanded }), {
 		id,
 		expanded,
 		disabled,
-		onExpandedChange: (next: boolean, event?: Event) => onChange?.(event, next),
+		onExpandedChange: (next: boolean, event?: Event) => {
+			if (grouped) group.machine.set(value, next, event)
+			onChange?.(event, next)
+		},
 	})
 	const parts = machine.connect()
 	return (
@@ -75,5 +85,29 @@ export const AccordionDetails = forwardRef<HTMLDivElement, ComponentPropsWithout
 				</div>
 			</div>
 		</div>
+	)
+})
+
+export interface AccordionGroupProps extends Omit<ComponentPropsWithoutRef<"div">, "onChange" | "defaultValue"> {
+	/** The open panel's `value` (a list with `multiple`). Controlled; leave out to let the group keep it. */
+	value?: string | string[] | null | undefined
+	defaultValue?: string | string[] | null | undefined
+	/** Let several stay open. Default: opening one closes the others. */
+	multiple?: boolean | undefined
+	onChange?: ((event: Event | undefined, value: string | string[] | null) => void) | undefined
+}
+
+/** A stack of Accordions of which one stays open (or several, with `multiple`). Give each Accordion a `value`. */
+export const AccordionGroup = forwardRef<HTMLDivElement, AccordionGroupProps>(function AccordionGroup({ value, defaultValue, multiple, onChange, ...rest }, ref) {
+	const [machine, state] = useMachine(() => createAccordionGroup({ defaultValue, multiple }), {
+		value,
+		multiple,
+		onValueChange: (next: string | string[] | null, event?: Event) => onChange?.(event, next),
+	})
+	const context = useMemo(() => ({ machine, open: state.open }), [machine, state.open])
+	return (
+		<GroupContext.Provider value={context}>
+			<div {...rest} ref={ref} />
+		</GroupContext.Provider>
 	)
 })

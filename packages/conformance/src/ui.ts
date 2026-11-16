@@ -142,9 +142,107 @@ export interface UiHarness {
 	accordions(props: { disabled?: boolean }, log: (event: string) => void): UiHandle
 	/**
 	 * A "Save" button with a Tooltip saying "Saves your work" (placement top, enterDelay 0, leaveDelay 50).
-	 * Logs `open` and `close`. `title` can be changed (`""` turns the tooltip off).
+	 * Logs `open` and `close`. `title` can be changed (`""` turns the tooltip off), and `arrow` adds
+	 * the pointer. A finger needs 30ms to open it and it closes 30ms after (enterTouchDelay and leaveTouchDelay).
 	 */
-	tooltip(props: { title?: string }, log: (event: string) => void): UiHandle
+	tooltip(props: { title?: string; arrow?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * Five Alerts, in this order: severity error with an AlertTitle "Upload failed" and the text "The
+	 * file is too big."; one with no severity and the text "Saved"; severity info, variant filled,
+	 * "Heads up"; severity warning, variant outlined, no icon, `onClose` (logs `close:warning`),
+	 * "Careful"; severity success with an `action` Button "Undo" (logs `click:undo`), "Done".
+	 */
+	alerts(props: Record<string, never>, log: (event: string) => void): UiHandle
+	/**
+	 * A "Show" button and a Snackbar (message "Saved", `action` Button "Undo" logging `click:undo`) that
+	 * opens on it; `autoHideDuration` comes from props. On a close request it logs `close:<reason>` and closes.
+	 */
+	snackbar(props: { autoHideDuration?: number }, log: (event: string) => void): UiHandle
+	/**
+	 * In this order: a CircularProgress (aria-label "Loading"); a CircularProgress with `value` from
+	 * props (starts 40, aria-label "Upload"); a LinearProgress determinate with `value` (aria-label
+	 * "Progress"); a LinearProgress buffer (value 30, valueBuffer 60, aria-label "Buffering"); an
+	 * indeterminate LinearProgress (aria-label "Working"); Skeletons: text, circular (width 40) and
+	 * rectangular (width 200, height 60, animation false); and a Backdrop whose `open` comes from props
+	 * (starts true) and that logs `click:backdrop`.
+	 */
+	progress(props: { value?: number; open?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * An "Open" button and a Drawer (aria-label "Navigation"; `variant` and `anchor` are set at mount)
+	 * holding a nav-less List with ListItemButtons "Home" and "Settings". The button opens it. On a
+	 * close request it logs `close:<reason>` and closes.
+	 */
+	drawer(props: { variant?: "temporary" | "persistent" | "permanent"; anchor?: "start" | "end" | "top" | "bottom" }, log: (event: string) => void): UiHandle
+	/**
+	 * A "Filters" button (id `popover-button`) and a Popover anchored to it (aria-label "Filter
+	 * options") holding the text "Filter options" and a button "Apply" (logs `click:apply`). The button
+	 * opens it. On a close request it logs `close:<reason>` and closes.
+	 */
+	popover(props: Record<string, never>, log: (event: string) => void): UiHandle
+	/**
+	 * A Breadcrumbs (`maxItems` from props, default 8) with Links "Home" (href /), "Library", "Data",
+	 * "Reports", "2026" and then the plain text "Current"; and a Link "Docs" (href /docs, underline
+	 * hover, colour secondary).
+	 */
+	breadcrumbs(props: { maxItems?: number }, log: (event: string) => void): UiHandle
+	/**
+	 * A Pagination (aria-label "Results", `count` from props, default 10, first and last buttons,
+	 * `disabled` from props) whose page is held by the host (starts 1; logs `change:<page>`); and an
+	 * uncontrolled outlined small one (aria-label "Uncontrolled", count 5, defaultPage 3; logs
+	 * `uncontrolled:<page>`).
+	 */
+	pagination(props: { count?: number; disabled?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A Stepper (aria-label "Checkout", `activeStep` from props, starts 1) with Steps "Cart" (`onClick`
+	 * logs `click:cart`), "Address" (optional "Optional"), "Payment" and "Done"; and a vertical Stepper
+	 * (aria-label "Build steps", activeStep 0) with Steps "Plan" (content "Plan details") and "Build"
+	 * (content "Build details").
+	 */
+	stepper(props: { activeStep?: number }, log: (event: string) => void): UiHandle
+	/**
+	 * A BottomNavigation (aria-label "Main", `showLabels` from props) with actions "Recents" (value
+	 * recents), "Favorites" (favorites) and "Nearby" (nearby, disabled), each with an svg icon. The
+	 * value is held by the host (starts recents). Logs `change:<value>`.
+	 */
+	bottomNavigation(props: { showLabels?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A SpeedDial (ariaLabel "Actions") with SpeedDialActions "Copy", "Save" and "Print" (each with an
+	 * svg icon). Logs `click:copy`, `click:save` and `click:print`.
+	 */
+	speedDial(props: Record<string, never>, log: (event: string) => void): UiHandle
+	/**
+	 * A Table (aria-label "Desserts") whose head has TableSortLabels "Name" and "Calories" (sorted by
+	 * Name ascending to begin with; a click on a label logs `sort:<name|calories>`, and the host sorts
+	 * by it ascending, or flips the direction when it is the sorted one); whose body has two rows; and
+	 * whose footer has a TablePagination (count 23, page 0 and 10 rows per page to begin with, options
+	 * 5, 10 and 25) that logs `page:<n>` and `rows:<n>` (the host then goes back to page 0).
+	 */
+	sortableTable(props: Record<string, never>, log: (event: string) => void): UiHandle
+	/**
+	 * Two Cards. The first holds a CardActionArea (a button, logs `click:area`) with CardContent "Action
+	 * card"; the second a CardActionArea with href /card and CardContent "Link card". Then an AvatarGroup
+	 * (max 3) of Avatars A to E; an AvatarGroup (max 3, total 6) of Avatars A and B; and a List with a
+	 * ListItem (alignItems flex-start) holding a ListItemAvatar with an Avatar "R" and a ListItemText
+	 * (primary "Brunch", secondary "Ali Connors"), and a ListItem (no padding) holding a ListItemButton
+	 * (alignItems flex-start) with a ListItemAvatar (Avatar "S") and a ListItemText (primary "Summer BBQ").
+	 */
+	cardsAndLists(props: Record<string, never>, log: (event: string) => void): UiHandle
+	/**
+	 * An AccordionGroup (`multiple` set at mount, starting with "a" open, uncontrolled) of three
+	 * Accordions, values a, b, c, with summaries "Alpha", "Beta", "Gamma" and details "Alpha body", "Beta
+	 * body", "Gamma body". Logs `change:<open values joined with ",">` (empty for none).
+	 */
+	accordionGroup(props: { multiple?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A Chip "Custom delete" with `onDelete` (logs `delete:custom`) and a custom delete icon: an
+	 * `<svg data-custom-delete>`.
+	 */
+	chipDeleteIcon(props: Record<string, never>, log: (event: string) => void): UiHandle
+	/**
+	 * A "Info" button with a Tooltip (enterDelay 0, leaveDelay 0) whose content is rich: a
+	 * `<strong data-rich>Rich</strong>` followed by " content". Logs `open` and `close`.
+	 */
+	richTooltip(props: Record<string, never>, log: (event: string) => void): UiHandle
 	/** Wait until the framework has applied pending updates and effects. */
 	settle(): Promise<void>
 }
@@ -1310,6 +1408,807 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				await wait(30)
 				expect(tooltip()).toBeNull()
 				expect(events).toEqual([])
+			})
+		})
+
+
+		const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
+		const labelled = (label: string): HTMLElement => document.querySelector(`[aria-label="${label}"]`) as HTMLElement
+		const touch = (el: Element, type: string): void => void el.dispatchEvent(Object.assign(new Event(type, { bubbles: true }), { pointerType: "touch" }))
+
+		describe("Alert", () => {
+			const alerts = (): HTMLElement[] => $$(".omni-alert")
+
+			it("severity picks the role (alert interrupts, status waits), the icon and the variant", async () => {
+				mount(h.alerts({}, log))
+				await h.settle()
+				const [error, plain, info, warning, success] = alerts() as [HTMLElement, HTMLElement, HTMLElement, HTMLElement, HTMLElement]
+				expect(alerts()).toHaveLength(5)
+				expect(error.getAttribute("role")).toBe("alert")
+				expect(error.dataset).toMatchObject({ severity: "error", variant: "standard" })
+				expect(error.querySelector(".omni-alert__title")?.textContent).toBe("Upload failed")
+				expect(error.querySelector(".omni-alert__message")?.textContent).toContain("The file is too big.")
+				expect(error.querySelector(".omni-alert__icon svg")).not.toBeNull()
+				expect(plain.getAttribute("role")).toBe("status")
+				expect(plain.dataset["severity"]).toBe("success")
+				expect(info.dataset).toMatchObject({ severity: "info", variant: "filled" })
+				expect(info.getAttribute("role")).toBe("status")
+				expect(warning.getAttribute("role")).toBe("alert")
+				expect(warning.dataset["variant"]).toBe("outlined")
+				expect(warning.querySelector(".omni-alert__icon")).toBeNull()
+				expect(success.querySelector("button")?.textContent).toBe("Undo")
+			})
+
+			it("onClose adds a named close button; an action replaces it", async () => {
+				mount(h.alerts({}, log))
+				await h.settle()
+				const [error, , , warning, success] = alerts() as [HTMLElement, HTMLElement, HTMLElement, HTMLElement, HTMLElement]
+				expect(error.querySelector("button")).toBeNull()
+				const close = warning.querySelector<HTMLButtonElement>('button[aria-label="Close"]') as HTMLButtonElement
+				close.click()
+				expect(events).toEqual(["close:warning"])
+				expect(success.querySelector('button[aria-label="Close"]')).toBeNull()
+				byText("button", "Undo").click()
+				expect(events).toEqual(["close:warning", "click:undo"])
+			})
+
+			it("has no accessibility violations", async () => {
+				mount(h.alerts({}, log))
+				await h.settle()
+				await expectAccessible("alerts")
+			})
+		})
+
+		describe("Snackbar", () => {
+			const snack = (): HTMLElement | null => document.querySelector<HTMLElement>(".omni-snackbar")
+
+			it("is not in the page until opened; then it is a polite message with its action", async () => {
+				mount(h.snackbar({}, log))
+				await h.settle()
+				expect(snack()).toBeNull()
+				byText("button", "Show").click()
+				await h.settle()
+				const bar = snack() as HTMLElement
+				expect(bar.dataset).toMatchObject({ state: "open", vertical: "bottom", horizontal: "left" })
+				expect(bar.querySelector(".omni-snackbar__content")?.getAttribute("role")).toBe("status")
+				expect(bar.textContent).toContain("Saved")
+				byText("button", "Undo").click()
+				expect(events).toEqual(["click:undo"])
+			})
+
+			it("closes itself after autoHideDuration with the reason timeout", async () => {
+				mount(h.snackbar({ autoHideDuration: 60 }, log))
+				await h.settle()
+				byText("button", "Show").click()
+				await h.settle()
+				await wait(30)
+				expect(events).toEqual([])
+				await wait(80)
+				await h.settle()
+				expect(events).toEqual(["close:timeout"])
+				await wait(260)
+				await h.settle()
+				expect(snack()).toBeNull()
+			})
+
+			it("pauses while the pointer is on it and counts again once it leaves", async () => {
+				mount(h.snackbar({ autoHideDuration: 60 }, log))
+				await h.settle()
+				byText("button", "Show").click()
+				await h.settle()
+				pointerEnter(snack() as HTMLElement)
+				await wait(150)
+				expect(events).toEqual([])
+				pointerLeave(snack() as HTMLElement) // 30ms left
+				await wait(100)
+				await h.settle()
+				expect(events).toEqual(["close:timeout"])
+			})
+
+			it("Escape and a press outside ask to close; a press inside does not", async () => {
+				mount(h.snackbar({}, log))
+				await h.settle()
+				byText("button", "Show").click()
+				await h.settle()
+				pointerdown(byText("button", "Undo"))
+				expect(events).toEqual([])
+				pointerdown(document.body)
+				await h.settle()
+				expect(events).toEqual(["close:outsidePress"])
+				await wait(260)
+				byText("button", "Show").click()
+				await h.settle()
+				keydown(document.body, "Escape")
+				await h.settle()
+				expect(events).toEqual(["close:outsidePress", "close:escapeKeyDown"])
+				await wait(260)
+			})
+
+			it("has no accessibility violations while open", async () => {
+				mount(h.snackbar({}, log))
+				await h.settle()
+				byText("button", "Show").click()
+				await h.settle()
+				await expectAccessible("snackbar")
+			})
+		})
+
+		describe("Progress, Skeleton and Backdrop", () => {
+			it("a CircularProgress is a named progressbar: spinning without a value, filled with one", async () => {
+				const handle = mount(h.progress({}, log))
+				await h.settle()
+				const spinner = labelled("Loading")
+				expect(spinner.getAttribute("role")).toBe("progressbar")
+				expect(spinner.dataset["variant"]).toBe("indeterminate")
+				expect(spinner.hasAttribute("aria-valuenow")).toBe(false)
+				const upload = labelled("Upload")
+				expect(upload.dataset["variant"]).toBe("determinate")
+				expect(upload.getAttribute("aria-valuenow")).toBe("40")
+				const offset = (): string | null => upload.querySelector("circle")?.getAttribute("style") ?? null
+				const before = offset()
+				expect(before).toContain("stroke-dashoffset")
+				await handle.set({ value: 80 })
+				await h.settle()
+				expect(upload.getAttribute("aria-valuenow")).toBe("80")
+				expect(offset()).not.toBe(before)
+			})
+
+			it("a LinearProgress shows its value and buffer as variables on the bars", async () => {
+				const handle = mount(h.progress({}, log))
+				await h.settle()
+				const bar = labelled("Progress")
+				expect(bar.dataset["variant"]).toBe("determinate")
+				expect(bar.getAttribute("aria-valuenow")).toBe("40")
+				expect(bar.querySelector(".omni-linear-progress__bar1")?.getAttribute("style")).toContain("--_p: 40")
+				await handle.set({ value: 55 })
+				await h.settle()
+				expect(bar.querySelector(".omni-linear-progress__bar1")?.getAttribute("style")).toContain("--_p: 55")
+				const buffer = labelled("Buffering")
+				expect(buffer.dataset["variant"]).toBe("buffer")
+				expect(buffer.querySelector(".omni-linear-progress__bar2")?.getAttribute("style")).toContain("--_p: 60")
+				const working = labelled("Working")
+				expect(working.dataset["variant"]).toBe("indeterminate")
+				expect(working.hasAttribute("aria-valuenow")).toBe(false)
+			})
+
+			it("Skeletons are decorative and carry their size", async () => {
+				mount(h.progress({}, log))
+				await h.settle()
+				const skeletons = $$(".omni-skeleton")
+				expect(skeletons.map((s) => s.dataset["variant"])).toEqual(["text", "circular", "rectangular"])
+				expect(skeletons.every((s) => s.getAttribute("aria-hidden") === "true")).toBe(true)
+				expect(skeletons[1]?.getAttribute("style")).toContain("--_w: 40px")
+				expect(skeletons[2]?.getAttribute("style")).toContain("--_h: 60px")
+				expect(skeletons[2]?.dataset["animation"]).toBe("none")
+				expect(skeletons[0]?.dataset["animation"]).toBe("pulse")
+			})
+
+			it("a Backdrop is hidden from screen readers, follows `open` and takes clicks", async () => {
+				const handle = mount(h.progress({}, log))
+				await h.settle()
+				const backdrop = $(".omni-backdrop")
+				expect(backdrop.getAttribute("aria-hidden")).toBe("true")
+				expect(backdrop.dataset["state"]).toBe("open")
+				backdrop.click()
+				expect(events).toEqual(["click:backdrop"])
+				await handle.set({ open: false })
+				await h.settle()
+				expect($(".omni-backdrop").dataset["state"]).toBe("closed")
+			})
+
+			it("has no accessibility violations", async () => {
+				mount(h.progress({}, log))
+				await h.settle()
+				await expectAccessible("progress")
+			})
+		})
+
+		describe("Drawer", () => {
+			it("temporary: a modal dialog on the chosen edge that closes on Escape and on a click outside", async () => {
+				mount(h.drawer({}, log))
+				await h.settle()
+				expect($(".omni-drawer")).toBeNull()
+				byText("button", "Open").click()
+				await h.settle()
+				const dialog = $('[role="dialog"]')
+				expect(dialog.getAttribute("aria-label")).toBe("Navigation")
+				expect(dialog.getAttribute("aria-modal")).toBe("true")
+				expect(dialog.className).toContain("omni-drawer__paper")
+				expect($(".omni-drawer").dataset).toMatchObject({ variant: "temporary", anchor: "start" })
+				expect(dialog.contains(document.activeElement)).toBe(true)
+				expect(dialog.textContent).toContain("Home")
+				keydown(dialog, "Escape")
+				await h.settle()
+				expect(events).toEqual(["close:escapeKeyDown"])
+				await wait(260)
+				await h.settle()
+				expect($(".omni-drawer")).toBeNull()
+				byText("button", "Open").click()
+				await h.settle()
+				$(".omni-drawer__container").click()
+				await h.settle()
+				expect(events).toEqual(["close:escapeKeyDown", "close:backdropClick"])
+				await wait(260)
+			})
+
+			it("the anchor is a logical edge", async () => {
+				mount(h.drawer({ anchor: "end" }, log))
+				await h.settle()
+				byText("button", "Open").click()
+				await h.settle()
+				expect($(".omni-drawer").dataset["anchor"]).toBe("end")
+			})
+
+			it("persistent: an aside that opens and closes without taking focus; Escape does nothing", async () => {
+				mount(h.drawer({ variant: "persistent" }, log))
+				await h.settle()
+				const aside = $("aside.omni-drawer")
+				expect(aside.getAttribute("aria-label")).toBe("Navigation")
+				expect(aside.dataset["state"]).toBe("closed")
+				expect($('[role="dialog"]')).toBeNull()
+				byText("button", "Open").click()
+				await h.settle()
+				expect($("aside.omni-drawer").dataset["state"]).toBe("open")
+				expect($('[role="dialog"]')).toBeNull()
+				keydown(document.body, "Escape")
+				await h.settle()
+				expect(events).toEqual([])
+			})
+
+			it("permanent: always an open aside", async () => {
+				mount(h.drawer({ variant: "permanent" }, log))
+				await h.settle()
+				const aside = $("aside.omni-drawer")
+				expect(aside.dataset).toMatchObject({ variant: "permanent", state: "open" })
+				expect(aside.textContent).toContain("Settings")
+			})
+
+			it("has no accessibility violations (open temporary and persistent)", async () => {
+				mount(h.drawer({}, log))
+				mount(h.drawer({ variant: "persistent" }, log))
+				await h.settle()
+				$$("button").filter((b) => b.textContent === "Open").forEach((b) => b.click())
+				await h.settle()
+				await expectAccessible("drawer")
+			})
+		})
+
+		describe("Popover", () => {
+			it("opens next to its anchor as a named, non-modal dialog and moves focus in", async () => {
+				mount(h.popover({}, log))
+				await h.settle()
+				expect($('[role="dialog"]')).toBeNull()
+				$("#popover-button").click()
+				await h.settle()
+				const dialog = $('[role="dialog"]')
+				expect(dialog.getAttribute("aria-label")).toBe("Filter options")
+				expect(dialog.hasAttribute("aria-modal")).toBe(false)
+				expect(dialog.className).toContain("omni-popover")
+				expect(dialog.style.position).toBe("fixed")
+				expect(dialog.contains(document.activeElement)).toBe(true)
+				byText("button", "Apply").click()
+				expect(events).toEqual(["click:apply"])
+			})
+
+			it("Escape and a press outside ask to close; focus goes back to the anchor; a press on the anchor is not outside", async () => {
+				mount(h.popover({}, log))
+				await h.settle()
+				$("#popover-button").click()
+				await h.settle()
+				pointerdown($("#popover-button"))
+				pointerdown(byText("button", "Apply"))
+				expect(events).toEqual([])
+				keydown($('[role="dialog"]'), "Escape")
+				await h.settle()
+				expect(events).toEqual(["close:escapeKeyDown"])
+				await wait(200)
+				await h.settle()
+				expect($('[role="dialog"]')).toBeNull()
+				expect(document.activeElement).toBe($("#popover-button"))
+				$("#popover-button").click()
+				await h.settle()
+				pointerdown(document.body)
+				await h.settle()
+				expect(events).toEqual(["close:escapeKeyDown", "close:outsidePress"])
+				await wait(200)
+			})
+
+			it("has no accessibility violations while open", async () => {
+				mount(h.popover({}, log))
+				await h.settle()
+				$("#popover-button").click()
+				await h.settle()
+				await expectAccessible("popover")
+			})
+		})
+
+		describe("Breadcrumbs and Link", () => {
+			const items = (): HTMLElement[] => $$(".omni-breadcrumbs__item")
+
+			it("is a nav with an ordered list; the last item is the current page; separators are hidden", async () => {
+				mount(h.breadcrumbs({}, log))
+				await h.settle()
+				const nav = $("nav.omni-breadcrumbs")
+				expect(nav.getAttribute("aria-label")).toBe("breadcrumb")
+				expect(nav.querySelector("ol")).not.toBeNull()
+				expect(items().map((i) => i.textContent?.trim())).toEqual(["Home", "Library", "Data", "Reports", "2026", "Current"])
+				expect(items()[5]?.getAttribute("aria-current")).toBe("page")
+				expect(items()[0]?.hasAttribute("aria-current")).toBe(false)
+				const separators = $$(".omni-breadcrumbs__separator")
+				expect(separators).toHaveLength(5)
+				expect(separators.every((s) => s.getAttribute("aria-hidden") === "true")).toBe(true)
+			})
+
+			it("too many items fold their middle under a button that shows them", async () => {
+				mount(h.breadcrumbs({ maxItems: 4 }, log))
+				await h.settle()
+				expect(items().map((i) => i.textContent?.trim())).toEqual(["Home", "", "Current"])
+				const expand = $("button.omni-breadcrumbs__expand")
+				expect(expand.getAttribute("aria-label")).toBe("Show path")
+				expand.click()
+				await h.settle()
+				expect(items()).toHaveLength(6)
+				expect($("button.omni-breadcrumbs__expand")).toBeNull()
+			})
+
+			it("a Link is a real anchor with its underline and colour", async () => {
+				mount(h.breadcrumbs({}, log))
+				await h.settle()
+				const link = $$("a.omni-link").find((a) => a.textContent === "Docs") as HTMLElement
+				expect(link.getAttribute("href")).toBe("/docs")
+				expect(link.dataset).toMatchObject({ underline: "hover", color: "secondary" })
+				expect($$("a.omni-link").find((a) => a.textContent === "Home")?.dataset["underline"]).toBe("always")
+			})
+
+			it("has no accessibility violations", async () => {
+				mount(h.breadcrumbs({ maxItems: 4 }, log))
+				await h.settle()
+				await expectAccessible("breadcrumbs")
+			})
+		})
+
+		describe("Pagination", () => {
+			const nav = (label: string): HTMLElement => $(`nav[aria-label="${label}"]`)
+			const buttons = (label: string): HTMLButtonElement[] => Array.from(nav(label).querySelectorAll("button"))
+			const named = (label: string, name: string): HTMLButtonElement => buttons(label).find((b) => b.getAttribute("aria-label") === name) as HTMLButtonElement
+
+			it("is a nav of buttons: ends, numbers, a fold, the current page", async () => {
+				mount(h.pagination({}, log))
+				await h.settle()
+				expect(buttons("Results").map((b) => b.getAttribute("aria-label"))).toEqual([
+					"Go to first page",
+					"Go to previous page",
+					"page 1",
+					"Go to page 2",
+					"Go to page 3",
+					"Go to page 4",
+					"Go to page 5",
+					"Go to page 10",
+					"Go to next page",
+					"Go to last page",
+				])
+				expect(named("Results", "page 1").getAttribute("aria-current")).toBe("page")
+				expect(named("Results", "page 1").hasAttribute("data-selected")).toBe(true)
+				expect(named("Results", "Go to first page").disabled).toBe(true)
+				expect(named("Results", "Go to previous page").disabled).toBe(true)
+				expect(nav("Results").querySelectorAll(".omni-pagination__ellipsis")).toHaveLength(1)
+			})
+
+			it("a click on a page, next or last reports it and moves the current page (host-held)", async () => {
+				mount(h.pagination({}, log))
+				await h.settle()
+				named("Results", "Go to page 3").click()
+				await h.settle()
+				expect(events).toEqual(["change:3"])
+				expect(named("Results", "page 3").getAttribute("aria-current")).toBe("page")
+				named("Results", "Go to next page").click()
+				await h.settle()
+				expect(events).toEqual(["change:3", "change:4"])
+				named("Results", "Go to last page").click()
+				await h.settle()
+				expect(events[2]).toBe("change:10")
+				expect(named("Results", "Go to next page").disabled).toBe(true)
+			})
+
+			it("count and disabled follow the props", async () => {
+				const handle = mount(h.pagination({}, log))
+				await h.settle()
+				await handle.set({ count: 3 })
+				await h.settle()
+				expect(nav("Results").querySelectorAll(".omni-pagination__ellipsis")).toHaveLength(0)
+				expect(buttons("Results")).toHaveLength(7)
+				await handle.set({ disabled: true })
+				await h.settle()
+				expect(buttons("Results").every((b) => b.disabled)).toBe(true)
+			})
+
+			it("an uncontrolled one keeps its own page", async () => {
+				mount(h.pagination({}, log))
+				await h.settle()
+				expect(named("Uncontrolled", "page 3").getAttribute("aria-current")).toBe("page")
+				expect(nav("Uncontrolled").dataset).toMatchObject({ variant: "outlined", size: "small" })
+				named("Uncontrolled", "Go to page 5").click()
+				await h.settle()
+				expect(events).toEqual(["uncontrolled:5"])
+				expect(named("Uncontrolled", "page 5").getAttribute("aria-current")).toBe("page")
+			})
+
+			it("has no accessibility violations", async () => {
+				mount(h.pagination({}, log))
+				await h.settle()
+				await expectAccessible("pagination")
+			})
+		})
+
+		describe("Stepper", () => {
+			const steps = (label: string): HTMLElement[] => Array.from($(`[aria-label="${label}"]`).querySelectorAll<HTMLElement>(":scope > .omni-step"))
+
+			it("steps before the active one are completed, the active one is the current step, the rest wait", async () => {
+				mount(h.stepper({}, log))
+				await h.settle()
+				const list = steps("Checkout")
+				expect(list.map((s) => s.dataset["state"])).toEqual(["completed", "active", "pending", "pending"])
+				expect(list.map((s) => s.getAttribute("aria-current"))).toEqual([null, "step", null, null])
+				expect(list[0]?.querySelector(".omni-step__icon svg")).not.toBeNull()
+				expect(list[1]?.querySelector(".omni-step__icon")?.textContent).toBe("2")
+				expect(list[1]?.querySelector(".omni-step__optional")?.textContent).toBe("Optional")
+				expect(list[3]?.hasAttribute("data-last")).toBe(true)
+				expect(list[0]?.hasAttribute("data-last")).toBe(false)
+				expect($('[aria-label="Checkout"]').tagName).toBe("OL")
+			})
+
+			it("changing activeStep moves the states; a step with onClick has a button header", async () => {
+				const handle = mount(h.stepper({}, log))
+				await h.settle()
+				expect(steps("Checkout")[0]?.querySelector("button.omni-step__header")).not.toBeNull()
+				expect(steps("Checkout")[1]?.querySelector("button")).toBeNull()
+				steps("Checkout")[0]?.querySelector("button")?.click()
+				expect(events).toEqual(["click:cart"])
+				await handle.set({ activeStep: 3 })
+				await h.settle()
+				expect(steps("Checkout").map((s) => s.dataset["state"])).toEqual(["completed", "completed", "completed", "active"])
+			})
+
+			it("a vertical stepper shows the content of the active step only", async () => {
+				mount(h.stepper({}, log))
+				await h.settle()
+				const vertical = $('[aria-label="Build steps"]')
+				expect(vertical.dataset["orientation"]).toBe("vertical")
+				const [plan, build] = steps("Build steps") as [HTMLElement, HTMLElement]
+				expect(plan.querySelector(".omni-step__content")?.textContent).toBe("Plan details")
+				expect(build.querySelector(".omni-step__content")?.textContent).toBe("")
+			})
+
+			it("has no accessibility violations", async () => {
+				mount(h.stepper({}, log))
+				await h.settle()
+				await expectAccessible("stepper")
+			})
+		})
+
+		describe("BottomNavigation", () => {
+			const action = (name: string): HTMLButtonElement => byText("button.omni-bottom-navigation__action", name) as HTMLButtonElement
+
+			it("is a nav of buttons; the current one is aria-current", async () => {
+				mount(h.bottomNavigation({}, log))
+				await h.settle()
+				expect($("nav.omni-bottom-navigation").getAttribute("aria-label")).toBe("Main")
+				expect(action("Recents").getAttribute("aria-current")).toBe("page")
+				expect(action("Recents").hasAttribute("data-selected")).toBe(true)
+				expect(action("Favorites").hasAttribute("aria-current")).toBe(false)
+				expect(action("Nearby").disabled).toBe(true)
+				expect(action("Favorites").querySelector("svg")).not.toBeNull()
+			})
+
+			it("a click reports the value and the host moves the current action; a disabled one does nothing", async () => {
+				const handle = mount(h.bottomNavigation({}, log))
+				await h.settle()
+				action("Favorites").click()
+				await h.settle()
+				expect(events).toEqual(["change:favorites"])
+				expect(action("Favorites").getAttribute("aria-current")).toBe("page")
+				expect(action("Recents").hasAttribute("aria-current")).toBe(false)
+				action("Nearby").click()
+				expect(events).toEqual(["change:favorites"])
+				expect($("nav.omni-bottom-navigation").hasAttribute("data-show-labels")).toBe(false)
+				await handle.set({ showLabels: true })
+				await h.settle()
+				expect($("nav.omni-bottom-navigation").hasAttribute("data-show-labels")).toBe(true)
+			})
+
+			it("has no accessibility violations", async () => {
+				mount(h.bottomNavigation({}, log))
+				await h.settle()
+				await expectAccessible("bottom navigation")
+			})
+		})
+
+		describe("SpeedDial", () => {
+			const trigger = (): HTMLElement => $('button[aria-label="Actions"]')
+			const menu = (): HTMLElement => $('[role="menu"]')
+			const item = (name: string): HTMLElement => $(`[role="menuitem"][aria-label="${name}"]`)
+
+			it("a button opens a menu of named actions", async () => {
+				mount(h.speedDial({}, log))
+				await h.settle()
+				expect(trigger().getAttribute("aria-haspopup")).toBe("menu")
+				expect(trigger().getAttribute("aria-expanded")).toBe("false")
+				expect(menu().dataset["state"]).toBe("closed")
+				expect($$('[role="menuitem"]').map((i) => i.getAttribute("aria-label"))).toEqual(["Copy", "Save", "Print"])
+				expect(trigger().getAttribute("aria-controls")).toBe(menu().id)
+				trigger().click()
+				await h.settle()
+				expect(trigger().getAttribute("aria-expanded")).toBe("true")
+				expect(menu().dataset["state"]).toBe("open")
+				expect($(".omni-speed-dial").dataset["direction"]).toBe("up")
+			})
+
+			it("choosing an action runs it, closes the dial and focuses the button", async () => {
+				mount(h.speedDial({}, log))
+				await h.settle()
+				trigger().click()
+				await h.settle()
+				item("Save").click()
+				await h.settle()
+				expect(events).toEqual(["click:save"])
+				expect(trigger().getAttribute("aria-expanded")).toBe("false")
+				expect(document.activeElement).toBe(trigger())
+			})
+
+			it("Escape closes it; hover opens and leaving closes", async () => {
+				mount(h.speedDial({}, log))
+				await h.settle()
+				pointerEnter($(".omni-speed-dial"))
+				await h.settle()
+				expect(trigger().getAttribute("aria-expanded")).toBe("true")
+				keydown(trigger(), "Escape")
+				await h.settle()
+				expect(trigger().getAttribute("aria-expanded")).toBe("false")
+				pointerEnter($(".omni-speed-dial"))
+				await h.settle()
+				pointerLeave($(".omni-speed-dial"))
+				await h.settle()
+				expect(trigger().getAttribute("aria-expanded")).toBe("false")
+			})
+
+			it("arrow keys open it and move between the actions", async () => {
+				mount(h.speedDial({}, log))
+				await h.settle()
+				trigger().focus()
+				keydown(trigger(), "ArrowUp")
+				await h.settle()
+				expect(trigger().getAttribute("aria-expanded")).toBe("true")
+				keydown(trigger(), "ArrowUp")
+				expect(document.activeElement).toBe(item("Copy"))
+				keydown(item("Copy"), "ArrowUp")
+				expect(document.activeElement).toBe(item("Save"))
+				keydown(item("Save"), "ArrowDown")
+				expect(document.activeElement).toBe(item("Copy"))
+			})
+
+			it("has no accessibility violations while open", async () => {
+				mount(h.speedDial({}, log))
+				await h.settle()
+				trigger().click()
+				await h.settle()
+				await expectAccessible("speed dial")
+			})
+		})
+
+		describe("TableSortLabel and TablePagination", () => {
+			const th = (name: string): HTMLElement => $$("th").find((c) => c.textContent?.trim().startsWith(name)) as HTMLElement
+			const sort = (name: string): HTMLButtonElement => th(name).querySelector("button.omni-table__sort") as HTMLButtonElement
+			const rows = (): HTMLSelectElement => $("select.omni-table-pagination__select")
+			const range = (): string => $(".omni-table-pagination [aria-live]").textContent ?? ""
+
+			it("the sorted column has aria-sort and an active, directional label", async () => {
+				mount(h.sortableTable({}, log))
+				await h.settle()
+				expect(th("Name").getAttribute("aria-sort")).toBe("ascending")
+				expect(th("Calories").hasAttribute("aria-sort")).toBe(false)
+				expect(sort("Name").dataset).toMatchObject({ active: "", direction: "asc" })
+				expect(sort("Calories").hasAttribute("data-active")).toBe(false)
+				expect(sort("Name").querySelector("svg")).not.toBeNull()
+			})
+
+			it("clicking sorts by the column, and again flips the direction", async () => {
+				mount(h.sortableTable({}, log))
+				await h.settle()
+				sort("Calories").click()
+				await h.settle()
+				expect(events).toEqual(["sort:calories"])
+				expect(th("Calories").getAttribute("aria-sort")).toBe("ascending")
+				expect(th("Name").hasAttribute("aria-sort")).toBe(false)
+				sort("Calories").click()
+				await h.settle()
+				expect(th("Calories").getAttribute("aria-sort")).toBe("descending")
+				expect(sort("Calories").dataset["direction"]).toBe("desc")
+			})
+
+			it("pagination shows the range, pages with the buttons and changes the page size", async () => {
+				mount(h.sortableTable({}, log))
+				await h.settle()
+				expect(range()).toBe("1–10 of 23")
+				expect(rows().value).toBe("10")
+				expect($('.omni-table-pagination label').textContent).toBe("Rows per page:")
+				expect(Array.from(rows().options).map((o) => o.value)).toEqual(["5", "10", "25"])
+				const previous = $('button[aria-label="Go to previous page"]') as HTMLButtonElement
+				const next = $('button[aria-label="Go to next page"]') as HTMLButtonElement
+				expect(previous.disabled).toBe(true)
+				next.click()
+				await h.settle()
+				expect(events).toEqual(["page:1"])
+				expect(range()).toBe("11–20 of 23")
+				;($('button[aria-label="Go to next page"]') as HTMLButtonElement).click()
+				await h.settle()
+				expect(range()).toBe("21–23 of 23")
+				expect(($('button[aria-label="Go to next page"]') as HTMLButtonElement).disabled).toBe(true)
+				rows().value = "5"
+				rows().dispatchEvent(new Event("change", { bubbles: true }))
+				await h.settle()
+				expect(events).toEqual(["page:1", "page:2", "rows:5"])
+				expect(range()).toBe("1–5 of 23")
+			})
+
+			it("has no accessibility violations", async () => {
+				mount(h.sortableTable({}, log))
+				await h.settle()
+				await expectAccessible("sortable table")
+			})
+		})
+
+		describe("CardActionArea, AvatarGroup and List avatars", () => {
+			const visible = (group: HTMLElement): string[] => Array.from(group.querySelectorAll<HTMLElement>(".omni-avatar")).filter((a) => !a.hidden).map((a) => a.textContent?.trim() ?? "")
+
+			it("a CardActionArea is one button (or a link) around the card content", async () => {
+				mount(h.cardsAndLists({}, log))
+				await h.settle()
+				const areas = $$(".omni-card__action-area")
+				expect(areas[0]?.tagName).toBe("BUTTON")
+				expect(areas[0]?.getAttribute("type")).toBe("button")
+				expect(areas[0]?.textContent).toContain("Action card")
+				areas[0]?.click()
+				expect(events).toEqual(["click:area"])
+				expect(areas[1]?.tagName).toBe("A")
+				expect(areas[1]?.getAttribute("href")).toBe("/card")
+			})
+
+			it("an AvatarGroup shows at most `max` avatars, the last slot being +N", async () => {
+				mount(h.cardsAndLists({}, log))
+				await h.settle()
+				const [first, second] = $$(".omni-avatar-group") as [HTMLElement, HTMLElement]
+				expect(first.getAttribute("role")).toBe("group")
+				expect(visible(first)).toEqual(["A", "B", "+3"])
+				expect(visible(second)).toEqual(["A", "B", "+4"])
+			})
+
+			it("ListItemAvatar and alignItems", async () => {
+				mount(h.cardsAndLists({}, log))
+				await h.settle()
+				const item = $("li.omni-list__item[data-align-items]")
+				expect(item.dataset["alignItems"]).toBe("flex-start")
+				expect(item.querySelector(".omni-list__avatar .omni-avatar")?.textContent).toBe("R")
+				expect(item.querySelector(".omni-list__primary")?.textContent).toBe("Brunch")
+				const button = $(".omni-list__button")
+				expect(button.dataset["alignItems"]).toBe("flex-start")
+				expect(button.querySelector(".omni-list__avatar")?.textContent).toBe("S")
+			})
+
+			it("has no accessibility violations", async () => {
+				mount(h.cardsAndLists({}, log))
+				await h.settle()
+				await expectAccessible("cards and lists")
+			})
+		})
+
+		describe("AccordionGroup", () => {
+			const summary = (text: string): HTMLElement => byText("button.omni-accordion__summary", text)
+			const open = (text: string): boolean => summary(text).getAttribute("aria-expanded") === "true"
+
+			it("one panel is open at a time: opening another closes the first", async () => {
+				mount(h.accordionGroup({}, log))
+				await h.settle()
+				expect([open("Alpha"), open("Beta"), open("Gamma")]).toEqual([true, false, false])
+				summary("Beta").click()
+				await h.settle()
+				expect([open("Alpha"), open("Beta"), open("Gamma")]).toEqual([false, true, false])
+				expect(events).toEqual(["change:b"])
+				summary("Beta").click()
+				await h.settle()
+				expect([open("Alpha"), open("Beta"), open("Gamma")]).toEqual([false, false, false])
+				expect(events).toEqual(["change:b", "change:"])
+			})
+
+			it("with `multiple` several stay open", async () => {
+				mount(h.accordionGroup({ multiple: true }, log))
+				await h.settle()
+				summary("Beta").click()
+				await h.settle()
+				expect([open("Alpha"), open("Beta")]).toEqual([true, true])
+				summary("Alpha").click()
+				await h.settle()
+				expect([open("Alpha"), open("Beta")]).toEqual([false, true])
+				expect(events).toEqual(["change:a,b", "change:b"])
+			})
+
+			it("has no accessibility violations", async () => {
+				mount(h.accordionGroup({}, log))
+				await h.settle()
+				await expectAccessible("accordion group")
+			})
+		})
+
+		describe("Chip deleteIcon", () => {
+			it("a custom icon replaces the cross and keeps the delete behaviour", async () => {
+				mount(h.chipDeleteIcon({}, log))
+				await h.settle()
+				const chip = $(".omni-chip")
+				const icon = chip.querySelector(".omni-chip__delete") as HTMLElement
+				expect(icon.getAttribute("aria-hidden")).toBe("true")
+				expect(icon.querySelector("svg[data-custom-delete]")).not.toBeNull()
+				expect(chip.querySelectorAll(".omni-chip__delete")).toHaveLength(1)
+				icon.querySelector("svg")?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+				expect(events).toEqual(["delete:custom"])
+				keydown(chip, "Backspace")
+				expect(events).toEqual(["delete:custom", "delete:custom"])
+				await expectAccessible("chip with a custom delete icon")
+			})
+		})
+
+		describe("Tooltip arrow, touch and rich content", () => {
+			const tooltip = (): HTMLElement | null => document.querySelector<HTMLElement>('[role="tooltip"]')
+
+			it("`arrow` adds a pointer inside the tooltip", async () => {
+				const handle = mount(h.tooltip({}, log))
+				await h.settle()
+				await handle.set({ arrow: true })
+				await h.settle()
+				byText("button", "Save").dispatchEvent(new Event("pointerenter"))
+				await h.settle()
+				await wait(30)
+				const arrow = (tooltip() as HTMLElement).querySelector(".omni-tooltip__arrow")
+				expect(arrow?.hasAttribute("data-arrow")).toBe(true)
+				expect(arrow?.getAttribute("aria-hidden")).toBe("true")
+				expect((tooltip() as HTMLElement).textContent).toBe("Saves your work")
+			})
+
+			it("a held touch opens it and it closes a moment after the finger lifts; a quick tap does nothing", async () => {
+				mount(h.tooltip({}, log))
+				await h.settle()
+				const save = byText("button", "Save")
+				touch(save, "pointerdown")
+				await wait(10)
+				touch(save, "pointerup")
+				await wait(60)
+				await h.settle()
+				expect(tooltip()).toBeNull()
+				expect(events).toEqual([])
+				touch(save, "pointerdown")
+				await wait(60)
+				await h.settle()
+				expect(tooltip()?.textContent).toBe("Saves your work")
+				expect(events).toEqual(["open"])
+				touch(save, "pointerup")
+				touch(save, "pointerleave")
+				await wait(10)
+				expect(events).toEqual(["open"])
+				await wait(80)
+				await h.settle()
+				expect(events).toEqual(["open", "close"])
+				await wait(250)
+			})
+
+			it("rich content (markup) is allowed in the tooltip", async () => {
+				mount(h.richTooltip({}, log))
+				await h.settle()
+				byText("button", "Info").dispatchEvent(new Event("pointerenter"))
+				await h.settle()
+				await wait(30)
+				await h.settle()
+				const tip = tooltip() as HTMLElement
+				expect(tip.querySelector("strong[data-rich]")?.textContent).toBe("Rich")
+				expect(tip.textContent).toBe("Rich content")
+				expect(byText("button", "Info").getAttribute("aria-describedby")).toBe(tip.id)
 			})
 		})
 
