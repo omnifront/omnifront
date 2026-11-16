@@ -57,6 +57,12 @@ export interface UiHarness {
 	 */
 	slider(props: { disabled?: boolean }, log: (event: string) => void): UiHandle
 	/**
+	 * A range Slider (two thumbs, aria-label "Price", 0 to 100, step 10, value labels always on) whose
+	 * `[lower, upper]` is held by the host (starts at 20 and 80). Logs `change:<lower>,<upper>`. With
+	 * `vertical` (set at mount) it is vertical.
+	 */
+	rangeSlider(props: { vertical?: boolean; disabled?: boolean }, log: (event: string) => void): UiHandle
+	/**
 	 * A Rating (aria-label "Rating", 5 stars, whole steps) whose value is held by the host (starts at
 	 * 0). `readOnly` makes it show 3. Logs `change:<number>`.
 	 */
@@ -79,6 +85,13 @@ export interface UiHarness {
 	 * (starts empty) and `change:` logs the values joined with ",".
 	 */
 	select(props: { error?: boolean; disabled?: boolean; multiple?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A Select labelled "Food" with two groups: "Fruit" (options "Apple" value `a`, "Banana" value `b`,
+	 * disabled) and "Vegetables" ("Carrot" value `c`, "Daikon" value `d`). Each option in the open list
+	 * is drawn with custom content: `<span data-rich>{label}</span><small>{value}</small>`. Chosen value
+	 * held by the host (starts empty). Logs `change:<value>` and `close:<reason>`.
+	 */
+	selectGroups(props: Record<string, never>, log: (event: string) => void): UiHandle
 	/**
 	 * Tabs labelled "Sections": "One", "Two" (disabled), "Three", with panels "First panel",
 	 * "Second panel", "Third panel", controlled by the host. Logs `change:<value>`.
@@ -392,6 +405,58 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				expect(range().disabled).toBe(true)
 				expect($(".omni-slider").hasAttribute("data-disabled")).toBe(true)
 			})
+
+			describe("range (two thumbs)", () => {
+				const thumbs = (): HTMLInputElement[] => $$<HTMLInputElement>('input[type="range"]')
+				const moveThumb = (index: number, value: string): void => {
+					const input = thumbs()[index] as HTMLInputElement
+					Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, value)
+					input.dispatchEvent(new Event("input", { bubbles: true }))
+				}
+
+				it("two native range inputs, each named, with the lower and upper value, and a drawn rail", async () => {
+					mount(h.rangeSlider({}, log))
+					await h.settle()
+					expect(thumbs().map((t) => t.getAttribute("aria-label"))).toEqual(["Price minimum", "Price maximum"])
+					expect(thumbs().map((t) => t.value)).toEqual(["20", "80"])
+					expect(thumbs().every((t) => t.min === "0" && t.max === "100" && t.step === "10")).toBe(true)
+					expect(new Set(thumbs().map((t) => t.id)).size).toBe(2)
+					expect($(".omni-slider").hasAttribute("data-range")).toBe(true)
+					expect($(".omni-slider__rail .omni-slider__fill")).not.toBeNull()
+					const style = $(".omni-slider").getAttribute("style") ?? ""
+					expect(style).toContain("--omni-slider-start: 20")
+					expect(style).toContain("--omni-slider-percent: 80")
+					expect($$(".omni-slider__label").map((l) => l.textContent)).toEqual(["20", "80"])
+				})
+
+				it("each thumb reports both values; the lower cannot pass the upper and the control is put back", async () => {
+					mount(h.rangeSlider({}, log))
+					await h.settle()
+					moveThumb(1, "50")
+					await h.settle()
+					moveThumb(0, "90") // past the upper thumb (now 50): stops there
+					await h.settle()
+					expect(events).toEqual(["change:20,50", "change:50,50"])
+					expect(thumbs().map((t) => t.value)).toEqual(["50", "50"])
+					moveThumb(1, "10") // below the lower thumb: stops there too
+					await h.settle()
+					expect(thumbs().map((t) => t.value)).toEqual(["50", "50"])
+					expect(events).toEqual(["change:20,50", "change:50,50"])
+				})
+
+				it("vertical: both thumbs say so, and the root is vertical", async () => {
+					mount(h.rangeSlider({ vertical: true }, log))
+					await h.settle()
+					expect(thumbs().map((t) => t.getAttribute("aria-orientation"))).toEqual(["vertical", "vertical"])
+					expect($(".omni-slider").dataset["orientation"]).toBe("vertical")
+				})
+
+				it("disabled disables both thumbs", async () => {
+					mount(h.rangeSlider({ disabled: true }, log))
+					await h.settle()
+					expect(thumbs().every((t) => t.disabled)).toBe(true)
+				})
+			})
 		})
 
 		describe("Rating", () => {
@@ -632,6 +697,28 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				expect(events).not.toContain("close:select")
 			})
 
+			it("groups: each is a labelled group of options, options can show custom content, typing still matches the label", async () => {
+				mount(h.selectGroups({}, log))
+				await h.settle()
+				combobox().click()
+				await h.settle()
+				await new Promise((r) => setTimeout(r, 50))
+				const groups = $$('[role="group"]')
+				expect(groups.map((g) => document.getElementById(g.getAttribute("aria-labelledby") as string)?.textContent?.trim())).toEqual(["Fruit", "Vegetables"])
+				expect(groups.map((g) => Array.from(g.querySelectorAll('[role="option"]')).map((o) => o.getAttribute("data-value")))).toEqual([["a", "b"], ["c", "d"]])
+				expect($$("[data-rich]").map((el) => el.textContent)).toEqual(["Apple", "Banana", "Carrot", "Daikon"])
+				expect($('[role="option"][data-value="b"]').getAttribute("aria-disabled")).toBe("true")
+				expect(document.activeElement).toBe($$('[role="option"]')[0])
+				keydown(document.activeElement as Element, "d") // the option shows more than its label; typing matches the label
+				const target = document.activeElement as HTMLElement
+				expect(target.getAttribute("data-value")).toBe("d")
+				target.click()
+				await h.settle()
+				expect(events).toEqual(["change:d", "close:select"])
+				await closed()
+				expect(combobox().textContent?.trim()).toBe("Daikon") // the closed select shows the label, not the custom content
+			})
+
 			it("type-ahead moves to the option whose label starts with the typed letter", async () => {
 				mount(h.select({}, log))
 				await h.settle()
@@ -848,6 +935,18 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				await expectAccessible("disabled slider")
 			})
 
+			it("a range slider, horizontal and vertical", async () => {
+				mount(h.rangeSlider({}, log))
+				await h.settle()
+				await expectAccessible("range slider")
+			})
+
+			it("a vertical range slider", async () => {
+				mount(h.rangeSlider({ vertical: true }, log))
+				await h.settle()
+				await expectAccessible("vertical range slider")
+			})
+
 			it("a switch in each state", async () => {
 				const handle = mount(h.switch({}, log))
 				await h.settle()
@@ -876,6 +975,15 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				await group.set({ disabled: true })
 				await h.settle()
 				await expectAccessible("disabled checkbox and radio group")
+			})
+
+			it("an open select with groups and custom option content", async () => {
+				mount(h.selectGroups({}, log))
+				await h.settle()
+				$('[role="combobox"]').click()
+				await h.settle()
+				await new Promise((r) => setTimeout(r, 50))
+				await expectAccessible("open select with groups")
 			})
 
 			it("a closed select, an open select, and a select in error", async () => {

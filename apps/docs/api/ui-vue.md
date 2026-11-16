@@ -58,7 +58,7 @@ Buttons that stay pressed. `ToggleButtonGroup`: `v-model` (a list of values; wit
 <Slider v-model="volume" aria-label="Volume" value-label-display="auto" />
 ```
 
-A real `<input type="range">`, so dragging, the keys, forms and screen readers are native. Props: `v-model`, `default-value`, `min`, `max`, `step`, `marks` (`true` or a list of `{ value, label? }`), `value-label-display` (`auto`, `on`, `off`), `value-label-format`, `get-aria-value-text`, `size`, `color`, `disabled`, `name`, `aria-label`. Event `change(event, value)`. Not yet: two thumbs and a vertical slider.
+A real `<input type="range">`, so dragging, the keys, forms and screen readers are native. Props: `v-model` (a number, or with `range` a `[lower, upper]` pair; the lower thumb cannot pass the upper one, and the thumbs are named after `aria-label` with "minimum" and "maximum" added), `default-value`, `range`, `orientation` (`vertical` puts the smallest value at the bottom), `length` (the height of a vertical slider, default 200px), `min`, `max`, `step`, `marks` (`true` or a list of `{ value, label? }`), `value-label-display` (`auto`, `on`, `off`), `value-label-format`, `get-aria-value-text`, `size`, `color`, `disabled`, `name`, `aria-label`. Event `change(event, value)`.
 
 ### `Rating`
 
@@ -110,7 +110,7 @@ A labelled group of related controls (a `<fieldset>` with a `<legend>`), for exa
 <Select v-model="fruit" label="Fruit" :options="[{ value: 'a', label: 'Apple' }]" />
 ```
 
-Looks like a `TextField` and opens a list of options. Props: `label`, `options` (`SelectOption[]`: `{ value, label, disabled? }`), `modelValue` (`v-model`; leave it out for an uncontrolled select) / `defaultValue`, `open` (`v-model:open`; stays uncontrolled when absent) / `defaultOpen`, `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`), `id`. Events: `update:modelValue`, `change(event, value)`, `update:open`, `close(reason)`. The options are data, not children, so every framework shows the chosen label the same way, including on the server.
+Looks like a `TextField` and opens a list of options. Props: `label`, `options` (a list of `SelectItem`: options, `{ value, label, disabled? }`, and `SelectGroup`s of them, `{ label, options }`), `modelValue` (`v-model`; leave it out for an uncontrolled select) / `defaultValue`, `open` (`v-model:open`; stays uncontrolled when absent) / `defaultOpen`, `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`), `id`. Events: `update:modelValue`, `change(event, value)`, `update:open`, `close(reason)`. The options are data, not children, so every framework shows the chosen label the same way, including on the server. The `option` slot (`{ option, selected }`) changes what an option looks like in the open list, such as an icon and a second line; the closed select and type-ahead still use the `label`.
 
 ### `Dialog`
 

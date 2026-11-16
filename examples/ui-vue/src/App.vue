@@ -59,6 +59,11 @@ const align = ref<string | null>("left")
 const volume = ref(30)
 const stars = ref(3)
 const marks = [{ value: 0, label: "0°C" }, { value: 10, label: "10°C" }, { value: 20, label: "20°C" }, { value: 30, label: "30°C" }, { value: 40, label: "40°C" }]
+const grouped = [
+	{ label: "Fruit", options: [{ value: "a", label: "Apple" }, { value: "b", label: "Banana" }] },
+	{ label: "Vegetables", options: [{ value: "c", label: "Carrot" }, { value: "d", label: "Daikon", disabled: true }] },
+]
+const bandMarks = [{ value: 0, label: "0" }, { value: 50, label: "50" }, { value: 100, label: "100" }]
 const fruit = [
 	{ value: "a", label: "Apple" },
 	{ value: "b", label: "Banana", disabled: true },
@@ -159,6 +164,12 @@ onMounted(() => {
 					<Slider aria-label="Temperature" :default-value="20" :min="0" :max="40" :step="10" :marks="marks" color="secondary" />
 					<Slider aria-label="Small" size="small" :default-value="60" />
 					<Slider aria-label="Disabled" disabled :default-value="40" />
+					<Slider aria-label="Price" range :default-value="[20, 60]" value-label-display="on" />
+				</div>
+				<div style="display: flex; gap: 24px; align-items: center">
+					<Slider aria-label="Level" orientation="vertical" :length="160" :default-value="40" value-label-display="auto" />
+					<Slider aria-label="Band" orientation="vertical" :length="160" range :default-value="[20, 70]" :marks="bandMarks" color="secondary" />
+					<Slider aria-label="Vertical disabled" orientation="vertical" :length="160" disabled :default-value="60" />
 				</div>
 				<div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: center">
 					<Rating v-model="stars" aria-label="Rating" />
@@ -175,6 +186,9 @@ onMounted(() => {
 					<Select label="Filled" variant="filled" :options="fruit" default-value="c" />
 					<Select label="Standard" variant="standard" :options="fruit" />
 					<Select label="Several" multiple :options="fruit" :default-value="['a', 'c']" />
+					<Select label="Grouped" :options="grouped" default-value="c">
+						<template #option="{ option }"><strong>{{ option.label }}</strong> <small style="color: var(--omni-palette-text-secondary)">{{ option.value }}</small></template>
+					</Select>
 					<Select label="Error" error :options="fruit" helper-text="Required" />
 					<Select label="Disabled" disabled :options="fruit" default-value="a" />
 				</div>

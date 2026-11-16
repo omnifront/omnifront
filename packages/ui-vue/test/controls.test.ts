@@ -158,7 +158,7 @@ describe("Slider", () => {
 
 	it("v-model follows the parent", async () => {
 		const v = ref(20)
-		mount(() => h(Slider, { "aria-label": "c", modelValue: v.value, "onUpdate:modelValue": (n: number) => (v.value = n) }))
+		mount(() => h(Slider, { "aria-label": "c", modelValue: v.value, "onUpdate:modelValue": (n: number | readonly [number, number]) => (v.value = n as number) }))
 		fireEvent.input(range(), { target: { value: "40" } })
 		await flush()
 		expect(v.value).toBe(40)
