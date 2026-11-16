@@ -36,7 +36,7 @@
 		-webkit-tap-highlight-color: transparent;
 		transition: min-height var(--omni-duration-shortest) var(--omni-easing-ease-in-out), background-color var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
 	}
-	.omni-accordion[data-expanded] > .omni-accordion__heading > .omni-accordion__summary { min-block-size: 64px; }
+	.omni-accordion[data-expanded] .omni-accordion__summary { min-block-size: 64px; }
 	.omni-accordion__summary:focus-visible { background-color: var(--omni-palette-action-focus); }
 	.omni-accordion__summary[aria-disabled="true"] { cursor: default; opacity: 0.38; }
 	.omni-accordion__summary-content { display: flex; flex-grow: 1; margin-block: 12px; }

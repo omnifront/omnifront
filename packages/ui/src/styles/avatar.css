@@ -21,5 +21,7 @@
 	.omni-avatar[data-variant="rounded"] { border-radius: var(--omni-shape-border-radius); }
 	.omni-avatar[data-variant="square"] { border-radius: 0; }
 	.omni-avatar__img { inline-size: 100%; block-size: 100%; object-fit: cover; text-align: center; color: transparent; text-indent: 10000px; }
+	/* the generic person: only when it is all the avatar has (Angular always renders it, so this is what hides it) */
 	.omni-avatar__fallback { inline-size: 75%; block-size: 75%; fill: currentColor; }
+	.omni-avatar__fallback:not(:only-child) { display: none; }
 }

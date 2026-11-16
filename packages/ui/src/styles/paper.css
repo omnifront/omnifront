@@ -38,9 +38,10 @@
 	.omni-card { overflow: hidden; }
 	.omni-card__header { display: flex; align-items: center; padding: 16px; }
 	.omni-card__header-avatar { flex: 0 0 auto; margin-inline-end: 16px; }
+	.omni-card__header-avatar:empty, .omni-card__header-action:empty { display: none; }
 	.omni-card__header-content { flex: 1 1 auto; min-inline-size: 0; }
 	.omni-card__title { display: block; margin: 0; font: var(--omni-typography-h5-font); letter-spacing: var(--omni-typography-h5-letter-spacing); }
-	.omni-card__header[data-with-avatar] .omni-card__title { font: var(--omni-typography-body2-font); letter-spacing: var(--omni-typography-body2-letter-spacing); font-weight: 500; }
+	.omni-card__header:has(> .omni-card__header-avatar:not(:empty)) .omni-card__title { font: var(--omni-typography-body2-font); letter-spacing: var(--omni-typography-body2-letter-spacing); font-weight: 500; }
 	.omni-card__subheader { display: block; margin: 0; color: var(--omni-palette-text-secondary); font: var(--omni-typography-body2-font); letter-spacing: var(--omni-typography-body2-letter-spacing); }
 	.omni-card__header-action { flex: 0 0 auto; align-self: flex-start; margin-block: -4px; margin-inline-end: -8px; }
 	.omni-card__content { padding: 16px; }
