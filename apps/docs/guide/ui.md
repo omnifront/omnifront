@@ -1,7 +1,7 @@
 # UI components
 
 ::: info Pre-release
-Not on npm yet. Wave 0 of the UI kit (ADR-0014) has Button, TextField, Dialog, Menu and Tabs, Select, Checkbox, Radio and Switch from wave 1. More components arrive in later waves.
+Not on npm yet. Waves 0 to 3 of the UI kit (ADR-0014): inputs, display and surface, and feedback and navigation. Layout components, transitions and Autocomplete arrive in wave 4.
 :::
 
 A Material-style component library for React, Vue and Angular. Behaviour, accessibility and look are written once, in `@omnifront/ui`; each framework package only renders it. The result: the same DOM, the same keyboard behaviour and the same theme in all three, and a conformance suite that runs the same scenarios against each.
@@ -165,9 +165,17 @@ Names follow MUI. Where a framework has a native idiom, the API uses it: `onClos
 | **AppBar**, **Toolbar** | A `<header>` and the 56 / 64px row inside it. |
 | **List** | `ul` with `ListItem`s; `ListItemButton` is a real button or link that fills the row (`aria-current` when selected); icon, primary and secondary text, subheader, a secondary action at the far end. |
 | **Table** | A native `<table>` (head, body, footer, row, cell; a header cell is a `th` with `scope="col"`), `size`, `stickyHeader`, `hover` and `selected` rows, a container that scrolls sideways. |
-| **Chip** | A tag, filter or choice. With a click handler it is a button (Enter, and Space on key up); with a delete handler it shows a delete icon and Backspace or Delete on the focused chip removes it. |
-| **Accordion** | A `<button>` in a heading with `aria-expanded` and `aria-controls`, over a `role="region"`. Controlled or not; the closed region leaves the accessibility tree and the Tab order, and opens with one CSS transition. |
-| **Tooltip** | A description (not a name) that opens when the pointer rests on its trigger or the trigger gets keyboard focus, closes on leave, blur or Escape, and stays open while the pointer is on it. Positioned with floating-ui; no touch. |
+| **Chip** | A tag, filter or choice. With a click handler it is a button (Enter, and Space on key up); with a delete handler it shows a delete icon (yours, if you pass one) and Backspace or Delete on the focused chip removes it. |
+| **Accordion**, **AccordionGroup** | A `<button>` in a heading with `aria-expanded` and `aria-controls`, over a `role="region"`. Controlled or not; the closed region leaves the accessibility tree and the Tab order, and opens with one CSS transition. A group keeps one open (or several, with `multiple`). |
+| **Tooltip** | A description (not a name) that opens when the pointer rests on its trigger or the trigger gets keyboard focus, closes on leave, blur or Escape, and stays open while the pointer is on it. A held touch opens it too. `arrow` adds a pointer; rich content (markup) is allowed. Positioned with floating-ui. |
+| **Alert**, **Snackbar** | A message with a status icon: `error` and `warning` interrupt a screen reader, `info` and `success` wait. A Snackbar is the same message at the edge of the screen: a polite live region that closes after `autoHideDuration` (paused while the pointer or focus is on it), on Escape and on a press outside. |
+| **CircularProgress**, **LinearProgress**, **Skeleton**, **Backdrop** | `role="progressbar"` with a value, or without one for an unknown wait (also `buffer`); grey placeholders that pulse or sweep; a dimmed layer. Reduced motion slows the spinners down rather than stopping them. |
+| **Drawer** | `temporary` is a modal dialog on an edge (`start` and `end` follow the writing direction); `persistent` slides in and out and `permanent` stays: both are an `<aside>` that does not take focus. |
+| **Popover** | A non-modal panel next to an element that holds anything: Escape and a press outside close it, focus goes in and comes back. Needs an `aria-label`. |
+| **Breadcrumbs**, **Link** | A `nav` with an ordered list (the last item is the current page; a long path folds under "…") and a real `<a>`. |
+| **Pagination**, **TablePagination**, **TableSortLabel** | Page buttons that never hide a single page behind "…"; the table footer row with a native "rows per page" select and "1–10 of 95" in a live region; column headers as buttons with `aria-sort`. |
+| **Stepper**, **BottomNavigation**, **SpeedDial** | An ordered list of steps (`aria-current="step"`, vertical, alternative label, error); a bar of 3 to 5 destinations (`aria-current="page"`); a floating button that fans out a `menu` of actions with arrow keys. |
+| **CardActionArea**, **AvatarGroup**, **ListItemAvatar** | The whole card as one button or link; overlapping avatars that fold into "+N"; the avatar slot of a list row (`alignItems="flex-start"` for multi-line text). |
 | **Dialog** | Focus moves in and is trapped, Escape and a click outside ask to close (`reason`: `escapeKeyDown`, `backdropClick`), the page behind stops scrolling and is hidden from screen readers, focus returns to the opener. `maxWidth`, `fullWidth`, `fullScreen`, exit animation. |
 | **Menu** | Hangs from `anchorEl`, flips when there is no room. Arrow keys, Home, End and typing move focus; Enter or Space choose; Escape, Tab and a click outside close. |
 | **Tabs** | `TabContext` + `TabList` + `Tab` + `TabPanel` (MUI Lab's shape). Roving tabindex, arrow keys, optional `selectionFollowsFocus`, sliding indicator. |
@@ -180,8 +188,9 @@ Names follow MUI. Where a framework has a native idiom, the API uses it: `onClos
 - **Label colours follow WCAG AA.** `contrastThreshold` defaults to 4.5 where MUI uses 3, so a few colours (light `warning` and `info`, dark `error`) get dark label text instead of white. Pass `contrastThreshold: 3` to get MUI's choice back.
 - **TextField adornments** are `startAdornment` / `endAdornment` (React, Vue slots), not `InputProps`.
 - **Avatar initials are black on grey 400** (11:1) where Material uses white (1.9:1, below AA). A `ListItemButton` row is a `<button>` inside the `li`, and a list of links goes inside a `nav` (MUI lets `List` be the `nav`, which puts `li` straight under it: invalid HTML).
-- **Angular picks the element yourself.** A template cannot choose a tag from an input, so `omni-typography` is a directive for the `h2`, `p` or `span` you write, and a Tooltip is a directive on the element it describes (text only). Chip needs `clickable` there, because a plain `(click)` cannot be detected.
-- Not built yet: `CardActionArea`, `AvatarGroup`, `TableSortLabel` and `TablePagination`, an Accordion group that keeps one open, a Tooltip `arrow` and touch support, scroll buttons on Tabs, layout components (`Box`, `Stack`, `Grid`) and the rest of the component list (waves 3 and 4).
+- **Angular picks the element yourself.** A template cannot choose a tag from an input, so `omni-typography` is a directive for the `h2`, `p` or `span` you write, and a Tooltip is a directive on the element it describes (a string, or a `TemplateRef` for markup). Chip needs `clickable` there, because a plain `(click)` cannot be detected. Breadcrumbs take their items as `*omniCrumb` templates and a step's click output is `(activate)`.
+- **`BottomNavigation` is always controlled** (you hold the route anyway), and `Snackbar` has no built-in queue: show the next message when `onClose` ran.
+- Not built yet: scroll buttons on Tabs, `StepContent` and a connector component for the Stepper, the `query` variant of LinearProgress, layout components (`Box`, `Stack`, `Grid`) and the rest of the component list (wave 4).
 
 ## Server-side rendering
 
@@ -189,7 +198,7 @@ Components render to HTML on the server in all three frameworks. Overlays (Dialo
 
 ## How it is tested
 
-The same 97 scenarios (roles, keyboard, focus, `aria-*`, controlled and uncontrolled use, and axe) run against React, Vue and Angular. In a real browser, one example page per framework (`examples/ui-react`, `ui-vue`, `ui-angular`) is screenshotted in sixteen states (light, dark, brand theme, open dialog, open menu, open select, and the whole display page in light, dark, brand, RTL, with a tooltip open and with an accordion open) and compared pixel by pixel to the React one, and axe checks WCAG 2.1 AA, colour contrast included. Key presses and the mouse (Space on a checkbox or switch, arrows in a radio group, the select's list, dragging a vertical slider, a tooltip opened by focus and by hover, Enter and Backspace on chips, an accordion) are driven in the real browser for every framework. All of it runs in Chromium, Firefox and WebKit, because a native control such as the slider is styled through engine-specific parts. Server rendering followed by hydration is tested for each framework: no mismatch, and the server's DOM is reused.
+The same 154 scenarios (roles, keyboard, focus, `aria-*`, controlled and uncontrolled use, and axe) run against React, Vue and Angular. In a real browser, one example page per framework (`examples/ui-react`, `ui-vue`, `ui-angular`) is screenshotted in twenty-six states (light, dark, brand theme, open dialog, open menu, open select, the whole display page in light, dark, brand, RTL, with a tooltip open and with an accordion open, and the whole feedback page in light, dark, brand, RTL, with a snackbar, drawer, popover, speed dial and tooltip arrow open) and compared pixel by pixel to the React one, and axe checks WCAG 2.1 AA, colour contrast included. Key presses and the mouse (Space on a checkbox or switch, arrows in a radio group, the select's list, dragging a vertical slider, a tooltip opened by focus, hover and a held touch, Enter and Backspace on chips, an accordion, a drawer, popover and speed dial with Escape and arrow keys) are driven in the real browser for every framework. All of it runs in Chromium, Firefox and WebKit, because a native control such as the slider is styled through engine-specific parts. Server rendering followed by hydration is tested for each framework: no mismatch, and the server's DOM is reused.
 
 ## Under the hood
 

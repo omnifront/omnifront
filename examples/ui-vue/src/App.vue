@@ -33,8 +33,11 @@ import {
 } from "@omnifront/ui-vue"
 import { computed, onMounted, ref } from "vue"
 import Display from "./Display.vue"
+import Feedback from "./Feedback.vue"
 
-const displayView = new URLSearchParams(location.search).get("view") === "display"
+const view = new URLSearchParams(location.search).get("view")
+const displayView = view === "display"
+const feedbackView = view === "feedback"
 
 // The same page exists for React and Angular (examples/ui-react, examples/ui-angular). The URL sets the
 // starting state (?scheme=dark&theme=brand&open=dialog&tab=queries) so the three can be compared
@@ -84,7 +87,8 @@ onMounted(() => {
 
 <template>
 	<ThemeProvider :theme="theme" :color-scheme="mode" global>
-		<Display v-if="displayView" />
+		<Feedback v-if="feedbackView" />
+		<Display v-else-if="displayView" />
 		<main v-else :style="{ maxWidth: '880px', margin: '0 auto', padding: '24px', display: 'grid', gap: '32px', color: 'var(--omni-palette-text-primary)', font: 'var(--omni-typography-body1-font)' }">
 			<header style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
 				<h1 style="font: var(--omni-typography-h4-font); margin: 0; flex: 1">omnifront UI</h1>

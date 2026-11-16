@@ -213,3 +213,40 @@ Place `floating` next to `anchor` with floating-ui (flip, shift, `position: fixe
 | `Breakpoints`, `BreakpointKey` | Breakpoint helpers; keys are `xs`, `sm`, `md`, `lg`, `xl`. |
 | `Transitions`, `ZIndex`, `ComponentsOptions` | The rest of the theme's parts. |
 | `ThemeToCssOptions` | Options of `themeToCss`. |
+
+## Wave 3: feedback and navigation
+
+Machines (`Subscribable`, each with `connect()`; the three that open also have `attach()`):
+
+### `createSnackbar`
+
+`createSnackbar({ open, autoHideDuration, anchorOrigin, closeOnOutsidePress, onOpenChange, scheduler })`: a message that closes itself. The timer runs on the `Scheduler`, pauses on `pointerenter` and `focusin` of `connect().root` and counts half the duration again after `pointerleave` and `focusout`. `attach({ content })` closes on Escape and on a press outside (reasons `escapeKeyDown`, `outsidePress`; the timer's is `timeout`). Types: `Snackbar`, `SnackbarProps`, `SnackbarState`, `SnackbarElements`.
+
+### `createPopover`
+
+`createPopover({ id, label, labelledBy, open, onOpenChange })`: a non-modal panel, `role="dialog"`. `attach({ content, anchor, position })` positions it (pass `autoPosition` from `@omnifront/ui/position`), closes on Escape and on a press outside the content and the anchor, moves focus in and restores it. Types: `Popover`, `PopoverProps`, `PopoverState`, `PopoverElements`.
+
+### `createPagination`, `paginationItems`
+
+`createPagination({ count, page, defaultPage, onPageChange, siblingCount, boundaryCount, showFirstButton, showLastButton, hidePrevButton, hideNextButton, disabled, variant, shape, size, color, label })` keeps a 1-based page (controlled with `page`, otherwise its own, starting at `defaultPage`) and gives the list of buttons; `connect()` gives `root`, `list` and `item(item)` (labels such as "Go to page 3", `aria-current="page"`). `paginationItems(options)` is the same list as a pure function. Types: `Pagination`, `PaginationProps`, `PaginationState`, `PaginationItem`, `PaginationItemType`, `PaginationItemsOptions`.
+
+### `createAccordionGroup`
+
+`createAccordionGroup({ value, defaultValue, multiple, onValueChange })` says which accordions are open (`isExpanded(key)`, `set(key, expanded)`); one at a time unless `multiple`. Types: `AccordionGroup`, `AccordionGroupProps`, `AccordionGroupState`.
+
+### `createSpeedDial`
+
+`createSpeedDial({ id, direction, open, defaultOpen, onOpenChange })`: a button that opens a `menu` of actions. `connect()` gives `root` (hover, focus-out, Escape and arrow keys in the direction of the fan), `trigger`, `actions` and `action`. Types: `SpeedDial`, `SpeedDialProps`, `SpeedDialState`, `SpeedDialParts`.
+
+The tooltip machine also takes `enterTouchDelay` and `leaveTouchDelay`, and `autoPosition` takes `arrow: true` to point the `[data-arrow]` element at the anchor.
+
+Parts without state (each is a class and `data-*` attributes, so all three frameworks draw the same DOM):
+
+- `alertPart`(options): role by severity. Types: `AlertOptions`, `Severity`.
+- `circularProgressParts`(options) and `linearProgressParts`(options): `role="progressbar"`, the value as attributes and CSS variables. Types: `CircularProgressOptions`, `CircularProgressParts`, `LinearProgressOptions`, `LinearProgressParts`, `ProgressColor`.
+- `skeletonPart`(options) and `linkPart`(options). Types: `SkeletonOptions`, `LinkOptions`.
+- `breadcrumbsPart`(label) and `breadcrumbItems`(count, options): which crumbs to draw, with one `"ellipsis"` where the middle folds. Type: `BreadcrumbsOptions`.
+- `stepperPart`(options), `stepPart`(options) and `stepState`(options): completed, active, pending or error from the position and `activeStep`. Types: `StepperOptions`, `StepOptions`, `StepState`.
+- `bottomNavigationActionPart`(options). Type: `BottomNavigationActionOptions`.
+- `sortLabelPart`(options) and `tablePaginationState`(options) (the range text and whether previous and next are possible). Types: `SortLabelOptions`, `TablePaginationOptions`, `TablePaginationState`.
+- `avatarGroupState`(count, max, total): how many avatars to draw and the "+N". Type: `AvatarGroupState`.

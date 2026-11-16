@@ -11,10 +11,10 @@
 	.omni-speed-dial[data-direction="up"] .omni-speed-dial__actions { flex-direction: column-reverse; padding-block: 0 16px; }
 	.omni-speed-dial[data-direction="down"] .omni-speed-dial__actions { flex-direction: column; padding-block: 16px 0; }
 	.omni-speed-dial[data-direction="left"] .omni-speed-dial__actions, .omni-speed-dial[data-direction="right"] .omni-speed-dial__actions { flex-direction: row; padding-block: 0; }
-	.omni-speed-dial__actions[data-state="closed"] { visibility: hidden; pointer-events: none; transition: visibility 0s var(--omni-duration-leaving-screen); }
+	.omni-speed-dial__actions[data-state="closed"] { visibility: hidden; pointer-events: none; }
 	.omni-speed-dial__action { position: relative; display: inline-flex; }
 	.omni-speed-dial__actions[data-state="open"] .omni-speed-dial__action { animation: omni-sd-in var(--omni-duration-shortest) var(--omni-easing-ease-out) both; }
-	.omni-speed-dial__actions[data-state="closed"] .omni-speed-dial__action { opacity: 0; transform: scale(0); transition: opacity var(--omni-duration-leaving-screen), transform var(--omni-duration-leaving-screen); }
+	.omni-speed-dial__actions[data-state="closed"] .omni-speed-dial__action { opacity: 0; transform: scale(0); }
 	.omni-speed-dial__trigger { transition: transform var(--omni-duration-short) var(--omni-easing-ease-in-out); }
 	.omni-speed-dial__trigger[aria-expanded="true"] { transform: rotate(45deg); }
 	/* the action's name, as a caption beside it, while the dial is open */

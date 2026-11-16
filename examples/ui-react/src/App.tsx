@@ -32,6 +32,7 @@ import {
 } from "@omnifront/ui-react"
 import { useEffect, useMemo, useState } from "react"
 import { Display } from "./Display"
+import { Feedback } from "./Feedback"
 
 // The same page exists for Vue and Angular (examples/ui-vue, examples/ui-angular). The URL sets the
 // starting state (?scheme=dark&theme=brand&open=dialog&tab=queries) so the three can be compared
@@ -79,6 +80,13 @@ export function App() {
 		if (params.get("open") === "menu") setAnchor(document.getElementById("menu-button"))
 	}, [])
 
+	if (params.get("view") === "feedback") {
+		return (
+			<ThemeProvider theme={theme} colorScheme={mode} global>
+				<Feedback />
+			</ThemeProvider>
+		)
+	}
 	if (params.get("view") === "display") {
 		return (
 			<ThemeProvider theme={theme} colorScheme={mode} global>

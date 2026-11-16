@@ -22,6 +22,17 @@ export const scenarios = [
 	{ name: "display-rtl", query: "view=display", fullPage: true, rtl: true },
 	{ name: "display-tooltip", query: "view=display&open=tooltip", fullPage: true },
 	{ name: "display-accordion", query: "view=display&open=accordion", fullPage: true },
+	// Wave 3 (feedback and navigation) and the wave 2 leftovers: one long page, and the pieces that open.
+	{ name: "feedback", query: "view=feedback", fullPage: true },
+	{ name: "feedback-dark", query: "view=feedback&scheme=dark", fullPage: true },
+	{ name: "feedback-brand", query: "view=feedback&theme=brand", fullPage: true },
+	{ name: "feedback-rtl", query: "view=feedback", fullPage: true, rtl: true },
+	{ name: "feedback-snackbar", query: "view=feedback&open=snackbar" },
+	{ name: "feedback-drawer", query: "view=feedback&open=drawer" },
+	{ name: "feedback-drawer-rtl", query: "view=feedback&open=drawer", rtl: true },
+	{ name: "feedback-popover", query: "view=feedback&open=popover" },
+	{ name: "feedback-speeddial", query: "view=feedback&open=speeddial", fullPage: true },
+	{ name: "feedback-tooltip-arrow", query: "view=feedback&open=tooltip-arrow", fullPage: true },
 ] as const satisfies ReadonlyArray<{ name: string; query: string; fullPage?: boolean; rtl?: boolean }>
 
 export async function open(page: Page, framework: Framework, query: string, options: { rtl?: boolean } = {}): Promise<void> {
@@ -34,6 +45,10 @@ export async function open(page: Page, framework: Framework, query: string, opti
 		await page.locator('[role="menu"]').waitFor()
 		await page.locator('[role="menu"][data-placement]').waitFor() // positioned by floating-ui
 	}
+	if (query.includes("open=snackbar")) await page.locator(".omni-snackbar").waitFor()
+	if (query.includes("open=drawer")) await page.locator(".omni-drawer__paper[role='dialog']").waitFor()
+	if (query.includes("open=popover")) await page.locator(".omni-popover[data-placement]").waitFor()
+	if (query.includes("open=speeddial")) await page.locator('[role="menu"][data-state="open"]').waitFor()
 	if (query.includes("open=select")) await page.locator('[role="listbox"][data-placement]').waitFor()
 	await page.evaluate(() => document.fonts.ready)
 	await page.waitForTimeout(300)

@@ -201,3 +201,99 @@ Inputs: `expanded`, `defaultExpanded`, `disabled`. Output: `expandedChange`. `Om
 
 A directive for the element it describes (text only). Inputs: `omniTooltip` (the text; empty means no tooltip), `tooltipPlacement`, `tooltipOpen`, `tooltipEnterDelay`, `tooltipLeaveDelay`, `tooltipDisableInteractive`. Outputs: `tooltipOpened`, `tooltipClosed`. Same behaviour as React. The tooltip itself is an `OmniTooltipPanel`, created for you and moved to a portal in `<body>`; you never write it.
 
+## Wave 3: feedback and navigation
+
+The same behaviour as React. Angular cannot pick an element from an input and cannot wrap each projected child, so a few pieces differ: `omni-breadcrumbs` takes its items as `*omniCrumb` templates, a step's click output is `(activate)`, and avatars past an `AvatarGroup` limit are `hidden` instead of left out.
+
+### `OmniAlert`, `OmniAlertTitle`, `OmniAlertIcon`, `OmniAlertAction`
+
+```html
+<div omni-alert severity="error" (close)="open = false"><div omni-alert-title>Upload failed</div>The file is too big.</div>
+```
+
+Inputs `severity`, `variant`, `icon` (`false` removes it; an element with `omniAlertIcon` replaces it), `closeText`; an element with `omniAlertAction` sits at the far end. A `(close)` listener adds the close button.
+
+### `OmniSnackbar`, `OmniSnackbarAction`
+
+```html
+<omni-snackbar [(open)]="open" message="Saved" [autoHideDuration]="4000">
+	<button omniSnackbarAction omni-button size="small">Undo</button>
+</omni-snackbar>
+```
+
+Inputs `open`, `autoHideDuration`, `anchorOrigin`, `message`, `disableClickAway`; outputs `openChange` and `closed` (`{ reason, event }`, with `SnackbarCloseReason`). Content (an `omni-alert`) goes after `message`. The host moves to a portal in `<body>` while shown.
+
+### `OmniBackdrop`, `OmniCircularProgress`, `OmniLinearProgress`, `OmniSkeleton`, `OmniLink`
+
+`<div omni-backdrop [open]>`, `<span omni-circular-progress [value] aria-label>`, `<div omni-linear-progress variant [value] [valueBuffer] aria-label>`, `<span omni-skeleton variant [animation] [width] [height]>` and `<a omni-link underline color>`. Inputs as in React.
+
+### `OmniDrawer`, `OmniPopover`
+
+```html
+<omni-drawer [(open)]="open" label="Navigation"><nav>…</nav></omni-drawer>
+<omni-popover [anchorEl]="button" [(open)]="open" label="Filters">…</omni-popover>
+```
+
+`OmniDrawer`: inputs `variant`, `anchor`, `open`, `width`, `label`; outputs `openChange`, `closed` (`DrawerCloseEvent`). `OmniPopover`: inputs `anchorEl`, `open`, `placement`, `label`, `labelledBy`; outputs `openChange`, `closed` (`PopoverCloseEvent`). Both move to a portal in `<body>` while shown (a persistent or permanent drawer stays where it is).
+
+### `OmniBreadcrumbs`, `OmniCrumb`
+
+```html
+<nav omni-breadcrumbs><a *omniCrumb omni-link href="/">Home</a><span *omniCrumb>Guide</span></nav>
+```
+
+Inputs `maxItems`, `itemsBeforeCollapse`, `itemsAfterCollapse`, `separator` (text), `label`, `expandText`.
+
+### `OmniPagination`
+
+```html
+<nav omni-pagination label="Results" [count]="10" [(page)]="page" showFirstButton></nav>
+```
+
+Inputs as in React plus `label`; outputs `pageChange` (the page) and `changed` (`PaginationChangeEvent`: page and event).
+
+### `OmniStepper`, `OmniStep`, `OmniStepIcon`
+
+```html
+<ol omni-stepper [activeStep]="1"><li omni-step label="Cart"></li><li omni-step label="Address" optional="Optional" (activate)="go(1)"></li></ol>
+```
+
+`OmniStepper`: `activeStep`, `orientation`, `alternativeLabel`, `nonLinear`. `OmniStep`: `label`, `optional`, `completed`, `active`, `disabled`, `error`; an `(activate)` listener makes the header a button; an element with `omniStepIcon` replaces the number. Steps find their position through a content query, so `@for` and `@if` work.
+
+### `OmniBottomNavigation`, `OmniBottomNavigationAction`, `OmniNavIcon`
+
+```html
+<nav omni-bottom-navigation aria-label="Main" [(value)]="tab">
+	<button omni-bottom-navigation-action value="home" label="Home"><svg omniNavIcon …/></button>
+</nav>
+```
+
+### `OmniSpeedDial`, `OmniSpeedDialAction`, `OmniSpeedDialIcon`
+
+```html
+<omni-speed-dial ariaLabel="Actions"><omni-speed-dial-action tooltipTitle="Copy" (click)="copy()"><svg …/></omni-speed-dial-action></omni-speed-dial>
+```
+
+Inputs `ariaLabel` (required), `direction`, `open`, `defaultOpen`; outputs `openChange`, `closed` (`SpeedDialCloseEvent`); an element with `omniSpeedDialIcon` replaces the plus.
+
+### `OmniCardActionArea`, `OmniAvatarGroup`, `OmniListItemAvatar`
+
+`<button omni-card-action-area>` (or `<a … href>`), `<div omni-avatar-group [max] [total] spacing>` and `<div omni-list-item-avatar>`. `omni-list-item` and `omni-list-item-button` take `alignItems="flex-start"`.
+
+### `OmniTableSortLabel`, `OmniTablePagination`
+
+`<button omni-table-sort-label [active] [direction]>`; `omni-table-cell` takes `sortDirection`. `<td omni-table-pagination [count] [page] [rowsPerPage] [rowsPerPageOptions] [colSpan]>` with outputs `pageChange`, `changed` (`TablePageChange`) and `rowsPerPageChange`.
+
+### `OmniAccordionGroup`
+
+```html
+<div omni-accordion-group [(value)]="open"><div omni-accordion value="a">…</div><div omni-accordion value="b">…</div></div>
+```
+
+Inputs `value`, `defaultValue`, `multiple`; outputs `valueChange` and `changed` (`AccordionGroupChange`).
+
+### `OmniChipDeleteIcon`
+
+An element with `omniChipDeleteIcon` inside an `omni-chip` replaces the cross of its delete icon. `OmniTooltip` takes a string or a `TemplateRef` (for markup), `tooltipArrow`, `tooltipEnterTouchDelay` and `tooltipLeaveTouchDelay`.
+
+The injection tokens the parts use to find their parent are exported for custom parts: `OMNI_ACCORDION_GROUP`, `OMNI_STEPPER`, `OMNI_BOTTOM_NAVIGATION` and `OMNI_SPEED_DIAL`. The close reasons are `SnackbarCloseReason` (`timeout`, `outsidePress`, `escapeKeyDown`, `programmatic`), `SnackbarCloseEvent`, `DrawerCloseReason` and `PopoverCloseReason`.

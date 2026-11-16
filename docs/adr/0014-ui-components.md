@@ -242,7 +242,7 @@ ui-angular  → ui, angular (+ peer: @angular/core, @angular/common)
 
 **بودجه (ثبت، بدون سقف سخت):** `ui` ۱۳٫۵KB، `styles.css` ۱۳٫۰KB، `ui-react` ۱۰٫۳KB، `ui-vue` ۱۳٫۴KB، `ui-angular` ۱۹٫۳KB (gzip)؛ رشد ۱۸ تا ۴۰ درصد در یک موج با ۱۴ قلم و سه فریم‌ورک است، پس توضیح‌خواه ولی انتظارشده. سقف‌های `.size-limit.json` به‌همین اندازه به‌علاوه‌ی حدود ۱۵٪ رفتند. بسته‌های داده‌ای (`core`، `query`، `api`) دست نخوردند.
 
-**انجام‌نشده (آگاهانه):** `CardActionArea`، `AvatarGroup`، `TableSortLabel`، `TablePagination`، گروه آکاردئون، `arrow` و لمس برای Tooltip، `deleteIcon` سفارشی برای Chip، محتوای غنی در Tooltip برای Angular (Popover در موج ۳)، ورودی‌های `alignItems` و `ListItemAvatar` در List، و `component` برای Table (عنصرها بومی‌اند و تغییر نمی‌کنند). هیچ‌کدام برای تمام شدن موج لازم نبود و هر کدام یک تصمیم جداگانه می‌خواهد.
+**انجام‌نشده (آگاهانه؛ در موج ۳ همه انجام شدند، بخش بعد):** `CardActionArea`، `AvatarGroup`، `TableSortLabel`، `TablePagination`، گروه آکاردئون، `arrow` و لمس برای Tooltip، `deleteIcon` سفارشی برای Chip، محتوای غنی در Tooltip برای Angular (Popover در موج ۳)، ورودی‌های `alignItems` و `ListItemAvatar` در List، و `component` برای Table (عنصرها بومی‌اند و تغییر نمی‌کنند). هیچ‌کدام برای تمام شدن موج لازم نبود و هر کدام یک تصمیم جداگانه می‌خواهد.
 
 ## موج ۳: بازخورد و ناوبری (2026-11-16)
 
@@ -253,7 +253,7 @@ ui-angular  → ui, angular (+ peer: @angular/core, @angular/common)
 **تصمیم‌های هر قلم:**
 
 - **Alert:** `severity` (پیش‌فرض `success`، مثل MUI)، `variant` (`standard`، `filled`، `outlined`)، `icon` سفارشی یا `false`، `action` و `onClose` (دکمه‌ی بستن با `aria-label="Close"`)، `AlertTitle`. نقش برای `error` و `warning` `alert` و برای `info` و `success` `status` است، تا پیام‌های غیرفوری صفحه‌خوان را قطع نکنند.
-- **Snackbar:** `open`، `autoHideDuration` (پیش‌فرض بدون بسته شدن خودکار)، `onClose(event, reason)` با دلیل‌های `timeout`، `clickaway` و `escapeKeyDown`، `anchorOrigin`، `message`، `action`. تایمر با hover یا فوکوس داخل متوقف می‌شود و پایان مکث نصف مدت را دوباره می‌شمارد (WCAG 2.2.1). بدون صف داخلی: صف‌کردن پیام‌ها کار برنامه است (یک `key` که عوض شود کافی است). محتوا `role="status"` است، چون `alert` برای پیام موقت خیلی تهاجمی است؛ `Alert` داخل Snackbar نقش خود را دارد.
+- **Snackbar:** `open`، `autoHideDuration` (پیش‌فرض بدون بسته شدن خودکار)، `onClose(event, reason)` با دلیل‌های `timeout`، `outsidePress` و `escapeKeyDown`، `anchorOrigin`، `message`، `action`. تایمر با hover یا فوکوس داخل متوقف می‌شود و پایان مکث نصف مدت را دوباره می‌شمارد (WCAG 2.2.1). بدون صف داخلی: صف‌کردن پیام‌ها کار برنامه است (یک `key` که عوض شود کافی است). محتوا `role="status"` است، چون `alert` برای پیام موقت خیلی تهاجمی است؛ `Alert` داخل Snackbar نقش خود را دارد.
 - **Backdrop:** یک `div` تزئینی (`aria-hidden`) با گذار `opacity` و `visibility`، `invisible`، `onClick`. Dialog و Drawer پس‌زمینه‌ی خودشان را دارند و از آن استفاده نمی‌کنند.
 - **CircularProgress و LinearProgress:** `role="progressbar"`؛ با `value` قطعی (`aria-valuenow`) و بدون آن نامعین (بدون `aria-valuenow`). `LinearProgress` حالت `buffer` را هم دارد (`valueBuffer`)؛ `query` نیامد. چرخش و حرکت با reduced motion به یک گردش کند تبدیل می‌شود نه ایستا، چون ایستا یعنی «قفل کرده» به نظر می‌آید.
 - **Skeleton:** `variant` (`text`، `circular`، `rectangular`، `rounded`)، `animation` (`pulse`، `wave`، `false`)، `width` و `height` به متغیر CSS تبدیل می‌شوند. `aria-hidden`؛ ظاهر خود را با `aria-busy` روی پدر اعلام می‌کند، نه روی Skeleton.
@@ -278,7 +278,24 @@ ui-angular  → ui, angular (+ peer: @angular/core, @angular/common)
 - **Tooltip غنی در Angular:** `omniTooltip` علاوه بر رشته یک `TemplateRef` می‌پذیرد.
 - **ListItemAvatar و `alignItems`:** `ListItemAvatar` یک `div` با فاصله‌ی ثابت؛ `alignItems="flex-start"` روی `ListItem` و `ListItemButton` متن چندخطی را از بالا تراز می‌کند.
 
-**آزمون و بودجه:** هر قلم یک سناریوی conformance با axe در هر سه فریم‌ورک دارد و صفحه‌ی `?view=feedback` در مثال‌ها اضافه می‌شود (تصویر یکسان بین فریم‌ورک‌ها در روشن، تیره، RTL و reduced motion). اعداد نهایی در بخش «نتیجه‌ی موج ۳» همین سند ثبت می‌شوند.
+**آزمون و بودجه:** هر قلم یک سناریوی conformance با axe در هر سه فریم‌ورک دارد و صفحه‌ی `?view=feedback` در مثال‌ها اضافه می‌شود (تصویر یکسان بین فریم‌ورک‌ها در روشن، تیره، برند و RTL، و هر تکه‌ی بازشونده). اعداد نهایی در بخش «نتیجه‌ی موج ۳» پایین ثبت شده‌اند.
+
+### نتیجه‌ی موج ۳ (2026-11-16)
+
+هر ۱۴ قلم موج و هر ۹ قلم عقب‌افتاده‌ی موج ۲ در هر سه فریم‌ورک ساخته شد؛ چیزی جا نماند. تصمیم‌هایی که حین ساخت عوض شد یا اضافه شد:
+
+- **ماشین‌ها `defaultPage` و `defaultValue` را دیر می‌پذیرند.** `createPagination` و `createAccordionGroup` مقدار پیش‌فرض را از props می‌خوانند (نه فقط هنگام ساخت) و تا وقتی کاربر چیزی انتخاب نکرده همان را نشان می‌دهند. Angular ورودی‌ها را بعد از ساخت ماشین می‌رساند؛ بدون این، پیش‌فرض یا باید «بی‌صدا» اعمال می‌شد یا گم می‌شد.
+- **Breadcrumbs در Angular الگو می‌گیرد.** projection نمی‌تواند هر فرزند را داخل `li` بپیچد، پس آیتم‌ها `*omniCrumb` (یک `TemplateRef`) هستند. خروجی کلیک `Step` در Angular `(activate)` است، چون `(click)` روی خود `li` برای کل گام شلیک می‌شود. `AvatarGroup` در Angular فرزندهای اضافه را `hidden` می‌کند و حذف نمی‌کند.
+- **ترتیب DOM در AvatarGroup:** ترتیب طبیعی (نه معکوس با `row-reverse`)، چون Angular نمی‌تواند فرزندان را جابه‌جا کند؛ آواتار بعدی روی قبلی می‌افتد.
+- **SpeedDial بدون انیمیشن خروج.** اولین نسخه `visibility` را با تأخیر گذار می‌داد و مرورگر واقعی نشان داد اکشن‌ها بعد از باز شدن تا پایان تأخیر هنوز قابل فوکوس نیستند (کلید پیکان بی‌اثر بود؛ jsdom CSS ندارد و نمی‌دید). حالا بسته شدن فوری است.
+- **`Snackbar` و دلیل بستن:** `outsidePress` (همان واژگان بقیه‌ی ماشین‌ها) به‌جای `clickaway`؛ `CloseReason` یک مقدار تازه گرفت: `timeout`.
+- **Drawer با ماشین Dialog.** هیچ ماشین جدیدی برای آن نیامد؛ `container` شفاف تمام‌صفحه کلیک روی خالی را می‌گیرد و `backdropClick` همان Dialog است.
+
+**آزمون:** conformance به ۱۵۴ سناریو در هر فریم‌ورک رسید (۵۷ تازه، همه با axe یا کنار آن). `ui` ۱۸۹ آزمون واحد (۳۴ تازه)، `ui-react` ۲۵۴، `ui-vue` ۲۵۳، `ui-angular` ۲۳۱. مثال‌ها صفحه‌ی `?view=feedback` گرفتند و Playwright به ۲۰۹ آزمون در هر موتور (Chromium، Firefox، WebKit) رسید: ده مقایسه‌ی تصویری تازه (روشن، تیره، برند، RTL، و snackbar، drawer، drawer در RTL، popover، speed dial و arrow tooltip باز)، axe روی نُه حالت تازه، و ۲۱ آزمون کلید و ماوس واقعی (از جمله لمس نگه‌داشته، ترتیب تب داخل drawer، سمت `start` در RTL، پیکان‌های SpeedDial، و وارونه شدن آیکون‌های Pagination در RTL).
+
+**بودجه (ثبت، بدون سقف سخت):** `ui` ۱۷٫۳KB، `styles.css` ۱۷٫۴KB، `ui-react` ۱۴٫۲KB، `ui-vue` ۱۸٫۴KB، `ui-angular` ۲۷٫۵KB (gzip)؛ رشد ۲۸ تا ۴۲ درصد برای ۲۳ قلم در سه فریم‌ورک، پس توضیح‌خواه ولی انتظارشده. سقف‌های `.size-limit.json` به همین اندازه به‌علاوه‌ی حدود ۱۵٪ رفتند.
+
+**انجام‌نشده (آگاهانه):** `StepContent` و `StepConnector` جدا (محتوای گام عمودی فرزند `Step` است)، حالت `query` در LinearProgress، `BottomNavigation` غیرکنترل‌شده، صف داخلی Snackbar، `variant` و `color` برای Skeleton جدا از `variant`، Popover با `anchorPosition` (فقط `anchorEl`)، `Drawer` قابل کشیدن با لمس (SwipeableDrawer)، و `SpeedDial` با Tooltip ماشینی به‌جای برچسب CSS. `TablePagination` همیشه کنترل‌شده است و `<select>` بومی دارد. بعد از این موج ۳ تمام است و موج ۴ (چیدمان و ابزار) مانده.
 
 ## معیار بازبینی
 
