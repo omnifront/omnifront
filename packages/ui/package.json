@@ -62,7 +62,20 @@
 		"./icon-button.css": "./dist/icon-button.css",
 		"./button-group.css": "./dist/button-group.css",
 		"./slider.css": "./dist/slider.css",
-		"./rating.css": "./dist/rating.css"
+		"./rating.css": "./dist/rating.css",
+		"./typography.css": "./dist/typography.css",
+		"./color.css": "./dist/color.css",
+		"./paper.css": "./dist/paper.css",
+		"./divider.css": "./dist/divider.css",
+		"./avatar.css": "./dist/avatar.css",
+		"./badge.css": "./dist/badge.css",
+		"./chip.css": "./dist/chip.css",
+		"./list.css": "./dist/list.css",
+		"./table.css": "./dist/table.css",
+		"./tooltip.css": "./dist/tooltip.css",
+		"./svg-icon.css": "./dist/svg-icon.css",
+		"./accordion.css": "./dist/accordion.css",
+		"./app-bar.css": "./dist/app-bar.css"
 	},
 	"files": [
 		"dist"

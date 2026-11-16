@@ -2,6 +2,35 @@ import { ChangeDetectionStrategy, Component, signal, type Type } from "@angular/
 import { TestBed, type ComponentFixture } from "@angular/core/testing"
 import { defineUiConformanceSuite, type UiHarness } from "@omnifront/conformance"
 import {
+	OmniAccordion,
+	OmniAccordionDetails,
+	OmniAccordionSummary,
+	OmniAppBar,
+	OmniAvatar,
+	OmniBadge,
+	OmniCard,
+	OmniCardActions,
+	OmniCardAvatar,
+	OmniCardContent,
+	OmniCardHeader,
+	OmniChip,
+	OmniDivider,
+	OmniList,
+	OmniListItem,
+	OmniListItemAction,
+	OmniListItemButton,
+	OmniListItemIcon,
+	OmniListItemText,
+	OmniListSubheader,
+	OmniPaper,
+	OmniSvgIcon,
+	OmniTable,
+	OmniTableCell,
+	OmniTableContainer,
+	OmniTableRow,
+	OmniToolbar,
+	OmniTooltip,
+	OmniTypography,
 	OmniButton,
 	OmniDialog,
 	OmniDialogActions,
@@ -310,6 +339,150 @@ class TabsView {
 	log: Log = () => {}
 }
 
+
+@Component({
+	standalone: true,
+	imports: [OmniAppBar, OmniToolbar, OmniTypography, OmniPaper, OmniCard, OmniCardHeader, OmniCardAvatar, OmniCardContent, OmniCardActions, OmniAvatar, OmniDivider],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `
+		<header omni-app-bar position="static"><div omni-toolbar><h1 omni-typography variant="h6">Dashboard</h1></div></header>
+		<p omni-typography variant="body1">Plain text</p>
+		<div omni-paper [elevation]="3">Paper text</div>
+		<div omni-card [raised]="!!p().raised">
+			<div omni-card-header title="Card title" subheader="Card subheader"><div omni-avatar omniCardAvatar>A</div></div>
+			<div omni-card-content>Card body</div>
+			<div omni-card-actions><button (click)="log('click:share')">Share</button></div>
+		</div>
+		<hr omni-divider />
+		<div omni-divider>Or</div>
+	`,
+})
+class SurfacesView {
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+}
+
+@Component({
+	standalone: true,
+	imports: [OmniAvatar, OmniBadge, OmniSvgIcon],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `
+		<div omni-avatar>AB</div>
+		<div omni-avatar variant="rounded" src="/missing.png" alt="Ada"></div>
+		<div omni-avatar></div>
+		<span omni-badge [badgeContent]="count()"><svg omni-svg-icon titleAccess="Mail"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" /></svg></span>
+		<span omni-badge variant="dot"><svg omni-svg-icon><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" /></svg></span>
+		<span omni-badge [badgeContent]="7" [max]="5"><svg omni-svg-icon><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" /></svg></span>
+	`,
+})
+class BadgesView {
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+	count = () => (this.p()["count"] as number | undefined) ?? 4
+}
+
+@Component({
+	standalone: true,
+	imports: [OmniList, OmniListSubheader, OmniListItem, OmniListItemButton, OmniListItemIcon, OmniListItemText, OmniListItemAction, OmniDivider, OmniSvgIcon],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `
+		<nav aria-label="Mailboxes">
+			<ul omni-list [dense]="!!p().dense">
+				<li omni-list-subheader>Folders</li>
+				<li omni-list-item disablePadding>
+					<button omni-list-item-button selected (click)="log('click:inbox')">
+						<div omni-list-item-icon><svg omni-svg-icon><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4-8 5-8-5V6l8 5 8-5v2z" /></svg></div>
+						<div omni-list-item-text primary="Inbox" secondary="3 new"></div>
+					</button>
+					<button omni-list-item-button disabled (click)="log('click:trash')">Trash</button>
+				</li>
+				<li omni-list-item divider>
+					<div omni-list-item-text primary="Drafts"></div>
+					<button aria-label="Delete drafts" omniListItemAction (click)="log('click:delete')">x</button>
+				</li>
+				<li omni-divider></li>
+			</ul>
+		</nav>
+	`,
+})
+class ListView {
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+}
+
+@Component({
+	standalone: true,
+	imports: [OmniTable, OmniTableContainer, OmniTableRow, OmniTableCell],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `
+		<div omni-table-container>
+			<table omni-table aria-label="Desserts" [size]="$any(p().size)">
+				<thead><tr omni-table-row><th omni-table-cell>Dessert</th><th omni-table-cell align="right">Calories</th></tr></thead>
+				<tbody>
+					<tr omni-table-row hover selected><th omni-table-cell scope="row">Frozen yoghurt</th><td omni-table-cell align="right">159</td></tr>
+					<tr omni-table-row><td omni-table-cell>Ice cream</td><td omni-table-cell align="right">237</td></tr>
+				</tbody>
+				<tfoot><tr omni-table-row><td omni-table-cell>Total</td><td omni-table-cell align="right">396</td></tr></tfoot>
+			</table>
+		</div>
+	`,
+})
+class TableView {
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+}
+
+@Component({
+	standalone: true,
+	imports: [OmniChip],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `
+		<div omni-chip label="Static"></div>
+		<div omni-chip label="Clickable" [clickable]="true" [disabled]="!!p().disabled" (click)="log('click:clickable')"></div>
+		<div omni-chip label="Deletable" [disabled]="!!p().disabled" (delete)="log('delete:deletable')"></div>
+		<div omni-chip label="Outlined" variant="outlined" color="primary" size="small"></div>
+	`,
+})
+class ChipsView {
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+}
+
+@Component({
+	standalone: true,
+	imports: [OmniAccordion, OmniAccordionSummary, OmniAccordionDetails],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `
+		<div>
+			<div omni-accordion (expandedChange)="log('first:' + $event)">
+				<omni-accordion-summary>First question</omni-accordion-summary>
+				<omni-accordion-details>First answer</omni-accordion-details>
+			</div>
+			<div omni-accordion [expanded]="second()" [disabled]="!!p().disabled" (expandedChange)="log('second:' + $event); second.set($event)">
+				<omni-accordion-summary>Second question</omni-accordion-summary>
+				<omni-accordion-details>Second answer</omni-accordion-details>
+			</div>
+		</div>
+	`,
+})
+class AccordionsView {
+	second = signal(false)
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+}
+
+@Component({
+	standalone: true,
+	imports: [OmniTooltip],
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	template: `<button [omniTooltip]="title()" tooltipPlacement="top" [tooltipEnterDelay]="0" [tooltipLeaveDelay]="50" (tooltipOpened)="log('open')" (tooltipClosed)="log('close')">Save</button>`,
+})
+class TooltipView {
+	p = signal<Record<string, unknown>>({})
+	log: Log = () => {}
+	title = () => (this.p()["title"] as string | undefined) ?? "Saves your work"
+}
+
 interface View {
 	p: { set(v: Record<string, unknown>): void; (): Record<string, unknown> }
 	log: Log
@@ -352,6 +525,13 @@ const harness: UiHarness = {
 	slider: (props, log) => mountView(SliderView, props, log),
 	rangeSlider: (props, log) => mountView(RangeSliderView, props, log),
 	rating: (props, log) => mountView(RatingView, props, log),
+	surfaces: (props, log) => mountView(SurfacesView, props, log),
+	badges: (props, log) => mountView(BadgesView, props, log),
+	list: (props, log) => mountView(ListView, props, log),
+	table: (props, log) => mountView(TableView, props, log),
+	chips: (props, log) => mountView(ChipsView, props, log),
+	accordions: (props, log) => mountView(AccordionsView, props, log),
+	tooltip: (props, log) => mountView(TooltipView, props, log),
 	tabs: (props, log) => mountView(TabsView, props, log),
 	settle: async () => {
 		for (const fixture of live) await settle(fixture)

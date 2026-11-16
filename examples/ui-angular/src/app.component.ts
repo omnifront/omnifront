@@ -31,6 +31,7 @@ import {
 	createTheme,
 	type ColorSchemeMode,
 } from "@omnifront/ui-angular"
+import { DisplayComponent } from "./display.component"
 
 // The same page exists for React and Vue (examples/ui-react, examples/ui-vue). The URL sets the
 // starting state (?scheme=dark&theme=brand&open=dialog&tab=queries) so the three can be compared
@@ -77,9 +78,13 @@ const standard = createTheme()
 		OmniTabList,
 		OmniTab,
 		OmniTabPanel,
+		DisplayComponent,
 	],
 	template: `
 		<omni-theme-provider [theme]="custom() ? brand : standard" [colorScheme]="mode()" global>
+			@if (displayView) {
+				<app-display />
+			} @else {
 			<main style="max-width: 880px; margin: 0 auto; padding: 24px; display: grid; gap: 32px; color: var(--omni-palette-text-primary); font: var(--omni-typography-body1-font)">
 				<header style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
 					<h1 style="font: var(--omni-typography-h4-font); margin: 0; flex: 1">omnifront UI</h1>
@@ -264,10 +269,12 @@ const standard = createTheme()
 					</omni-tab-context>
 				</section>
 			</main>
+			}
 		</omni-theme-provider>
 	`,
 })
 export class AppComponent implements AfterViewInit {
+	readonly displayView = params.get("view") === "display"
 	readonly brand = brand
 	readonly standard = standard
 	readonly modes = ["light", "dark", "system"] as const

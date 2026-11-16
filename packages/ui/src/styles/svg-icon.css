@@ -1,0 +1,21 @@
+@layer omnifront {
+	/* SvgIcon: 1em square that fills with the text colour. `data-font-size` sets the size. */
+	.omni-svg-icon {
+		--_main: var(--omni-palette-primary-main);
+		display: inline-block;
+		flex-shrink: 0;
+		inline-size: 1em;
+		block-size: 1em;
+		fill: currentColor;
+		font-size: 1.5rem;
+		user-select: none;
+		transition: fill var(--omni-duration-shorter) var(--omni-easing-ease-in-out);
+	}
+	.omni-svg-icon[data-font-size="small"] { font-size: 1.25rem; }
+	.omni-svg-icon[data-font-size="large"] { font-size: 2.1875rem; }
+	.omni-svg-icon[data-font-size="inherit"] { font-size: inherit; }
+	.omni-svg-icon[data-color="action"] { color: var(--omni-palette-action-active); }
+	.omni-svg-icon[data-color="disabled"] { color: var(--omni-palette-action-disabled); }
+	.omni-svg-icon[data-color]:not([data-color="action"]):not([data-color="disabled"]) { color: var(--_main); }
+	@media (prefers-reduced-motion: reduce) { .omni-svg-icon { transition: none; } }
+}

@@ -30,6 +30,33 @@ export type {
 
 // Behaviour machines
 export * from "./machines"
+export {
+	appBarPart,
+	avatarPart,
+	cardPart,
+	badgeMarkPart,
+	badgeState,
+	displayPart,
+	dividerPart,
+	ICON_PATHS,
+	paperPart,
+	svgIconPart,
+	typographyPart,
+	typographyTag,
+} from "./display"
+export type {
+	AppBarOptions,
+	AvatarOptions,
+	BadgeOptions,
+	BadgeState,
+	CardOptions,
+	DividerOptions,
+	PaperOptions,
+	SvgIconOptions,
+	TypographyColor,
+	TypographyOptions as TypographyPartOptions,
+	TypographyVariantName,
+} from "./display"
 export { buttonPart, iconButtonPart, fabPart, toggleButtonPart } from "./button"
 export type {
 	ButtonColor,

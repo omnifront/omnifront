@@ -195,5 +195,95 @@ for (const framework of Object.keys(frameworks) as Framework[]) {
 			await page.keyboard.press("Space")
 			await expect(page.getByRole("listbox", { name: "Several" })).toBeVisible()
 		})
+
+		test("tooltip: keyboard focus opens it, it describes the button, Escape closes it", async ({ page }) => {
+			await open(page, framework, "view=display")
+			const save = page.getByRole("button", { name: "Save", exact: true })
+			await save.focus()
+			await page.keyboard.press("Shift+Tab") // away and back by keyboard, so focus is "visible"
+			await page.keyboard.press("Tab")
+			const tip = page.getByRole("tooltip")
+			await expect(tip).toHaveText("Saves your work")
+			expect(await save.getAttribute("aria-describedby")).toBe(await tip.getAttribute("id"))
+			await page.keyboard.press("Escape")
+			await expect(tip).toHaveCount(0)
+			await expect(save).not.toHaveAttribute("aria-describedby", /.+/)
+		})
+
+		test("tooltip: hover opens it after a moment, it stays while the pointer is on it, and goes when it leaves", async ({ page }) => {
+			await open(page, framework, "view=display")
+			const hint = page.getByRole("button", { name: "Hover or focus me" })
+			await hint.hover()
+			const tip = page.getByRole("tooltip")
+			await expect(tip).toHaveText("More options below")
+			await tip.hover() // onto the tooltip itself: it stays (hoverable)
+			await page.waitForTimeout(300)
+			await expect(tip).toBeVisible()
+			await page.mouse.move(2, 2)
+			await expect(tip).toHaveCount(0)
+		})
+
+		test("accordion: Enter and Space open and close it, the region is hidden while closed, and opening one does not open another", async ({ page }) => {
+			await open(page, framework, "view=display")
+			const first = page.getByRole("button", { name: "What is an accordion?" })
+			const second = page.getByRole("button", { name: "Controlled by the page" })
+			await expect(first).toHaveAttribute("aria-expanded", "false")
+			await expect(page.getByRole("region", { name: "What is an accordion?" })).toBeHidden()
+			await first.focus()
+			await page.keyboard.press("Enter")
+			await expect(first).toHaveAttribute("aria-expanded", "true")
+			await expect(page.getByRole("region", { name: "What is an accordion?" })).toBeVisible()
+			await expect(second).toHaveAttribute("aria-expanded", "false")
+			await page.keyboard.press("Space")
+			await expect(first).toHaveAttribute("aria-expanded", "false")
+			await expect(page.getByRole("region", { name: "What is an accordion?" })).toBeHidden()
+			await second.click()
+			await expect(second).toHaveAttribute("aria-expanded", "true")
+			await expect(page.getByRole("button", { name: "Disabled", exact: true })).toHaveAttribute("aria-disabled", "true")
+		})
+
+		test("chips: Tab reaches the clickable and deletable chips, Enter and Space press, Backspace and the icon delete", async ({ page }) => {
+			await open(page, framework, "view=display")
+			const status = page.getByRole("status")
+			const clickable = page.getByRole("button", { name: "Clickable" })
+			await clickable.focus()
+			await page.keyboard.press("Enter")
+			await expect(status).toContainText("clicked")
+			await page.keyboard.press("Tab") // on to the deletable chip
+			await page.keyboard.press("Backspace")
+			await expect(status).toContainText("deleted")
+			await clickable.focus()
+			await page.keyboard.press("Space")
+			await expect(status).toContainText("clicked")
+			await page.locator(".omni-chip", { hasText: "Deletable" }).locator(".omni-chip__delete").click() // the icon: a mouse path
+			await expect(status).toContainText("deleted")
+			await expect(page.locator(".omni-chip", { hasText: "Disabled" })).toHaveAttribute("aria-disabled", "true")
+		})
+
+		test("avatars fall back to the generic person when the picture is broken or missing, and not otherwise", async ({ page }) => {
+			await open(page, framework, "view=display")
+			await expect(page.locator(".omni-avatar__fallback:visible")).toHaveCount(2) // the broken picture and the empty avatar
+			await expect(page.locator('.omni-avatar__img[alt="Portrait"]')).toBeVisible()
+		})
+
+		test("a badge sits on the end side of its icon, and the other way round in RTL", async ({ page }) => {
+			await open(page, framework, "view=display")
+			const side = async (): Promise<number> => {
+				const mark = page.locator(".omni-badge__mark", { hasText: "4" })
+				const box = (await mark.boundingBox()) as { x: number; width: number }
+				const parent = (await mark.locator("xpath=..").boundingBox()) as { x: number; width: number }
+				return box.x + box.width / 2 - (parent.x + parent.width / 2)
+			}
+			expect(await side()).toBeGreaterThan(0)
+			await page.evaluate(() => (document.documentElement.dir = "rtl"))
+			expect(await side()).toBeLessThan(0)
+		})
+
+		test("an accordion and a chip do not animate when the user prefers reduced motion", async ({ page }) => {
+			await open(page, framework, "view=display")
+			const duration = (selector: string): Promise<string> => page.locator(selector).first().evaluate((el) => getComputedStyle(el).transitionDuration)
+			expect(await duration(".omni-accordion__region")).toBe("0s")
+			expect(await duration(".omni-chip")).toBe("0s")
+		})
 	})
 }

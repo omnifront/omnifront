@@ -1,0 +1,57 @@
+@layer omnifront {
+	.omni-chip {
+		--_main: var(--omni-palette-text-primary);
+		--_dark: var(--omni-palette-text-primary);
+		--_contrast: var(--omni-palette-background-paper);
+		--_bg: var(--omni-palette-action-selected);
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		box-sizing: border-box;
+		max-inline-size: 100%;
+		block-size: 32px;
+		margin: 0;
+		padding: 0;
+		border: 0;
+		border-radius: 16px;
+		outline: 0;
+		vertical-align: middle;
+		white-space: nowrap;
+		text-decoration: none;
+		user-select: none;
+		font: var(--omni-typography-body2-font);
+		font-size: 0.8125rem;
+		line-height: 1.5;
+		letter-spacing: var(--omni-typography-body2-letter-spacing);
+		color: var(--omni-palette-text-primary);
+		background-color: var(--_bg);
+		-webkit-tap-highlight-color: transparent;
+		transition: background-color var(--omni-duration-short) var(--omni-easing-ease-in-out), box-shadow var(--omni-duration-short) var(--omni-easing-ease-in-out);
+	}
+	.omni-chip[data-size="small"] { block-size: 24px; }
+	.omni-chip[data-clickable] { cursor: pointer; }
+	.omni-chip[data-clickable]:hover, .omni-chip[data-deletable]:hover { background-color: color-mix(in srgb, var(--_bg), var(--omni-palette-text-primary) 8%); }
+	.omni-chip[data-clickable]:focus-visible, .omni-chip[data-deletable]:focus-visible { background-color: color-mix(in srgb, var(--_bg), var(--omni-palette-text-primary) 16%); }
+	.omni-chip[data-disabled] { opacity: 0.38; pointer-events: none; }
+
+	/* colours: filled chips take the palette colour as background, outlined ones as text and border */
+	.omni-chip[data-color]:not([data-color="default"]):not([data-variant="outlined"]) { --_bg: var(--_main); color: var(--_contrast); }
+	.omni-chip[data-color]:not([data-color="default"]):not([data-variant="outlined"]):hover,
+	.omni-chip[data-color]:not([data-color="default"]):not([data-variant="outlined"]):focus-visible { background-color: var(--_dark); }
+	.omni-chip[data-variant="outlined"] { --_bg: transparent; border: 1px solid var(--omni-palette-grey-400); }
+	.omni-chip[data-variant="outlined"]:is([data-clickable], [data-deletable]):hover { background-color: var(--omni-palette-action-hover); }
+	.omni-chip[data-variant="outlined"]:is([data-clickable], [data-deletable]):focus-visible { background-color: var(--omni-palette-action-focus); }
+	.omni-chip[data-variant="outlined"][data-color]:not([data-color="default"]) { color: color-mix(in srgb, var(--_main), var(--omni-palette-text-primary) 30%); border-color: var(--_main); }
+
+	.omni-chip__label { overflow: hidden; text-overflow: ellipsis; padding-inline: 12px; white-space: nowrap; }
+	.omni-chip[data-size="small"] .omni-chip__label { padding-inline: 8px; }
+	.omni-chip__icon, .omni-chip > .omni-avatar { flex-shrink: 0; margin-inline: 5px -6px; }
+	.omni-chip__icon { font-size: 1.125rem; }
+	.omni-chip > .omni-avatar { inline-size: 24px; block-size: 24px; font-size: 0.75rem; }
+	.omni-chip[data-size="small"] > .omni-avatar { inline-size: 18px; block-size: 18px; font-size: 0.625rem; }
+	.omni-chip__delete { flex-shrink: 0; margin-inline: -6px 5px; inline-size: 22px; block-size: 22px; cursor: pointer; fill: currentColor; opacity: 0.6; -webkit-tap-highlight-color: transparent; }
+	.omni-chip__delete:hover { opacity: 0.9; }
+	.omni-chip[data-size="small"] .omni-chip__delete { inline-size: 16px; block-size: 16px; margin-inline: -4px 4px; }
+	@media (prefers-reduced-motion: reduce) { .omni-chip { transition: none; } }
+}
