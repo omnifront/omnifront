@@ -31,6 +31,7 @@ import {
 	createTheme,
 	type ColorSchemeMode,
 } from "@omnifront/ui-angular"
+import { DisplayComponent } from "./display.component"
 
 // The same page exists for React and Vue (examples/ui-react, examples/ui-vue). The URL sets the
 // starting state (?scheme=dark&theme=brand&open=dialog&tab=queries) so the three can be compared
@@ -77,9 +78,13 @@ const standard = createTheme()
 		OmniTabList,
 		OmniTab,
 		OmniTabPanel,
+		DisplayComponent,
 	],
 	template: `
 		<omni-theme-provider [theme]="custom() ? brand : standard" [colorScheme]="mode()" global>
+			@if (displayView) {
+				<app-display />
+			} @else {
 			<main style="max-width: 880px; margin: 0 auto; padding: 24px; display: grid; gap: 32px; color: var(--omni-palette-text-primary); font: var(--omni-typography-body1-font)">
 				<header style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap">
 					<h1 style="font: var(--omni-typography-h4-font); margin: 0; flex: 1">omnifront UI</h1>
@@ -162,6 +167,12 @@ const standard = createTheme()
 						<omni-slider aria-label="Temperature" [defaultValue]="20" [min]="0" [max]="40" [step]="10" [marks]="marks" color="secondary" />
 						<omni-slider aria-label="Small" size="small" [defaultValue]="60" />
 						<omni-slider aria-label="Disabled" disabled [defaultValue]="40" />
+						<omni-slider aria-label="Price" range [defaultValue]="[20, 60]" valueLabelDisplay="on" />
+					</div>
+					<div style="display: flex; gap: 24px; align-items: center">
+						<omni-slider aria-label="Level" orientation="vertical" [length]="160" [defaultValue]="40" valueLabelDisplay="auto" />
+						<omni-slider aria-label="Band" orientation="vertical" [length]="160" range [defaultValue]="[20, 70]" [marks]="bandMarks" color="secondary" />
+						<omni-slider aria-label="Vertical disabled" orientation="vertical" [length]="160" disabled [defaultValue]="60" />
 					</div>
 					<div style="display: flex; gap: 32px; flex-wrap: wrap; align-items: center">
 						<omni-rating aria-label="Rating" [value]="stars()" (valueChange)="stars.set($event)" />
@@ -178,6 +189,8 @@ const standard = createTheme()
 						<omni-select label="Filled" variant="filled" [options]="fruit" defaultValue="c" />
 						<omni-select label="Standard" variant="standard" [options]="fruit" />
 						<omni-select label="Several" multiple [options]="fruit" [defaultValue]="['a', 'c']" />
+						<omni-select label="Grouped" [options]="grouped" defaultValue="c" [optionTemplate]="rich" />
+						<ng-template #rich let-option><strong>{{ option.label }}</strong> <small style="color: var(--omni-palette-text-secondary)">{{ option.value }}</small></ng-template>
 						<omni-select label="Error" error [options]="fruit" helperText="Required" />
 						<omni-select label="Disabled" disabled [options]="fruit" defaultValue="a" />
 					</div>
@@ -256,10 +269,12 @@ const standard = createTheme()
 					</omni-tab-context>
 				</section>
 			</main>
+			}
 		</omni-theme-provider>
 	`,
 })
 export class AppComponent implements AfterViewInit {
+	readonly displayView = params.get("view") === "display"
 	readonly brand = brand
 	readonly standard = standard
 	readonly modes = ["light", "dark", "system"] as const
@@ -269,6 +284,11 @@ export class AppComponent implements AfterViewInit {
 	readonly dialog = signal(params.get("open") === "dialog")
 	readonly anchor = signal<HTMLElement | null>(null)
 	readonly tab = signal(params.get("tab") ?? "overview")
+	readonly grouped = [
+		{ label: "Fruit", options: [{ value: "a", label: "Apple" }, { value: "b", label: "Banana" }] },
+		{ label: "Vegetables", options: [{ value: "c", label: "Carrot" }, { value: "d", label: "Daikon", disabled: true }] },
+	]
+	readonly bandMarks = [{ value: 0, label: "0" }, { value: 50, label: "50" }, { value: 100, label: "100" }]
 	readonly fruit = [
 		{ value: "a", label: "Apple" },
 		{ value: "b", label: "Banana", disabled: true },

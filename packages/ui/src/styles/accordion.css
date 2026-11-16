@@ -1,0 +1,58 @@
+@layer omnifront {
+	.omni-accordion {
+		position: relative;
+		color: var(--omni-palette-text-primary);
+		background-color: var(--omni-palette-background-paper);
+		background-image: none;
+		box-shadow: var(--omni-shadow-1);
+		transition: margin var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
+	}
+	/* one hairline between neighbours, rounded ends for a stack of them */
+	.omni-accordion + .omni-accordion::before { content: ""; position: absolute; inset-block-start: -1px; inset-inline: 0; block-size: 1px; background-color: var(--omni-palette-divider); }
+	.omni-accordion:first-child { border-start-start-radius: var(--omni-shape-border-radius); border-start-end-radius: var(--omni-shape-border-radius); }
+	.omni-accordion:last-child { border-end-start-radius: var(--omni-shape-border-radius); border-end-end-radius: var(--omni-shape-border-radius); }
+	.omni-accordion[data-expanded] { margin-block: 16px; }
+	.omni-accordion[data-expanded]:first-child { margin-block-start: 0; }
+	.omni-accordion[data-expanded]:last-child { margin-block-end: 0; }
+	.omni-accordion[data-expanded] + .omni-accordion::before, .omni-accordion[data-expanded]::before { display: none; }
+	.omni-accordion__heading { margin: 0; font: inherit; }
+	.omni-accordion__summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		box-sizing: border-box;
+		inline-size: 100%;
+		min-block-size: 48px;
+		margin: 0;
+		padding: 0 16px;
+		border: 0;
+		outline: 0;
+		cursor: pointer;
+		text-align: start;
+		font: var(--omni-typography-body1-font);
+		letter-spacing: var(--omni-typography-body1-letter-spacing);
+		color: inherit;
+		background: none;
+		-webkit-tap-highlight-color: transparent;
+		transition: min-height var(--omni-duration-shortest) var(--omni-easing-ease-in-out), background-color var(--omni-duration-shortest) var(--omni-easing-ease-in-out);
+	}
+	.omni-accordion[data-expanded] .omni-accordion__summary { min-block-size: 64px; }
+	.omni-accordion__summary:focus-visible { background-color: var(--omni-palette-action-focus); }
+	.omni-accordion__summary[aria-disabled="true"] { cursor: default; opacity: 0.38; }
+	.omni-accordion__summary-content { display: flex; flex-grow: 1; margin-block: 12px; }
+	.omni-accordion[data-expanded] .omni-accordion__summary-content { margin-block: 20px; }
+	.omni-accordion__icon { display: flex; margin-inline-end: -12px; color: var(--omni-palette-action-active); transition: transform var(--omni-duration-short) var(--omni-easing-ease-in-out); }
+	.omni-accordion__icon svg { inline-size: 1.5rem; block-size: 1.5rem; fill: currentColor; }
+	.omni-accordion[data-expanded] .omni-accordion__icon { transform: rotate(180deg); }
+	/* The region is always in the DOM. Closed: no height and `visibility: hidden` (so it leaves the accessibility tree and Tab order), after the height has finished shrinking. */
+	.omni-accordion__region {
+		display: grid;
+		grid-template-rows: 0fr;
+		visibility: hidden;
+		transition: grid-template-rows var(--omni-duration-short) var(--omni-easing-ease-in-out), visibility 0s linear var(--omni-duration-short);
+	}
+	.omni-accordion__region[data-state="open"] { grid-template-rows: 1fr; visibility: visible; transition: grid-template-rows var(--omni-duration-short) var(--omni-easing-ease-in-out), visibility 0s; }
+	.omni-accordion__region-inner { min-block-size: 0; overflow: hidden; }
+	.omni-accordion__details { padding: 8px 16px 16px; }
+	@media (prefers-reduced-motion: reduce) { .omni-accordion, .omni-accordion__summary, .omni-accordion__icon, .omni-accordion__region { transition: none; } }
+}

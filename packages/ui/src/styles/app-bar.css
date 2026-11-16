@@ -1,0 +1,58 @@
+@layer omnifront {
+	/* AppBar: the <header> at the top of a page. */
+	.omni-app-bar {
+		--_main: var(--omni-palette-primary-main);
+		--_contrast: var(--omni-palette-primary-contrast-text);
+		position: fixed;
+		inset-block-start: 0;
+		inset-inline: 0;
+		z-index: var(--omni-z-app-bar);
+		display: flex;
+		flex-direction: column;
+		flex-shrink: 0;
+		box-sizing: border-box;
+		inline-size: 100%;
+		color: var(--_contrast);
+		background-color: var(--_main);
+		background-image: none;
+	}
+	.omni-app-bar[data-position="absolute"] { position: absolute; }
+	.omni-app-bar[data-position="sticky"] { position: sticky; }
+	.omni-app-bar[data-position="relative"] { position: relative; }
+	.omni-app-bar[data-position="static"] { position: static; }
+	/* a step off the paper colour, in light and in dark */
+	.omni-app-bar[data-color="default"] { color: var(--omni-palette-text-primary); background-color: color-mix(in srgb, var(--omni-palette-background-paper), var(--omni-palette-text-primary) 6%); }
+	.omni-app-bar[data-color="transparent"] { color: inherit; background-color: transparent; }
+	.omni-app-bar[data-color="inherit"] { color: inherit; background-color: inherit; }
+	.omni-app-bar[data-elevation="0"] { box-shadow: var(--omni-shadow-0); }
+	.omni-app-bar[data-elevation="1"] { box-shadow: var(--omni-shadow-1); }
+	.omni-app-bar[data-elevation="2"] { box-shadow: var(--omni-shadow-2); }
+	.omni-app-bar[data-elevation="3"] { box-shadow: var(--omni-shadow-3); }
+	.omni-app-bar[data-elevation="4"] { box-shadow: var(--omni-shadow-4); }
+	.omni-app-bar[data-elevation="5"] { box-shadow: var(--omni-shadow-5); }
+	.omni-app-bar[data-elevation="6"] { box-shadow: var(--omni-shadow-6); }
+	.omni-app-bar[data-elevation="7"] { box-shadow: var(--omni-shadow-7); }
+	.omni-app-bar[data-elevation="8"] { box-shadow: var(--omni-shadow-8); }
+	.omni-app-bar[data-elevation="9"] { box-shadow: var(--omni-shadow-9); }
+	.omni-app-bar[data-elevation="10"] { box-shadow: var(--omni-shadow-10); }
+	.omni-app-bar[data-elevation="11"] { box-shadow: var(--omni-shadow-11); }
+	.omni-app-bar[data-elevation="12"] { box-shadow: var(--omni-shadow-12); }
+	.omni-app-bar[data-elevation="13"] { box-shadow: var(--omni-shadow-13); }
+	.omni-app-bar[data-elevation="14"] { box-shadow: var(--omni-shadow-14); }
+	.omni-app-bar[data-elevation="15"] { box-shadow: var(--omni-shadow-15); }
+	.omni-app-bar[data-elevation="16"] { box-shadow: var(--omni-shadow-16); }
+	.omni-app-bar[data-elevation="17"] { box-shadow: var(--omni-shadow-17); }
+	.omni-app-bar[data-elevation="18"] { box-shadow: var(--omni-shadow-18); }
+	.omni-app-bar[data-elevation="19"] { box-shadow: var(--omni-shadow-19); }
+	.omni-app-bar[data-elevation="20"] { box-shadow: var(--omni-shadow-20); }
+	.omni-app-bar[data-elevation="21"] { box-shadow: var(--omni-shadow-21); }
+	.omni-app-bar[data-elevation="22"] { box-shadow: var(--omni-shadow-22); }
+	.omni-app-bar[data-elevation="23"] { box-shadow: var(--omni-shadow-23); }
+	.omni-app-bar[data-elevation="24"] { box-shadow: var(--omni-shadow-24); }
+
+	/* Toolbar: the row inside it. 56px on narrow screens, 64px from 600px (Material). */
+	.omni-toolbar { position: relative; display: flex; align-items: center; min-block-size: 56px; padding-inline: 16px; }
+	@media (min-width: 600px) { .omni-toolbar { min-block-size: 64px; padding-inline: 24px; } }
+	.omni-toolbar[data-variant="dense"] { min-block-size: 48px; }
+	.omni-toolbar[data-disable-gutters] { padding-inline: 0; }
+}

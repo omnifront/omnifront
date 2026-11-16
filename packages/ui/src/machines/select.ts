@@ -9,10 +9,24 @@ export interface SelectOption {
 	disabled?: boolean | undefined
 }
 
+/** A labelled set of options. Groups do not nest. */
+export interface SelectGroup {
+	label: string
+	options: readonly SelectOption[]
+}
+
+/** What `options` holds: options and groups of options, in the order shown. */
+export type SelectItem = SelectOption | SelectGroup
+
+export const isSelectGroup = (item: SelectItem): item is SelectGroup => "options" in item
+
+/** Every option in display order, with the groups taken apart. */
+export const flattenOptions = (items: readonly SelectItem[]): SelectOption[] => items.flatMap((item) => (isSelectGroup(item) ? item.options : [item]))
+
 export interface SelectProps extends OpenProps {
 	/** Base for the ids of the trigger and the list. Use the same `id` as the field machine so the label links up. */
 	id: string
-	options: readonly SelectOption[]
+	options: readonly SelectItem[]
 	/** Controlled value. Leave undefined to let the machine keep its own. `""` means nothing is selected. */
 	value?: string | undefined
 	defaultValue?: string | undefined
@@ -74,13 +88,14 @@ export class Select extends OpenMachine<SelectProps, SelectState> {
 		const multiple = this.props.multiple === true
 		const values = stableList(this.peek()?.values, multiple ? [...(this.props.values ?? this.internalValues)] : [])
 		const value = this.props.value ?? this.internalValue
-		const selected = this.props.options.find((o) => o.value === value)
+		const all = flattenOptions(this.props.options)
+		const selected = all.find((o) => o.value === value)
 		return {
 			...this.openState(),
 			id: this.props.id,
 			value: multiple ? undefined : value,
 			label: multiple
-				? this.props.options.filter((o) => values.includes(o.value)).map((o) => o.label).join(", ")
+				? all.filter((o) => values.includes(o.value)).map((o) => o.label).join(", ")
 				: (selected?.label ?? ""),
 			filled: multiple ? values.length > 0 : value !== undefined && value !== "",
 			disabled: this.props.disabled === true,
@@ -156,7 +171,7 @@ export class Select extends OpenMachine<SelectProps, SelectState> {
 			this.typed = now - this.typedAt > 500 ? e.key.toLowerCase() : this.typed + e.key.toLowerCase()
 			this.typedAt = now
 			const order = [...items.slice(current + 1), ...items.slice(0, current + 1)]
-			const hit = order.find((el) => (el.textContent ?? "").trim().toLowerCase().startsWith(this.typed))
+			const hit = order.find((el) => (el.dataset["label"] ?? el.textContent ?? "").trim().toLowerCase().startsWith(this.typed))
 			if (hit) {
 				e.preventDefault()
 				hit.focus()
@@ -197,6 +212,19 @@ export class Select extends OpenMachine<SelectProps, SelectState> {
 		}
 	}
 
+	/**
+	 * Attributes for the group at `index` in `options`: `root` is the wrapper (`role="presentation"`),
+	 * `label` the heading, `list` the element that holds the group's options (`role="group"`, named by the heading).
+	 */
+	group(index: number): { root: Part; label: Part; list: Part } {
+		const labelId = `${this.props.id}-group-${index}`
+		return {
+			root: part({ role: "presentation" }),
+			label: part({ id: labelId, role: "presentation" }),
+			list: part({ role: "group", "aria-labelledby": labelId }),
+		}
+	}
+
 	/** Attributes and click handler for one option. A disabled option cannot be chosen or focused by the arrows. */
 	option(option: SelectOption): Part {
 		const s = this.getSnapshot()
@@ -207,6 +235,8 @@ export class Select extends OpenMachine<SelectProps, SelectState> {
 				role: "option",
 				tabindex: -1,
 				"data-value": option.value,
+				// what type-ahead matches, whatever the option shows
+				"data-label": option.label,
 				"aria-selected": selected ? "true" : "false",
 				"aria-disabled": disabled ? "true" : undefined,
 				"data-selected": selected ? "" : undefined,

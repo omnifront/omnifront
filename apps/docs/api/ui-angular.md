@@ -1,6 +1,6 @@
 # @omnifront/ui-angular
 
-Standalone Angular components for the UI kit (Angular 17 or newer; `@angular/forms` is a peer, because `omni-text-field` is a `ControlValueAccessor`). About 7.1 KB gzipped (excluding Angular and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui).
+Standalone Angular components for the UI kit (Angular 17 or newer; `@angular/forms` is a peer, because `omni-text-field` is a `ControlValueAccessor`). About 19.3 KB gzipped (excluding Angular and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui).
 
 Components that wrap a native element use an attribute selector (`button[omni-button]`, `li[omniMenuItem]`) so the element keeps its HTML meaning. Boolean inputs accept the bare attribute (`<button omni-button disabled>`). Add `@omnifront/ui/styles.css` to your global styles.
 
@@ -61,7 +61,7 @@ Buttons that stay pressed. Group inputs: `value` / `defaultValue` (a list; with 
 <omni-slider aria-label="Volume" [value]="volume()" (valueChange)="volume.set($event)" valueLabelDisplay="auto" />
 ```
 
-A real `<input type="range">`, so dragging, the keys, forms and screen readers are native. Inputs: `value` / `defaultValue`, `min`, `max`, `step`, `marks` (`true` or a list of `SliderMark`: `{ value, label? }`), `valueLabelDisplay` (`auto`, `on`, `off`), `valueLabelFormat`, `getAriaValueText`, `size`, `color`, `disabled`, `name`, `aria-label`; output `valueChange`. Not yet: two thumbs and a vertical slider.
+A real `<input type="range">`, so dragging, the keys, forms and screen readers are native. Inputs: `value` / `defaultValue` (a number, or with `range` a `[lower, upper]` pair; the lower thumb cannot pass the upper one, and the thumbs are named after `aria-label` with "minimum" and "maximum" added), `range`, `orientation` (`vertical` puts the smallest value at the bottom), `length` (the height of a vertical slider, default 200px), `min`, `max`, `step`, `marks` (`true` or a list of `SliderMark`: `{ value, label? }`), `valueLabelDisplay` (`auto`, `on`, `off`), `valueLabelFormat`, `getAriaValueText`, `size`, `color`, `disabled`, `name`, `aria-label`; output `valueChange`.
 
 ### `OmniRating`
 
@@ -113,7 +113,7 @@ A labelled group of related controls (a `<fieldset>` with a `<legend>`), for exa
 <omni-select label="Fruit" [options]="fruits" [(value)]="fruit" />
 ```
 
-Looks like a text field and opens a list of options. Inputs: `label`, `options` (`SelectOption[]`: `{ value, label, disabled? }`), `value`, `defaultValue`, `open`, `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`), `id`. Outputs: `valueChange`, `openChange`, and `closed` with a `SelectCloseEvent` (`{ reason, event }`; `SelectCloseReason` is `escapeKeyDown`, `outsidePress`, `tab`, `select`, `trigger` or `programmatic`). Works with `ngModel` and reactive forms. The list moves to a portal in `<body>` while it is open. The options are data, not children, so every framework shows the chosen label the same way, including on the server.
+Looks like a text field and opens a list of options. Inputs: `label`, `options` (a list of `SelectItem`: options, `{ value, label, disabled? }`, and `SelectGroup`s of them, `{ label, options }`), `optionTemplate` (a `TemplateRef` of `SelectOptionContext`, which has the option and `selected`, for what an option looks like in the open list: `<ng-template let-option let-selected="selected">`; the closed select and type-ahead still use the `label`), `value`, `defaultValue`, `open`, `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`), `id`. Outputs: `valueChange`, `openChange`, and `closed` with a `SelectCloseEvent` (`{ reason, event }`; `SelectCloseReason` is `escapeKeyDown`, `outsidePress`, `tab`, `select`, `trigger` or `programmatic`). Works with `ngModel` and reactive forms. The list moves to a portal in `<body>` while it is open. The options are data, not children, so every framework shows the chosen label the same way, including on the server.
 
 ### `OmniDialog`
 
@@ -126,3 +126,78 @@ Looks like a text field and opens a list of options. Inputs: `label`, `options` 
 ### `OmniTabContext`
 
 `<omni-tab-context [(value)]="tab">`. Inputs: `value`, `defaultValue`, `orientation`, `selectionFollowsFocus`. Output: `valueChange`. Holds the selection for `OmniTabList` (`<omni-tab-list label="…">`: inputs `color`, `variant`, `centered`, `label`), `OmniTab` (`<button omni-tab value="a" label="A">`: inputs `value`, `label`, `disabled`) and `OmniTabPanel` (`<omni-tab-panel value="a">`: inputs `value`, `keepMounted`). `OMNI_TABS` is the token they inject.
+
+### `OmniTypography`
+
+`<h2 omni-typography variant="h5" gutterBottom>`: an attribute directive for any element; the element is your choice (an Angular template cannot pick a tag from an input, so there is no default per variant). Inputs: `variant`, `align`, `color`, `gutterBottom`, `noWrap`, `paragraph`.
+
+### `OmniPaper`
+
+`<div omni-paper [elevation]="4">`. Inputs: `elevation` (0 to 24, default 1), `variant` (`elevation` or `outlined`), `square`.
+
+### `OmniCard`
+
+`<div omni-card>`: inputs `variant`, `raised`. Parts: `OmniCardHeader` (`<div omni-card-header title="…" subheader="…">`; put `omniCardAvatar` (`OmniCardAvatar`) on the avatar and `omniCardAction` (`OmniCardAction`) on the action), `OmniCardContent` (`[omni-card-content]`), `OmniCardActions` (`[omni-card-actions]`) and `OmniCardMedia` (`<img omni-card-media src="…" alt="">`).
+
+### `OmniDivider`
+
+`<hr omni-divider>`, `<li omni-divider>` in a list, or `<div omni-divider>Text</div>` for text in the line (a `role="separator"` `div`). Inputs: `orientation`, `variant`, `flexItem`, `textAlign`.
+
+### `OmniAvatar`
+
+`<div omni-avatar src="…" alt="Ada">AB</div>`. Inputs: `variant`, `src`, `srcSet`, `alt`; the content is the fallback (initials, an icon), then a generic person.
+
+### `OmniBadge`
+
+`<span omni-badge [badgeContent]="4" color="primary"><svg omni-svg-icon>…</svg></span>`. Inputs: `badgeContent`, `max`, `showZero`, `variant`, `invisible`, `color`, `anchorOrigin`, `overlap`.
+
+### `OmniSvgIcon`
+
+`<svg omni-svg-icon fontSize="large"><path d="…" /></svg>`. Inputs: `fontSize`, `color`, `viewBox`, `titleAccess` (`role="img"` and that name; without it the icon is `aria-hidden`).
+
+### `OmniAppBar`
+
+`<header omni-app-bar position="static">`: inputs `position` (default `fixed`), `color`, `elevation` (default 4). `OmniToolbar` (`<div omni-toolbar>`: inputs `variant`, `disableGutters`) is the row inside it.
+
+### `OmniList`
+
+```html
+<nav aria-label="Mailboxes">
+  <ul omni-list>
+    <li omni-list-subheader>Folders</li>
+    <li omni-list-item disablePadding>
+      <button omni-list-item-button selected><div omni-list-item-icon>…</div><div omni-list-item-text primary="Inbox" secondary="3 new"></div></button>
+    </li>
+  </ul>
+</nav>
+```
+
+Inputs: `dense`, `disablePadding`. Parts: `OmniListItem` (`li[omni-list-item]`: `divider`, `disablePadding`, `disableGutters`; an element with `omniListItemAction` (`OmniListItemAction`) goes at the far end), `OmniListItemButton` (`button[omni-list-item-button]` or `a[...]`: `selected`, `disabled`), `OmniListItemIcon`, `OmniListItemText` (`primary`, `secondary`) and `OmniListSubheader` (`li[omni-list-subheader]`: `disableSticky`).
+
+### `OmniTable`
+
+`<table omni-table size="small">` with native `thead`, `tbody`, `tfoot` and `tr[omni-table-row]` (`OmniTableRow`: `hover`, `selected`), `td[omni-table-cell]` / `th[omni-table-cell]` (`OmniTableCell`: `align`, `padding`, `variant`; a `th` without `scope` gets `scope="col"`, so write `scope="row"` for a row header) and `OmniTableContainer` (`[omni-table-container]`). Inputs of `omni-table`: `size`, `stickyHeader`. A cell in `thead` or `tfoot` is styled by where it is, so no extra input is needed.
+
+### `OmniChip`
+
+`<div omni-chip label="React" clickable (click)="filter()" (delete)="remove()">`. Inputs: `label`, `variant`, `color`, `size`, `clickable`, `disabled`. Output: `delete`. Angular cannot tell whether a plain `(click)` is bound, so say `clickable`; a `(delete)` listener shows the delete icon (Backspace or Delete on the focused chip fires it too). An `omni-avatar` inside is shown at the start; an element with `omniChipIcon` (`OmniChipIcon`) is the icon.
+
+### `OmniAccordion`
+
+```html
+<div omni-accordion [(expanded)]="open">
+  <omni-accordion-summary>Question</omni-accordion-summary>
+  <omni-accordion-details>Answer</omni-accordion-details>
+</div>
+```
+
+Inputs: `expanded`, `defaultExpanded`, `disabled`. Output: `expandedChange`. `OmniAccordionSummary` (input `headingLevel`; an element with `omniExpandIcon` (`OmniExpandIcon`) replaces the chevron) and `OmniAccordionDetails`. `OMNI_ACCORDION` is the token they inject.
+
+### `OmniTooltip`
+
+```html
+<button omni-button omniTooltip="Saves your work" tooltipPlacement="top">Save</button>
+```
+
+A directive for the element it describes (text only). Inputs: `omniTooltip` (the text; empty means no tooltip), `tooltipPlacement`, `tooltipOpen`, `tooltipEnterDelay`, `tooltipLeaveDelay`, `tooltipDisableInteractive`. Outputs: `tooltipOpened`, `tooltipClosed`. Same behaviour as React. The tooltip itself is an `OmniTooltipPanel`, created for you and moved to a portal in `<body>`; you never write it.
+

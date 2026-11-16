@@ -57,6 +57,12 @@ export interface UiHarness {
 	 */
 	slider(props: { disabled?: boolean }, log: (event: string) => void): UiHandle
 	/**
+	 * A range Slider (two thumbs, aria-label "Price", 0 to 100, step 10, value labels always on) whose
+	 * `[lower, upper]` is held by the host (starts at 20 and 80). Logs `change:<lower>,<upper>`. With
+	 * `vertical` (set at mount) it is vertical.
+	 */
+	rangeSlider(props: { vertical?: boolean; disabled?: boolean }, log: (event: string) => void): UiHandle
+	/**
 	 * A Rating (aria-label "Rating", 5 stars, whole steps) whose value is held by the host (starts at
 	 * 0). `readOnly` makes it show 3. Logs `change:<number>`.
 	 */
@@ -80,10 +86,65 @@ export interface UiHarness {
 	 */
 	select(props: { error?: boolean; disabled?: boolean; multiple?: boolean }, log: (event: string) => void): UiHandle
 	/**
+	 * A Select labelled "Food" with two groups: "Fruit" (options "Apple" value `a`, "Banana" value `b`,
+	 * disabled) and "Vegetables" ("Carrot" value `c`, "Daikon" value `d`). Each option in the open list
+	 * is drawn with custom content: `<span data-rich>{label}</span><small>{value}</small>`. Chosen value
+	 * held by the host (starts empty). Logs `change:<value>` and `close:<reason>`.
+	 */
+	selectGroups(props: Record<string, never>, log: (event: string) => void): UiHandle
+	/**
 	 * Tabs labelled "Sections": "One", "Two" (disabled), "Three", with panels "First panel",
 	 * "Second panel", "Third panel", controlled by the host. Logs `change:<value>`.
 	 */
 	tabs(props: { selectionFollowsFocus?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * Surfaces, in this order: an AppBar (position static, colour primary) holding a Toolbar with a
+	 * `h1` Typography (variant h6) "Dashboard"; a `p` Typography "Plain text"; a Paper (elevation 3)
+	 * with "Paper text"; a Card (`raised` from props) with a CardHeader (title "Card title", subheader
+	 * "Card subheader", an Avatar "A"), CardContent "Card body" and CardActions with a "Share" button
+	 * (logs `click:share`); an `hr` Divider; and a Divider with the text "Or".
+	 */
+	surfaces(props: { raised?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * In this order: an Avatar "AB" (initials); an Avatar (variant rounded) with `src` "/missing.png"
+	 * and alt "Ada" (its picture will fail to load); an Avatar with nothing in it; a Badge with
+	 * `badgeContent` from props (`count`, starts 4) around an SvgIcon (titleAccess "Mail"); a dot Badge
+	 * around a decorative SvgIcon; and a Badge with `badgeContent` 7 and `max` 5.
+	 */
+	badges(props: { count?: number }, log: (event: string) => void): UiHandle
+	/**
+	 * A `nav` labelled "Mailboxes" holding a List (a `ul`) with: a ListSubheader "Folders"; a ListItem (no padding) holding a
+	 * selected ListItemButton with an icon, primary "Inbox", secondary "3 new" (logs `click:inbox`);
+	 * a disabled ListItemButton "Trash" (logs `click:trash`); a ListItem "Drafts" with a divider and
+	 * a secondary action IconButton (aria-label "Delete drafts", logs `click:delete`); and a Divider
+	 * as `li`. `dense` comes from props.
+	 */
+	list(props: { dense?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A TableContainer with a Table (aria-label "Desserts", `size` from props) whose head has a row
+	 * with "Dessert" and a right-aligned "Calories"; whose body has two rows, the first `selected` and
+	 * `hover`: "Frozen yoghurt" (a row header: `th` scope "row") with 159, and "Ice cream" with 237;
+	 * and whose footer has "Total" and 396.
+	 */
+	table(props: { size?: "small" | "medium" }, log: (event: string) => void): UiHandle
+	/**
+	 * Four Chips: "Static" (nothing), "Clickable" (logs `click:clickable`), "Deletable" (logs
+	 * `delete:deletable`; its parent also reacts to the keyboard), and "Outlined" (variant outlined,
+	 * colour primary, size small). `disabled` disables the clickable and the deletable one.
+	 */
+	chips(props: { disabled?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * Two Accordions. "First" (summary "First question", details "First answer") is uncontrolled and
+	 * starts closed; it logs `first:<true|false>`. "Second" (summary "Second question", details "Second
+	 * answer") is controlled by the host (starts closed) and logs `second:<true|false>`. `disabled`
+	 * disables the second.
+	 */
+	accordions(props: { disabled?: boolean }, log: (event: string) => void): UiHandle
+	/**
+	 * A "Save" button with a Tooltip saying "Saves your work" (placement top, enterDelay 0, leaveDelay 50).
+	 * Logs `open` and `close`. `title` can be changed (`""` turns the tooltip off).
+	 */
+	tooltip(props: { title?: string }, log: (event: string) => void): UiHandle
 	/** Wait until the framework has applied pending updates and effects. */
 	settle(): Promise<void>
 }
@@ -94,6 +155,15 @@ const byText = (selector: string, text: string): HTMLElement =>
 	$$(selector).find((el) => el.textContent?.trim() === text) as HTMLElement
 const keydown = (el: Element, key: string): void => void el.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }))
 const pointerdown = (el: Element): void => void el.dispatchEvent(new Event("pointerdown", { bubbles: true }))
+/** A pointer arriving: `pointerover` too, because React builds its enter and leave events from over and out. */
+const pointerEnter = (el: Element): void => {
+	el.dispatchEvent(new Event("pointerover", { bubbles: true }))
+	el.dispatchEvent(new Event("pointerenter"))
+}
+const pointerLeave = (el: Element): void => {
+	el.dispatchEvent(new Event("pointerout", { bubbles: true }))
+	el.dispatchEvent(new Event("pointerleave"))
+}
 function type(input: HTMLInputElement, value: string): void {
 	// The native setter, so frameworks that track the value (React) still see a change.
 	Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, value)
@@ -392,6 +462,58 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				expect(range().disabled).toBe(true)
 				expect($(".omni-slider").hasAttribute("data-disabled")).toBe(true)
 			})
+
+			describe("range (two thumbs)", () => {
+				const thumbs = (): HTMLInputElement[] => $$<HTMLInputElement>('input[type="range"]')
+				const moveThumb = (index: number, value: string): void => {
+					const input = thumbs()[index] as HTMLInputElement
+					Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set?.call(input, value)
+					input.dispatchEvent(new Event("input", { bubbles: true }))
+				}
+
+				it("two native range inputs, each named, with the lower and upper value, and a drawn rail", async () => {
+					mount(h.rangeSlider({}, log))
+					await h.settle()
+					expect(thumbs().map((t) => t.getAttribute("aria-label"))).toEqual(["Price minimum", "Price maximum"])
+					expect(thumbs().map((t) => t.value)).toEqual(["20", "80"])
+					expect(thumbs().every((t) => t.min === "0" && t.max === "100" && t.step === "10")).toBe(true)
+					expect(new Set(thumbs().map((t) => t.id)).size).toBe(2)
+					expect($(".omni-slider").hasAttribute("data-range")).toBe(true)
+					expect($(".omni-slider__rail .omni-slider__fill")).not.toBeNull()
+					const style = $(".omni-slider").getAttribute("style") ?? ""
+					expect(style).toContain("--omni-slider-start: 20")
+					expect(style).toContain("--omni-slider-percent: 80")
+					expect($$(".omni-slider__label").map((l) => l.textContent)).toEqual(["20", "80"])
+				})
+
+				it("each thumb reports both values; the lower cannot pass the upper and the control is put back", async () => {
+					mount(h.rangeSlider({}, log))
+					await h.settle()
+					moveThumb(1, "50")
+					await h.settle()
+					moveThumb(0, "90") // past the upper thumb (now 50): stops there
+					await h.settle()
+					expect(events).toEqual(["change:20,50", "change:50,50"])
+					expect(thumbs().map((t) => t.value)).toEqual(["50", "50"])
+					moveThumb(1, "10") // below the lower thumb: stops there too
+					await h.settle()
+					expect(thumbs().map((t) => t.value)).toEqual(["50", "50"])
+					expect(events).toEqual(["change:20,50", "change:50,50"])
+				})
+
+				it("vertical: both thumbs say so, and the root is vertical", async () => {
+					mount(h.rangeSlider({ vertical: true }, log))
+					await h.settle()
+					expect(thumbs().map((t) => t.getAttribute("aria-orientation"))).toEqual(["vertical", "vertical"])
+					expect($(".omni-slider").dataset["orientation"]).toBe("vertical")
+				})
+
+				it("disabled disables both thumbs", async () => {
+					mount(h.rangeSlider({ disabled: true }, log))
+					await h.settle()
+					expect(thumbs().every((t) => t.disabled)).toBe(true)
+				})
+			})
 		})
 
 		describe("Rating", () => {
@@ -632,6 +754,28 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				expect(events).not.toContain("close:select")
 			})
 
+			it("groups: each is a labelled group of options, options can show custom content, typing still matches the label", async () => {
+				mount(h.selectGroups({}, log))
+				await h.settle()
+				combobox().click()
+				await h.settle()
+				await new Promise((r) => setTimeout(r, 50))
+				const groups = $$('[role="group"]')
+				expect(groups.map((g) => document.getElementById(g.getAttribute("aria-labelledby") as string)?.textContent?.trim())).toEqual(["Fruit", "Vegetables"])
+				expect(groups.map((g) => Array.from(g.querySelectorAll('[role="option"]')).map((o) => o.getAttribute("data-value")))).toEqual([["a", "b"], ["c", "d"]])
+				expect($$("[data-rich]").map((el) => el.textContent)).toEqual(["Apple", "Banana", "Carrot", "Daikon"])
+				expect($('[role="option"][data-value="b"]').getAttribute("aria-disabled")).toBe("true")
+				expect(document.activeElement).toBe($$('[role="option"]')[0])
+				keydown(document.activeElement as Element, "d") // the option shows more than its label; typing matches the label
+				const target = document.activeElement as HTMLElement
+				expect(target.getAttribute("data-value")).toBe("d")
+				target.click()
+				await h.settle()
+				expect(events).toEqual(["change:d", "close:select"])
+				await closed()
+				expect(combobox().textContent?.trim()).toBe("Daikon") // the closed select shows the label, not the custom content
+			})
+
 			it("type-ahead moves to the option whose label starts with the typed letter", async () => {
 				mount(h.select({}, log))
 				await h.settle()
@@ -789,6 +933,386 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 			})
 		})
 
+		describe("Surfaces", () => {
+			it("draws the AppBar, Typography, Paper and Divider as the elements and data attributes the CSS reads", async () => {
+				mount(h.surfaces({}, log))
+				await h.settle()
+				const bar = $("header")
+				expect(bar.className).toContain("omni-app-bar")
+				expect(bar.dataset).toMatchObject({ position: "static", color: "primary", elevation: "4" })
+				expect(bar.querySelector(".omni-toolbar")).not.toBeNull()
+				const heading = $("h1")
+				expect(heading.className).toContain("omni-typography")
+				expect(heading.dataset["variant"]).toBe("h6")
+				expect(heading.textContent).toBe("Dashboard")
+				const plain = byText("p", "Plain text")
+				expect(plain.dataset["variant"]).toBe("body1")
+				const paper = byText(".omni-paper", "Paper text")
+				expect(paper.dataset).toMatchObject({ variant: "elevation", elevation: "3" })
+			})
+
+			it("a Card is a Paper with a header, content and actions", async () => {
+				const handle = mount(h.surfaces({}, log))
+				await h.settle()
+				const card = $(".omni-card")
+				expect(card.className).toContain("omni-paper")
+				expect(card.dataset["elevation"]).toBe("1")
+				expect(card.querySelector(".omni-card__title")?.textContent).toBe("Card title")
+				expect(card.querySelector(".omni-card__subheader")?.textContent).toBe("Card subheader")
+				expect(card.querySelector(".omni-card__header-avatar .omni-avatar")?.textContent).toContain("A")
+				expect(card.querySelector(".omni-card__content")?.textContent).toBe("Card body")
+				byText(".omni-card__actions button", "Share").click()
+				expect(events).toEqual(["click:share"])
+				await handle.set({ raised: true })
+				await h.settle()
+				expect($(".omni-card").dataset["elevation"]).toBe("8")
+			})
+
+			it("a Divider is an hr; with text it is a separator div with the text in it", async () => {
+				mount(h.surfaces({}, log))
+				await h.settle()
+				const plain = $("hr")
+				expect(plain.className).toContain("omni-divider")
+				expect(plain.dataset).toMatchObject({ orientation: "horizontal", variant: "fullWidth" })
+				const withText = $('div[role="separator"]')
+				expect(withText.className).toContain("omni-divider")
+				expect(withText.hasAttribute("data-with-text")).toBe(true)
+				expect(withText.querySelector(".omni-divider__text")?.textContent).toBe("Or")
+			})
+		})
+
+		describe("Avatar, Badge and SvgIcon", () => {
+			it("an avatar shows initials, a picture, or a generic person", async () => {
+				mount(h.badges({}, log))
+				await h.settle()
+				const [initials, picture, empty] = $$(".omni-avatar") as [HTMLElement, HTMLElement, HTMLElement]
+				expect(initials.textContent).toContain("AB")
+				expect(initials.dataset["variant"]).toBe("circular")
+				expect(picture.dataset["variant"]).toBe("rounded")
+				const img = picture.querySelector<HTMLImageElement>("img.omni-avatar__img")
+				expect(img?.getAttribute("src")).toBe("/missing.png")
+				expect(img?.getAttribute("alt")).toBe("Ada")
+				expect(empty.querySelector("svg.omni-avatar__fallback")).not.toBeNull()
+			})
+
+			it("a picture that fails to load is replaced by the generic person", async () => {
+				mount(h.badges({}, log))
+				await h.settle()
+				const picture = $$(".omni-avatar")[1] as HTMLElement
+				picture.querySelector("img")?.dispatchEvent(new Event("error"))
+				await h.settle()
+				expect(picture.querySelector("img")).toBeNull()
+				expect(picture.querySelector("svg.omni-avatar__fallback")).not.toBeNull()
+			})
+
+			it("a badge shows its number capped at max, and hides at zero", async () => {
+				const handle = mount(h.badges({ count: 4 }, log))
+				await h.settle()
+				const marks = (): HTMLElement[] => $$(".omni-badge__mark")
+				expect(marks()[0]?.textContent).toBe("4")
+				expect(marks()[0]?.hasAttribute("data-invisible")).toBe(false)
+				expect(marks()[0]?.dataset).toMatchObject({ variant: "standard", anchor: "top-right", color: "default" })
+				expect(marks()[1]?.dataset["variant"]).toBe("dot")
+				expect(marks()[1]?.textContent).toBe("")
+				expect(marks()[2]?.textContent).toBe("5+")
+				await handle.set({ count: 0 })
+				await h.settle()
+				expect(marks()[0]?.hasAttribute("data-invisible")).toBe(true)
+				expect(marks()[0]?.getAttribute("aria-hidden")).toBe("true")
+				await handle.set({ count: 12 })
+				await h.settle()
+				expect(marks()[0]?.textContent).toBe("12")
+				expect(marks()[0]?.hasAttribute("data-invisible")).toBe(false)
+			})
+
+			it("an SvgIcon is decorative unless it has a title", async () => {
+				mount(h.badges({}, log))
+				await h.settle()
+				const icons = $$("svg.omni-svg-icon")
+				expect(icons[0]?.getAttribute("role")).toBe("img")
+				expect(icons[0]?.getAttribute("aria-label")).toBe("Mail")
+				expect(icons[0]?.getAttribute("aria-hidden")).toBeNull()
+				expect(icons[1]?.getAttribute("aria-hidden")).toBe("true")
+				expect(icons[1]?.getAttribute("focusable")).toBe("false")
+				expect(icons[1]?.getAttribute("viewBox")).toBe("0 0 24 24")
+				expect(icons[1]?.querySelector("path")).not.toBeNull()
+			})
+		})
+
+		describe("List", () => {
+			it("is a labelled nav of rows with a subheader, a selected button, a disabled button and a secondary action", async () => {
+				mount(h.list({}, log))
+				await h.settle()
+				const nav = $("nav")
+				expect(nav.getAttribute("aria-label")).toBe("Mailboxes")
+				expect(nav.querySelector("ul.omni-list")).not.toBeNull()
+				expect(byText(".omni-list__subheader", "Folders").tagName).toBe("LI")
+				const inbox = byText("button.omni-list__button", "Inbox3 new")
+				expect(inbox.getAttribute("aria-current")).toBe("true")
+				expect(inbox.hasAttribute("data-selected")).toBe(true)
+				expect(inbox.querySelector(".omni-list__icon")).not.toBeNull()
+				expect(inbox.querySelector(".omni-list__primary")?.textContent).toBe("Inbox")
+				expect(inbox.querySelector(".omni-list__secondary")?.textContent).toBe("3 new")
+				const trash = byText("button.omni-list__button", "Trash") as HTMLButtonElement
+				expect(trash.disabled).toBe(true)
+				const drafts = $$("li.omni-list__item").find((li) => li.querySelector(".omni-list__primary")?.textContent === "Drafts") as HTMLElement
+				expect(drafts.hasAttribute("data-divider")).toBe(true)
+				expect(drafts.hasAttribute("data-secondary-action")).toBe(true)
+				expect(drafts.querySelector(".omni-list__action button")?.getAttribute("aria-label")).toBe("Delete drafts")
+				expect($("li.omni-divider").getAttribute("aria-hidden")).toBe("true")
+			})
+
+			it("rows react to clicks; a disabled row and the rest of the page do not", async () => {
+				mount(h.list({}, log))
+				await h.settle()
+				byText("button.omni-list__button", "Inbox3 new").click()
+				byText("button.omni-list__button", "Trash").click()
+				$('button[aria-label="Delete drafts"]').click()
+				expect(events).toEqual(["click:inbox", "click:delete"])
+			})
+
+			it("dense is set on the list", async () => {
+				const handle = mount(h.list({}, log))
+				await h.settle()
+				expect($(".omni-list").hasAttribute("data-dense")).toBe(false)
+				await handle.set({ dense: true })
+				await h.settle()
+				expect($(".omni-list").hasAttribute("data-dense")).toBe(true)
+			})
+		})
+
+		describe("Table", () => {
+			it("is a real table with a head, body and footer, header cells and a row header", async () => {
+				mount(h.table({}, log))
+				await h.settle()
+				const table = $("table")
+				expect(table.className).toContain("omni-table")
+				expect(table.getAttribute("aria-label")).toBe("Desserts")
+				expect(table.closest(".omni-table-container")).not.toBeNull()
+				const heads = $$("thead th")
+				expect(heads.map((c) => c.textContent)).toEqual(["Dessert", "Calories"])
+				expect(heads.every((c) => c.getAttribute("scope") === "col" && c.className.includes("omni-table__cell"))).toBe(true)
+				expect(heads[1]?.dataset["align"]).toBe("right")
+				const first = $$("tbody tr")[0] as HTMLElement
+				expect(first.className).toContain("omni-table__row")
+				expect(first.hasAttribute("data-hover")).toBe(true)
+				expect(first.hasAttribute("data-selected")).toBe(true)
+				expect(first.getAttribute("aria-selected")).toBe("true")
+				const rowHeader = first.querySelector("th")
+				expect(rowHeader?.textContent).toBe("Frozen yoghurt")
+				expect(rowHeader?.getAttribute("scope")).toBe("row")
+				expect(first.querySelectorAll("td").length).toBe(1)
+				expect($$("tbody tr")[1]?.hasAttribute("data-selected")).toBe(false)
+				expect($$("tfoot td").map((c) => c.textContent)).toEqual(["Total", "396"])
+			})
+
+			it("small is set on the table", async () => {
+				const handle = mount(h.table({}, log))
+				await h.settle()
+				expect($("table").hasAttribute("data-size")).toBe(false)
+				await handle.set({ size: "small" })
+				await h.settle()
+				expect($("table").dataset["size"]).toBe("small")
+			})
+		})
+
+		describe("Chip", () => {
+			const chip = (label: string): HTMLElement => $$(".omni-chip").find((c) => c.textContent?.trim().startsWith(label)) as HTMLElement
+			const keyup = (el: Element, key: string): void => void el.dispatchEvent(new KeyboardEvent("keyup", { key, bubbles: true, cancelable: true }))
+
+			it("a plain chip is not interactive; a clickable one is a button in the Tab order; a deletable one has a delete icon", async () => {
+				mount(h.chips({}, log))
+				await h.settle()
+				const plain = chip("Static")
+				expect(plain.getAttribute("role")).toBeNull()
+				expect(plain.getAttribute("tabindex")).toBeNull()
+				expect(plain.dataset).toMatchObject({ variant: "filled", color: "default", size: "medium" })
+				expect(plain.querySelector(".omni-chip__label")?.textContent).toBe("Static")
+				const clickable = chip("Clickable")
+				expect(clickable.getAttribute("role")).toBe("button")
+				expect(clickable.getAttribute("tabindex")).toBe("0")
+				const deletable = chip("Deletable")
+				expect(deletable.querySelector("svg.omni-chip__delete")).not.toBeNull()
+				expect(deletable.getAttribute("tabindex")).toBe("0")
+				expect(deletable.getAttribute("aria-keyshortcuts")).toBe("Backspace Delete")
+				expect(chip("Outlined").dataset).toMatchObject({ variant: "outlined", color: "primary", size: "small" })
+				expect(plain.querySelector(".omni-chip__delete")).toBeNull()
+			})
+
+			it("click, Enter and Space activate a clickable chip", async () => {
+				mount(h.chips({}, log))
+				await h.settle()
+				const clickable = chip("Clickable")
+				clickable.click()
+				keydown(clickable, "Enter")
+				keydown(clickable, " ")
+				expect(events).toEqual(["click:clickable", "click:clickable"]) // Space acts on key up
+				keyup(clickable, " ")
+				expect(events).toEqual(["click:clickable", "click:clickable", "click:clickable"])
+			})
+
+			it("Backspace, Delete and the icon delete; the icon does not also press the chip", async () => {
+				mount(h.chips({}, log))
+				await h.settle()
+				const deletable = chip("Deletable")
+				keydown(deletable, "Backspace")
+				keydown(deletable, "Delete")
+				deletable.querySelector<SVGElement>(".omni-chip__delete")?.dispatchEvent(new MouseEvent("click", { bubbles: true }))
+				expect(events).toEqual(["delete:deletable", "delete:deletable", "delete:deletable"])
+			})
+
+			it("disabled chips are out of the Tab order and ignore everything", async () => {
+				const handle = mount(h.chips({}, log))
+				await h.settle()
+				await handle.set({ disabled: true })
+				await h.settle()
+				const clickable = chip("Clickable")
+				expect(clickable.getAttribute("aria-disabled")).toBe("true")
+				expect(clickable.getAttribute("tabindex")).toBeNull()
+				expect(clickable.hasAttribute("data-disabled")).toBe(true)
+				keydown(clickable, "Enter")
+				keydown(chip("Deletable"), "Backspace")
+				expect(events).toEqual([])
+			})
+		})
+
+		describe("Accordion", () => {
+			const summary = (text: string): HTMLElement => byText("button.omni-accordion__summary", text)
+			const region = (id: string | null): HTMLElement => document.getElementById(id ?? "") as HTMLElement
+
+			it("a heading holds a button that controls a region named by it, closed to begin with", async () => {
+				mount(h.accordions({}, log))
+				await h.settle()
+				const button = summary("First question")
+				expect(button.parentElement?.tagName).toBe("H3")
+				expect(button.getAttribute("aria-expanded")).toBe("false")
+				const panel = region(button.getAttribute("aria-controls"))
+				expect(panel.getAttribute("role")).toBe("region")
+				expect(panel.getAttribute("aria-labelledby")).toBe(button.id)
+				expect(panel.dataset["state"]).toBe("closed")
+				expect(panel.textContent).toContain("First answer")
+				expect(button.closest(".omni-accordion")?.hasAttribute("data-expanded")).toBe(false)
+			})
+
+			it("an uncontrolled accordion opens and closes on click and tells the parent", async () => {
+				mount(h.accordions({}, log))
+				await h.settle()
+				const button = summary("First question")
+				button.click()
+				await h.settle()
+				expect(events).toEqual(["first:true"])
+				expect(button.getAttribute("aria-expanded")).toBe("true")
+				expect(region(button.getAttribute("aria-controls")).dataset["state"]).toBe("open")
+				expect(button.closest(".omni-accordion")?.hasAttribute("data-expanded")).toBe(true)
+				button.click()
+				await h.settle()
+				expect(events).toEqual(["first:true", "first:false"])
+				expect(button.getAttribute("aria-expanded")).toBe("false")
+			})
+
+			it("a controlled accordion follows the parent, which here opens it", async () => {
+				mount(h.accordions({}, log))
+				await h.settle()
+				summary("Second question").click()
+				await h.settle()
+				expect(events).toEqual(["second:true"])
+				expect(summary("Second question").getAttribute("aria-expanded")).toBe("true")
+			})
+
+			it("disabled is exposed and ignores clicks", async () => {
+				const handle = mount(h.accordions({}, log))
+				await h.settle()
+				await handle.set({ disabled: true })
+				await h.settle()
+				const button = summary("Second question")
+				expect(button.getAttribute("aria-disabled")).toBe("true")
+				button.click()
+				await h.settle()
+				expect(events).toEqual([])
+				expect(button.getAttribute("aria-expanded")).toBe("false")
+			})
+		})
+
+		describe("Tooltip", () => {
+			const tooltip = (): HTMLElement | null => document.querySelector<HTMLElement>('[role="tooltip"]')
+			const wait = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms))
+
+			it("is not in the page until the pointer is on the trigger; then it describes it", async () => {
+				mount(h.tooltip({}, log))
+				await h.settle()
+				const save = byText("button", "Save")
+				expect(tooltip()).toBeNull()
+				expect(save.getAttribute("aria-describedby")).toBeNull()
+				save.dispatchEvent(new Event("pointerenter"))
+				await h.settle()
+				await wait(30)
+				const tip = tooltip() as HTMLElement
+				expect(tip.textContent).toBe("Saves your work")
+				expect(tip.className).toContain("omni-tooltip")
+				expect(tip.dataset["state"]).toBe("open")
+				expect(save.getAttribute("aria-describedby")).toBe(tip.id)
+				expect(events).toEqual(["open"])
+			})
+
+			it("closes when the pointer leaves, after the exit animation, and the description goes", async () => {
+				mount(h.tooltip({}, log))
+				await h.settle()
+				const save = byText("button", "Save")
+				save.dispatchEvent(new Event("pointerenter"))
+				await h.settle()
+				save.dispatchEvent(new Event("pointerleave"))
+				await wait(100) // leaveDelay 50
+				await h.settle()
+				expect(events).toEqual(["open", "close"])
+				await wait(250)
+				await h.settle()
+				expect(tooltip()).toBeNull()
+				expect(save.getAttribute("aria-describedby")).toBeNull()
+			})
+
+			it("Escape closes it even when the focus is elsewhere", async () => {
+				mount(h.tooltip({}, log))
+				await h.settle()
+				byText("button", "Save").dispatchEvent(new Event("pointerenter"))
+				await h.settle()
+				await wait(30)
+				keydown(document.body, "Escape")
+				await h.settle()
+				expect(events).toEqual(["open", "close"])
+				await wait(200)
+			})
+
+			it("the tooltip stays open while the pointer is on it, and closes when it leaves that too", async () => {
+				mount(h.tooltip({}, log))
+				await h.settle()
+				const save = byText("button", "Save")
+				save.dispatchEvent(new Event("pointerenter"))
+				await h.settle()
+				await wait(30)
+				save.dispatchEvent(new Event("pointerleave")) // leaveDelay 50 ...
+				pointerEnter(tooltip() as HTMLElement) // ... the pointer reaches the tooltip in time
+				await wait(120)
+				await h.settle()
+				expect(events).toEqual(["open"])
+				pointerLeave(tooltip() as HTMLElement)
+				await wait(120)
+				await h.settle()
+				expect(events).toEqual(["open", "close"])
+			})
+
+			it("an empty title turns the tooltip off", async () => {
+				const handle = mount(h.tooltip({}, log))
+				await h.settle()
+				await handle.set({ title: "" })
+				await h.settle()
+				byText("button", "Save").dispatchEvent(new Event("pointerenter"))
+				await h.settle()
+				await wait(30)
+				expect(tooltip()).toBeNull()
+				expect(events).toEqual([])
+			})
+		})
+
 		describe("Accessibility (axe)", () => {
 			it("button, link button and loading button", async () => {
 				mount(h.button({ variant: "contained" }, log))
@@ -848,6 +1372,18 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				await expectAccessible("disabled slider")
 			})
 
+			it("a range slider, horizontal and vertical", async () => {
+				mount(h.rangeSlider({}, log))
+				await h.settle()
+				await expectAccessible("range slider")
+			})
+
+			it("a vertical range slider", async () => {
+				mount(h.rangeSlider({ vertical: true }, log))
+				await h.settle()
+				await expectAccessible("vertical range slider")
+			})
+
 			it("a switch in each state", async () => {
 				const handle = mount(h.switch({}, log))
 				await h.settle()
@@ -876,6 +1412,15 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				await group.set({ disabled: true })
 				await h.settle()
 				await expectAccessible("disabled checkbox and radio group")
+			})
+
+			it("an open select with groups and custom option content", async () => {
+				mount(h.selectGroups({}, log))
+				await h.settle()
+				$('[role="combobox"]').click()
+				await h.settle()
+				await new Promise((r) => setTimeout(r, 50))
+				await expectAccessible("open select with groups")
 			})
 
 			it("a closed select, an open select, and a select in error", async () => {
@@ -975,6 +1520,53 @@ export function defineUiConformanceSuite(adapterName: string, h: UiHarness): voi
 				keydown(one, "ArrowRight")
 				await h.settle()
 				expect(events).toEqual(["change:three"])
+			})
+			it("surfaces, avatars, badges and icons", async () => {
+				const surfaces = mount(h.surfaces({}, log))
+				mount(h.badges({}, log))
+				await h.settle()
+				await expectAccessible("surfaces, avatars, badges and icons")
+				await surfaces.set({ raised: true })
+				await h.settle()
+				await expectAccessible("raised card")
+			})
+
+			it("a list and a table", async () => {
+				mount(h.list({ dense: true }, log))
+				mount(h.table({ size: "small" }, log))
+				await h.settle()
+				await expectAccessible("list and table")
+			})
+
+			it("chips, in each state", async () => {
+				const handle = mount(h.chips({}, log))
+				await h.settle()
+				await expectAccessible("chips")
+				await handle.set({ disabled: true })
+				await h.settle()
+				await expectAccessible("disabled chips")
+			})
+
+			it("accordions, closed and open", async () => {
+				const handle = mount(h.accordions({}, log))
+				await h.settle()
+				await expectAccessible("closed accordions")
+				byText("button.omni-accordion__summary", "First question").click()
+				byText("button.omni-accordion__summary", "Second question").click()
+				await h.settle()
+				await expectAccessible("open accordions")
+				await handle.set({ disabled: true })
+				await h.settle()
+				await expectAccessible("disabled accordion")
+			})
+
+			it("an open tooltip", async () => {
+				mount(h.tooltip({}, log))
+				await h.settle()
+				byText("button", "Save").dispatchEvent(new Event("pointerenter"))
+				await h.settle()
+				await new Promise((r) => setTimeout(r, 30))
+				await expectAccessible("open tooltip")
 			})
 		})
 	})

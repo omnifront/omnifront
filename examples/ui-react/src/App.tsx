@@ -31,6 +31,7 @@ import {
 	type ColorSchemeMode,
 } from "@omnifront/ui-react"
 import { useEffect, useMemo, useState } from "react"
+import { Display } from "./Display"
 
 // The same page exists for Vue and Angular (examples/ui-vue, examples/ui-angular). The URL sets the
 // starting state (?scheme=dark&theme=brand&open=dialog&tab=queries) so the three can be compared
@@ -47,6 +48,10 @@ const standard = createTheme()
 const heading = { font: "var(--omni-typography-h6-font)", margin: 0 } as const
 const plus = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" /></svg>
 const trash = <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" /></svg>
+const grouped = [
+	{ label: "Fruit", options: [{ value: "a", label: "Apple" }, { value: "b", label: "Banana" }] },
+	{ label: "Vegetables", options: [{ value: "c", label: "Carrot" }, { value: "d", label: "Daikon", disabled: true }] },
+]
 const fruit = [
 	{ value: "a", label: "Apple" },
 	{ value: "b", label: "Banana", disabled: true },
@@ -74,6 +79,13 @@ export function App() {
 		if (params.get("open") === "menu") setAnchor(document.getElementById("menu-button"))
 	}, [])
 
+	if (params.get("view") === "display") {
+		return (
+			<ThemeProvider theme={theme} colorScheme={mode} global>
+				<Display />
+			</ThemeProvider>
+		)
+	}
 	return (
 		<ThemeProvider theme={theme} colorScheme={mode} global>
 			<main style={{ maxWidth: 880, margin: "0 auto", padding: 24, display: "grid", gap: 32, color: "var(--omni-palette-text-primary)", font: "var(--omni-typography-body1-font)" }}>
@@ -162,6 +174,12 @@ export function App() {
 						<Slider aria-label="Temperature" defaultValue={20} min={0} max={40} step={10} marks={[{ value: 0, label: "0°C" }, { value: 10, label: "10°C" }, { value: 20, label: "20°C" }, { value: 30, label: "30°C" }, { value: 40, label: "40°C" }]} color="secondary" />
 						<Slider aria-label="Small" size="small" defaultValue={60} />
 						<Slider aria-label="Disabled" disabled defaultValue={40} />
+						<Slider aria-label="Price" range defaultValue={[20, 60]} valueLabelDisplay="on" />
+					</div>
+					<div style={{ display: "flex", gap: 24, alignItems: "center" }}>
+						<Slider aria-label="Level" orientation="vertical" length={160} defaultValue={40} valueLabelDisplay="auto" />
+						<Slider aria-label="Band" orientation="vertical" length={160} range defaultValue={[20, 70]} marks={[{ value: 0, label: "0" }, { value: 50, label: "50" }, { value: 100, label: "100" }]} color="secondary" />
+						<Slider aria-label="Vertical disabled" orientation="vertical" length={160} disabled defaultValue={60} />
 					</div>
 					<div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "center" }}>
 						<Rating aria-label="Rating" value={stars} onChange={(_e, v) => setStars(v)} />
@@ -178,6 +196,7 @@ export function App() {
 						<Select label="Filled" variant="filled" options={fruit} defaultValue="c" />
 						<Select label="Standard" variant="standard" options={fruit} />
 						<Select label="Several" multiple options={fruit} defaultValue={["a", "c"]} />
+						<Select label="Grouped" options={grouped} defaultValue="c" renderOption={(o) => (<><strong>{o.label}</strong> <small style={{ color: "var(--omni-palette-text-secondary)" }}>{o.value}</small></>)} />
 						<Select label="Error" error options={fruit} helperText="Required" />
 						<Select label="Disabled" disabled options={fruit} defaultValue="a" />
 					</div>

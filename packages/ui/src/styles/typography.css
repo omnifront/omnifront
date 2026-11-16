@@ -1,0 +1,35 @@
+@layer omnifront {
+	/* Typography: the theme's text styles. The element (h1, p, span) is the component's choice; the look is data-variant. */
+	.omni-typography { margin: 0; font: var(--omni-typography-body1-font); letter-spacing: var(--omni-typography-body1-letter-spacing); }
+	.omni-typography[data-variant="h1"] { font: var(--omni-typography-h1-font); letter-spacing: var(--omni-typography-h1-letter-spacing); text-transform: var(--omni-typography-h1-text-transform); }
+	.omni-typography[data-variant="h2"] { font: var(--omni-typography-h2-font); letter-spacing: var(--omni-typography-h2-letter-spacing); text-transform: var(--omni-typography-h2-text-transform); }
+	.omni-typography[data-variant="h3"] { font: var(--omni-typography-h3-font); letter-spacing: var(--omni-typography-h3-letter-spacing); text-transform: var(--omni-typography-h3-text-transform); }
+	.omni-typography[data-variant="h4"] { font: var(--omni-typography-h4-font); letter-spacing: var(--omni-typography-h4-letter-spacing); text-transform: var(--omni-typography-h4-text-transform); }
+	.omni-typography[data-variant="h5"] { font: var(--omni-typography-h5-font); letter-spacing: var(--omni-typography-h5-letter-spacing); text-transform: var(--omni-typography-h5-text-transform); }
+	.omni-typography[data-variant="h6"] { font: var(--omni-typography-h6-font); letter-spacing: var(--omni-typography-h6-letter-spacing); text-transform: var(--omni-typography-h6-text-transform); }
+	.omni-typography[data-variant="subtitle1"] { font: var(--omni-typography-subtitle1-font); letter-spacing: var(--omni-typography-subtitle1-letter-spacing); text-transform: var(--omni-typography-subtitle1-text-transform); }
+	.omni-typography[data-variant="subtitle2"] { font: var(--omni-typography-subtitle2-font); letter-spacing: var(--omni-typography-subtitle2-letter-spacing); text-transform: var(--omni-typography-subtitle2-text-transform); }
+	.omni-typography[data-variant="body1"] { font: var(--omni-typography-body1-font); letter-spacing: var(--omni-typography-body1-letter-spacing); text-transform: var(--omni-typography-body1-text-transform); }
+	.omni-typography[data-variant="body2"] { font: var(--omni-typography-body2-font); letter-spacing: var(--omni-typography-body2-letter-spacing); text-transform: var(--omni-typography-body2-text-transform); }
+	.omni-typography[data-variant="caption"] { font: var(--omni-typography-caption-font); letter-spacing: var(--omni-typography-caption-letter-spacing); text-transform: var(--omni-typography-caption-text-transform); }
+	.omni-typography[data-variant="overline"] { font: var(--omni-typography-overline-font); letter-spacing: var(--omni-typography-overline-letter-spacing); text-transform: var(--omni-typography-overline-text-transform); }
+	.omni-typography[data-variant="button"] { font: var(--omni-typography-button-font); letter-spacing: var(--omni-typography-button-letter-spacing); text-transform: var(--omni-typography-button-text-transform); }
+	.omni-typography[data-variant="inherit"] { font: inherit; letter-spacing: inherit; }
+	.omni-typography[data-variant="overline"], .omni-typography[data-variant="caption"], .omni-typography[data-variant="button"] { display: block; }
+	.omni-typography[data-align="left"] { text-align: left; }
+	.omni-typography[data-align="center"] { text-align: center; }
+	.omni-typography[data-align="right"] { text-align: right; }
+	.omni-typography[data-align="justify"] { text-align: justify; }
+	.omni-typography[data-gutter-bottom] { margin-block-end: 0.35em; }
+	.omni-typography[data-paragraph] { margin-block-end: 16px; }
+	.omni-typography[data-no-wrap] { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+	.omni-typography[data-color="primary"] { color: var(--omni-palette-primary-main); }
+	.omni-typography[data-color="secondary"] { color: var(--omni-palette-secondary-main); }
+	.omni-typography[data-color="error"] { color: var(--omni-palette-error-main); }
+	.omni-typography[data-color="info"] { color: var(--omni-palette-info-main); }
+	.omni-typography[data-color="success"] { color: var(--omni-palette-success-main); }
+	.omni-typography[data-color="warning"] { color: var(--omni-palette-warning-main); }
+	.omni-typography[data-color="text-primary"] { color: var(--omni-palette-text-primary); }
+	.omni-typography[data-color="text-secondary"] { color: var(--omni-palette-text-secondary); }
+	.omni-typography[data-color="text-disabled"] { color: var(--omni-palette-text-disabled); }
+}

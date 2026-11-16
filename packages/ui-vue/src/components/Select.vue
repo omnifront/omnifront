@@ -1,5 +1,5 @@
 <script setup lang="ts" generic="T extends string | readonly string[] = string">
-import { createField, createSelect, mergeParts, type CloseReason, type SelectOption } from "@omnifront/ui"
+import { createField, createSelect, isSelectGroup, mergeParts, type CloseReason, type SelectGroup, type SelectItem, type SelectOption } from "@omnifront/ui"
 import { autoPosition } from "@omnifront/ui/position"
 import { computed, mergeProps, ref, useAttrs, watch } from "vue"
 import { toVueProps, useMachine, useUid } from "../internal"
@@ -11,8 +11,8 @@ defineOptions({ name: "OmniSelect", inheritAttrs: false })
 const raw = withDefaults(
 	defineProps<{
 		label?: string | undefined
-		/** What can be chosen. `value` is what the model holds; `label` is what the user sees. */
-		options: readonly SelectOption[]
+		/** What can be chosen: options, and groups of options (`{ label, options }`). `value` is what the model holds; `label` is what the user sees. */
+		options: readonly SelectItem[]
 		/** The chosen value (`v-model`; a list when `multiple`). Leave it out for an uncontrolled select. `""` means nothing is selected. */
 		modelValue?: T | undefined
 		defaultValue?: T | undefined
@@ -44,6 +44,10 @@ const emit = defineEmits<{
 	close: [reason: SelectCloseReason]
 }>()
 
+defineSlots<{
+	/** What an option looks like in the open list (an icon, a second line). The closed select still shows the `label`. */
+	option?: (props: { option: SelectOption; selected: boolean }) => unknown
+}>()
 const attrs = useAttrs()
 const props = useDefaultProps("OmniSelect", () => ({ ...raw }))
 const generated = useUid()
@@ -100,6 +104,14 @@ const fieldParts = computed(() => (void fieldState.value, field.connect()))
 const triggerBinding = computed(() => toVueProps(mergeParts(parts.value.trigger, fieldParts.value.trigger)))
 const rootBinding = computed(() => mergeProps(toVueProps(fieldParts.value.root), { class: ["omni-text-field", "omni-select", attrs.class], style: attrs.style as never }))
 const optionBinding = (option: SelectOption) => toVueProps((void state.value, select.option(option)))
+const groupBinding = (index: number) => {
+	void state.value
+	const g = select.group(index)
+	return { root: toVueProps(g.root), label: toVueProps(g.label), list: toVueProps(g.list) }
+}
+const isSelected = (option: SelectOption): boolean => (state.value.multiple ? state.value.values.includes(option.value) : option.value === state.value.value)
+const asGroup = (item: SelectItem): SelectGroup => item as SelectGroup
+const asOption = (item: SelectItem): SelectOption => item as SelectOption
 
 const trigger = ref<HTMLElement | null>(null)
 const list = ref<HTMLElement | null>(null)
@@ -140,7 +152,19 @@ watch(
 		<p v-if="hasHelper" v-bind="toVueProps(fieldParts.helper)" class="omni-text-field__helper">{{ props.helperText }}</p>
 		<Portal>
 			<ul v-if="state.mounted" ref="list" v-bind="toVueProps(parts.listbox)" class="omni-menu omni-select__listbox">
-				<li v-for="option in props.options" :key="option.value" v-bind="optionBinding(option)" class="omni-menu__item">{{ option.label }}</li>
+				<template v-for="(item, index) in props.options" :key="isSelectGroup(item) ? `group-${index}` : asOption(item).value">
+					<li v-if="isSelectGroup(item)" v-bind="groupBinding(index).root" class="omni-select__group">
+						<span v-bind="groupBinding(index).label" class="omni-select__group-label">{{ asGroup(item).label }}</span>
+						<ul v-bind="groupBinding(index).list">
+							<li v-for="option in asGroup(item).options" :key="option.value" v-bind="optionBinding(option)" class="omni-menu__item">
+								<slot name="option" :option="option" :selected="isSelected(option)">{{ option.label }}</slot>
+							</li>
+						</ul>
+					</li>
+					<li v-else v-bind="optionBinding(asOption(item))" class="omni-menu__item">
+						<slot name="option" :option="asOption(item)" :selected="isSelected(asOption(item))">{{ asOption(item).label }}</slot>
+					</li>
+				</template>
 			</ul>
 		</Portal>
 	</div>

@@ -1,8 +1,8 @@
 # @omnifront/ui
 
-The framework-free core of the UI kit: a Material-style theme, behaviour machines, DOM utilities and static CSS. About 8.6 KB gzipped (`@omnifront/ui/position` adds floating-ui, about 6.9 KB, and is only loaded by Menu). See the [UI guide](/guide/ui).
+The framework-free core of the UI kit: a Material-style theme, behaviour machines, DOM utilities and static CSS. About 13.5 KB gzipped (`@omnifront/ui/position` adds floating-ui, about 6.9 KB, and is only loaded by Menu). See the [UI guide](/guide/ui).
 
-CSS entries: `@omnifront/ui/styles.css` (tokens, baseline and every component), or `tokens.css`, `baseline.css`, `button.css`, `text-field.css`, `dialog.css`, `menu.css`, `tabs.css` separately.
+CSS entries: `@omnifront/ui/styles.css` (tokens, baseline and every component), or `tokens.css`, `baseline.css`, `button.css`, `text-field.css`, `dialog.css`, `menu.css`, `tabs.css`, `typography.css`, `paper.css`, `list.css`, `table.css`, `chip.css`, `tooltip.css`, `accordion.css`, ... separately (one file per component).
 
 ## Theme
 
@@ -86,7 +86,7 @@ The base class: `subscribe`, `getSnapshot`, `getServerSnapshot`, `setProps(props
 
 ### `createSelect`
 
-`createSelect(props): Select` (`Select` is the class): a select, that is a `combobox` that opens a `listbox`. Props (`SelectProps`): `id`, `options` (a list of `SelectOption`: `{ value, label, disabled? }`), `value` / `defaultValue` / `onValueChange(value, event)`, `open` / `defaultOpen` / `onOpenChange(open, reason, event)`, `disabled`, `exitDuration` (default 120 ms). Use the same `id` as the field machine so the label links up. `""` as a value means nothing is selected. State (`SelectState`): `open`, `mounted`, `status`, `id`, `value`, `label` (the selected option's label, or `""`), `filled`, `disabled`.
+`createSelect(props): Select` (`Select` is the class): a select, that is a `combobox` that opens a `listbox`. Props (`SelectProps`): `id`, `options` (a list of `SelectItem`: a `SelectOption`, `{ value, label, disabled? }`, or a `SelectGroup`, `{ label, options }`; groups do not nest), `value` / `defaultValue` / `onValueChange(value, event)`, `open` / `defaultOpen` / `onOpenChange(open, reason, event)`, `disabled`, `exitDuration` (default 120 ms). Use the same `id` as the field machine so the label links up. `""` as a value means nothing is selected. State (`SelectState`): `open`, `mounted`, `status`, `id`, `value`, `label` (the selected option's label, or `""`), `filled`, `disabled`. `group(index)` returns the `Part`s of the group at that place in `options`: `root` (`role="presentation"`), `label` (the heading) and `list` (`role="group"`, named by the heading). Each option carries its `label` in `data-label`, which type-ahead matches, so an option can show more than its label. `isSelectGroup` (is this item a group?) and `flattenOptions` (every option in display order) are the helpers the adapters use.
 
 `connect()` returns `trigger` and `listbox`. The trigger carries `role="combobox"`, `aria-expanded`, `aria-controls` and `aria-labelledby` (the label, then its own text), and opens on click, Enter, Space and the arrows. `option(option)` returns one option's part (`role="option"`, `aria-selected`, click chooses). `choose(value)` chooses and closes. `attach({ content, trigger, position })` (`SelectElements`) focuses the selected option (else the first), closes on a press outside, and gives focus back to the trigger. In the list the arrows, Home, End and type-ahead move real focus, Enter and Space choose, Escape and Tab close.
 
@@ -116,7 +116,7 @@ The base class: `subscribe`, `getSnapshot`, `getServerSnapshot`, `setProps(props
 
 ### `createSlider`
 
-`createSlider(props): Slider` (`Slider` is the class): one value between `min` and `max` in `step`s. The control is a real `<input type="range">`, so dragging, the arrow keys, Home, End, Page Up and Page Down, forms and assistive technology are the browser's own; the machine keeps the value in range and tells the component where the thumb is. Props (`SliderProps`): `id`, `value` / `defaultValue` / `onValueChange(value, event)`, `min` (0), `max` (100), `step` (1), `disabled`. State (`SliderState`): `id`, `value`, `min`, `max`, `step`, `percent` (0 to 100, for the filled part of the track), `disabled`. Not supported yet: two thumbs (a range) and a vertical slider.
+`createSlider(props): Slider` (`Slider` is the class): one value between `min` and `max` in `step`s. The control is a real `<input type="range">`, so dragging, the arrow keys, Home, End, Page Up and Page Down, forms and assistive technology are the browser's own; the machine keeps the value in range and tells the component where the thumb is. Props (`SliderProps`): `id`, `value` / `defaultValue` / `onValueChange(value, event)`, `min` (0), `max` (100), `step` (1), `disabled`, `orientation` (`horizontal` or `vertical`). With `range` there are two thumbs, each its own native input (the first has the `id`, the second `<id>-end`): use `values` / `defaultValues` / `onValuesChange([lower, upper], event)` instead; the lower thumb cannot pass the upper one. State (`SliderState`): `id`, `value` (the lower one for a range), `min`, `max`, `step`, `percent` (0 to 100, where the last thumb is), `start` (0 to 100, where the filled part begins: `0`, or the lower thumb), `disabled`, `range`, `values`, `orientation`. `connect()` returns `input` (the first thumb) and `inputs` (both, for a range); `changeAt(index, value, event)` is what a range thumb's handler calls and returns the value the thumb ended with, so the native control can be put back when it was stopped. When both thumbs share a value past the middle the lower one gets `data-front` so it can still be grabbed.
 
 ### `createRating`
 
@@ -145,6 +145,46 @@ Browser only; call them after mount.
 | `hideOthers` | `(keep)`: `aria-hidden` on every other top-level element. Returns the cleanup. |
 | `createPortalRoot` | `(attributes?)`: a `div[data-omni-portal]` at the end of `<body>`. `PortalRoot` is the result type. |
 | `attachRipple` | `(element, { centered? })`: the Material touch ripple. Returns the cleanup. |
+
+### `displayPart`
+
+`displayPart(className, data?, extra?): Part`: a class and `data-*` attributes (`true` becomes an empty attribute, `false` and `undefined` are left out, camelCase becomes kebab-case). It is how the stateless pieces of wave 2 (Card header and content, List, Table, Toolbar, ...) get their attributes, and what you use for your own element that should look like one of them. The named functions below do the same for the pieces with a few more rules.
+
+### `typographyPart`, `typographyTag`
+
+`typographyPart(options?: TypographyPartOptions): Part` (the options are exported as `TypographyPartOptions`; `TypographyOptions` is the theme's own option type): `variant` (`TypographyVariantName`: `h1` to `h6`, `subtitle1`, `subtitle2`, `body1`, `body2`, `caption`, `overline`, `button`, `inherit`), `align`, `color` (`TypographyColor`: the palette colours and `text.primary`, `text.secondary`, `text.disabled`), `gutterBottom`, `noWrap`, `paragraph`. `typographyTag(variant?, paragraph?)` is the element a variant is drawn with by default (`h1` to `h6`; `h6` for the subtitles; `p` for body text; `span` for `caption`, `overline` and `button`).
+
+### `paperPart`, `cardPart`
+
+`paperPart(options?: PaperOptions): Part` (`PaperOptions`): `elevation` (0 to 24, default 1), `variant` (`elevation` or `outlined`), `square`. `cardPart(options?: CardOptions): Part` (`CardOptions`) is a Paper with the `omni-card` class (`variant`, `raised` for elevation 8).
+
+### `dividerPart`
+
+`dividerPart(options?: DividerOptions): Part` (`DividerOptions`): `orientation`, `variant` (`fullWidth`, `inset`, `middle`), `flexItem`, `textAlign`, `withText`, `as` (`hr`, `li` or `div`). A `div` with text is `role="separator"`; an `li` in a list is `aria-hidden` (a line, not an item: a list may only own list items); an `hr` needs nothing.
+
+### `avatarPart`, `badgeMarkPart`, `badgeState`
+
+`avatarPart(options?: AvatarOptions): Part` (`AvatarOptions`) (`variant`: `circular`, `rounded`, `square`). `badgeMarkPart(options: BadgeOptions): Part` is the number or dot of a Badge: `badgeContent`, `max` (default 99; `120` shows `99+`), `showZero`, `variant` (`standard` or `dot`), `invisible`, `color`, `anchorOrigin` (`{ vertical, horizontal }`), `overlap` (`rectangular` or `circular`). `badgeState(options): BadgeState` says what it shows: `{ text, invisible }` (the `BadgeState` type); the options are `BadgeOptions`.
+
+### `svgIconPart`, `ICON_PATHS`
+
+`svgIconPart(options?: SvgIconOptions): Part` (`SvgIconOptions`) for an `<svg>`: `fontSize` (`small`, `medium`, `large`, `inherit`), `color`, `viewBox`, and `titleAccess` (gives it `role="img"` and that name; without it the icon is `aria-hidden`). `ICON_PATHS` holds the three Material icon paths the components draw themselves (`cancel`, `expandMore`, `person`), 24px grid.
+
+### `appBarPart`
+
+`appBarPart(options?: AppBarOptions): Part` (`AppBarOptions`) for a `<header>`: `position` (`fixed` by default, `absolute`, `sticky`, `static`, `relative`), `color` (`primary`, `secondary`, `default`, `transparent`, `inherit`), `elevation` (default 4).
+
+### `createChip`
+
+`createChip(props?): Chip` (`Chip` is the class): the keyboard and role handling of a chip. Props (`ChipProps`): `clickable`, `deletable`, `disabled`, `onDelete(event)`. State (`ChipState`): `clickable`, `deletable`, `disabled`. `connect()` returns `ChipParts`: `root` (a clickable chip is `role="button"` in the Tab order; Enter presses it, Space presses it on key up like a native button; Backspace or Delete call `onDelete`; Escape blurs; `aria-disabled` when disabled) and `deleteIcon` (a click deletes and does not also press the chip). Pressing means calling `click()` on the element, so the caller's own click handler is the one that runs.
+
+### `createAccordion`
+
+`createAccordion(props): Accordion` (`Accordion` is the class): one collapsible section. Props (`AccordionProps`): `id`, `expanded` / `defaultExpanded` / `onExpandedChange(expanded, event)`, `disabled`. State (`AccordionState`): `id`, `expanded`, `disabled`. `toggle(event?)`. `connect()` returns `AccordionParts`: `root` (`data-state`), `trigger` (a `<button>` with `aria-expanded` and `aria-controls`), `region` (`role="region"` named by the trigger). The region stays in the DOM and is hidden by CSS (`visibility`, after the height has shrunk), so it needs no timer and works the same on the server.
+
+### `createTooltip`
+
+`createTooltip(props): Tooltip` (`Tooltip` is the class): a hint for an element. Props (`TooltipProps`): `id`, `open` / `defaultOpen` / `onOpenChange(open, reason, event)`, `enterDelay` (default 100 ms; keyboard focus opens at once), `leaveDelay` (default 0), `disabled`, `disableInteractive`, `exitDuration`, `scheduler`. State (`TooltipState`): `open`, `mounted`, `status`, `id`; render the tooltip while `mounted`. `connect()` returns `{ tooltip }` (`role="tooltip"`, `id`, `data-state`; while the pointer is on it the close is cancelled). `attachTrigger(element)` wires the trigger (pointer enter and leave, focus and blur; touch is ignored; focus from a mouse click does not count) and keeps its `aria-describedby` in step with the state; it returns the cleanup. `attach({ trigger, tooltip, position })` (`TooltipElements`) places the tooltip (`position` is usually `autoPosition` from `@omnifront/ui/position`) and closes it on Escape wherever the focus is. The pointer gets one tick of grace when it leaves the trigger even with `leaveDelay` 0, so a move onto the tooltip does not close it.
 
 ### `attachAutosize`
 

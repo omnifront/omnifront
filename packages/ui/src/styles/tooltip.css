@@ -1,0 +1,28 @@
+@layer omnifront {
+	/* The element that holds the trigger takes no space of its own. */
+	.omni-tooltip-trigger { display: contents; }
+	.omni-tooltip {
+		position: fixed;
+		inset-block-start: 0;
+		inset-inline-start: 0;
+		z-index: var(--omni-z-tooltip);
+		box-sizing: border-box;
+		max-inline-size: 300px;
+		margin: 0;
+		padding: 4px 8px;
+		border-radius: 4px;
+		overflow-wrap: break-word;
+		font-family: var(--omni-font-family);
+		font-size: 0.6875rem;
+		font-weight: 500;
+		line-height: 1.4;
+		color: #fff;
+		background-color: rgb(97 97 97 / 0.92);
+		animation: omni-tooltip-in var(--omni-duration-shortest) var(--omni-easing-ease-out) both;
+	}
+	.omni-tooltip[hidden] { display: none; }
+	.omni-tooltip[data-state="closed"] { animation: omni-tooltip-out var(--omni-duration-shortest) var(--omni-easing-ease-in) both; pointer-events: none; }
+	@keyframes omni-tooltip-in { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: none; } }
+	@keyframes omni-tooltip-out { from { opacity: 1; } to { opacity: 0; } }
+	@media (prefers-reduced-motion: reduce) { .omni-tooltip { animation-duration: 1ms !important; } }
+}

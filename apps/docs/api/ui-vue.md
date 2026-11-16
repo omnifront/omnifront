@@ -1,6 +1,6 @@
 # @omnifront/ui-vue
 
-Vue components (single-file components) for the UI kit. About 4.7 KB gzipped (excluding Vue and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui).
+Vue components (single-file components) for the UI kit. About 13.4 KB gzipped (excluding Vue and `@omnifront/ui`). See the [UI guide](/guide/ui). `createTheme`, `createColorSchemeStore`, `colorSchemeScript` and the types `Theme`, `ThemeOptions`, `ColorSchemeMode` and `SelectOption` are re-exported from [`@omnifront/ui`](/api/ui).
 
 Every component also reads `theme.components.Omni<Name>.defaultProps`. Attributes and classes you put on a component reach its main element. Events: `@click` on `Button` and `MenuItem`, `@close` and `v-model:open` on `Dialog` and `Menu`, `v-model` on `TextField` and `TabContext`.
 
@@ -58,7 +58,7 @@ Buttons that stay pressed. `ToggleButtonGroup`: `v-model` (a list of values; wit
 <Slider v-model="volume" aria-label="Volume" value-label-display="auto" />
 ```
 
-A real `<input type="range">`, so dragging, the keys, forms and screen readers are native. Props: `v-model`, `default-value`, `min`, `max`, `step`, `marks` (`true` or a list of `{ value, label? }`), `value-label-display` (`auto`, `on`, `off`), `value-label-format`, `get-aria-value-text`, `size`, `color`, `disabled`, `name`, `aria-label`. Event `change(event, value)`. Not yet: two thumbs and a vertical slider.
+A real `<input type="range">`, so dragging, the keys, forms and screen readers are native. Props: `v-model` (a number, or with `range` a `[lower, upper]` pair; the lower thumb cannot pass the upper one, and the thumbs are named after `aria-label` with "minimum" and "maximum" added), `default-value`, `range`, `orientation` (`vertical` puts the smallest value at the bottom), `length` (the height of a vertical slider, default 200px), `min`, `max`, `step`, `marks` (`true` or a list of `{ value, label? }`), `value-label-display` (`auto`, `on`, `off`), `value-label-format`, `get-aria-value-text`, `size`, `color`, `disabled`, `name`, `aria-label`. Event `change(event, value)`.
 
 ### `Rating`
 
@@ -110,7 +110,7 @@ A labelled group of related controls (a `<fieldset>` with a `<legend>`), for exa
 <Select v-model="fruit" label="Fruit" :options="[{ value: 'a', label: 'Apple' }]" />
 ```
 
-Looks like a `TextField` and opens a list of options. Props: `label`, `options` (`SelectOption[]`: `{ value, label, disabled? }`), `modelValue` (`v-model`; leave it out for an uncontrolled select) / `defaultValue`, `open` (`v-model:open`; stays uncontrolled when absent) / `defaultOpen`, `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`), `id`. Events: `update:modelValue`, `change(event, value)`, `update:open`, `close(reason)`. The options are data, not children, so every framework shows the chosen label the same way, including on the server.
+Looks like a `TextField` and opens a list of options. Props: `label`, `options` (a list of `SelectItem`: options, `{ value, label, disabled? }`, and `SelectGroup`s of them, `{ label, options }`), `modelValue` (`v-model`; leave it out for an uncontrolled select) / `defaultValue`, `open` (`v-model:open`; stays uncontrolled when absent) / `defaultOpen`, `helperText`, `error`, `disabled`, `required`, `variant`, `size`, `color`, `fullWidth`, `name` (also writes the value to a hidden `<input>`), `id`. Events: `update:modelValue`, `change(event, value)`, `update:open`, `close(reason)`. The options are data, not children, so every framework shows the chosen label the same way, including on the server. The `option` slot (`{ option, selected }`) changes what an option looks like in the open list, such as an icon and a second line; the closed select and type-ahead still use the `label`.
 
 ### `Dialog`
 
@@ -123,3 +123,60 @@ Props: `anchorEl`, `open`, `placement` (default `bottom-start`), `autoFocus` (de
 ### `TabContext`
 
 Props: `modelValue` (`v-model`) / `defaultValue`, `orientation`, `selectionFollowsFocus`. Events: `update:modelValue`, `change(event, value)`. `TabList` (props `color`, `variant`, `centered`) holds the `Tab`s (props `value`, `label`, `disabled`); `TabPanel` (props `value`, `keepMounted`) shows its content while its tab is selected.
+
+### `Typography`
+
+Props: `variant` (default `body1`), `align`, `color`, `gutterBottom`, `noWrap`, `paragraph`, `component`. Same rules as React: the element follows the variant unless `component` is given.
+
+### `Paper`
+
+Props: `elevation` (0 to 24, default 1), `variant` (`elevation` or `outlined`), `square`, `component`.
+
+### `Card`
+
+Props: `variant`, `raised`, `component`. `CardHeader` takes `title` and `subheader` as props (or the `title` and `subheader` slots) and the `avatar` and `action` slots. `CardContent`, `CardActions` (prop `disableSpacing`) and `CardMedia` (props `image`, `alt`, `height`) are the other parts.
+
+### `Divider`
+
+Props: `orientation`, `variant`, `flexItem`, `textAlign`, `component` (`hr`, `li`, `div`). With slot content the text sits in the line and the root is a `div` with `role="separator"`.
+
+### `Avatar`
+
+Props: `variant`, `src`, `srcSet`, `alt`; the slot is the fallback content (initials, an icon), then a generic person.
+
+### `Badge`
+
+Props: `badgeContent`, `max`, `showZero`, `variant`, `invisible`, `color`, `anchorOrigin`, `overlap`; the slot is what it wraps.
+
+### `SvgIcon`
+
+Props: `fontSize`, `color`, `viewBox`, `titleAccess`; the slot is the SVG content (`<SvgIcon><path d="…" /></SvgIcon>`).
+
+### `AppBar`
+
+Props: `position` (default `fixed`), `color`, `elevation` (default 4), `component` (default `header`). `Toolbar` takes `variant` (`regular` or `dense`) and `disableGutters`.
+
+### `List`
+
+Props: `dense`, `disablePadding`, `component`. `ListItem` (props `divider`, `disablePadding`, `disableGutters`; slot `secondaryAction`), `ListItemButton` (props `selected`, `disabled`, `href`; event `click`), `ListItemIcon`, `ListItemText` (props `primary`, `secondary`; or the `primary` and `secondary` slots) and `ListSubheader` (prop `disableSticky`). Put a `nav` around a list of links.
+
+### `Table`
+
+Props: `size`, `stickyHeader`. `TableContainer`, `TableHead`, `TableBody`, `TableFooter`, `TableRow` (props `hover`, `selected`) and `TableCell` (props `align`, `padding`, `variant`, `component`; a cell in `TableHead` is a `th` with `scope="col"`).
+
+### `Chip`
+
+Props: `label`, `variant`, `color`, `size`, `clickable`, `disabled`; slots `avatar`, `icon` and the default (instead of `label`). Events: `click` and `delete`. Vue has no "is anyone listening" prop, but the chip reads its listeners from the vnode: a `@click` makes it a `role="button"`, a `@delete` shows the delete icon (and Backspace or Delete on the focused chip emits it). Same keyboard behaviour as React.
+
+### `Accordion`
+
+Props: `expanded` (`v-model:expanded`) / `defaultExpanded`, `disabled`. Events: `change(event, expanded)` and `update:expanded`. `AccordionSummary` (prop `headingLevel`; slot `expandIcon`) and `AccordionDetails`.
+
+### `Tooltip`
+
+```vue
+<Tooltip title="Saves your work" placement="top"><Button>Save</Button></Tooltip>
+```
+
+Props: `title` (or the `title` slot for anything richer than text), `placement`, `open` (`v-model:open`) / `defaultOpen`, `enterDelay`, `leaveDelay`, `disableInteractive`. Events: `open`, `close`, `update:open`. The one element in the default slot is the trigger. Same behaviour as React.
+

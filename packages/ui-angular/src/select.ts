@@ -1,4 +1,4 @@
-import { DOCUMENT, isPlatformBrowser } from "@angular/common"
+import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from "@angular/common"
 import {
 	ChangeDetectionStrategy,
 	Component,
@@ -10,6 +10,7 @@ import {
 	OnInit,
 	Output,
 	PLATFORM_ID,
+	TemplateRef,
 	ViewChild,
 	afterNextRender,
 	booleanAttribute,
@@ -18,13 +19,18 @@ import {
 	signal,
 } from "@angular/core"
 import { NG_VALUE_ACCESSOR, type ControlValueAccessor } from "@angular/forms"
-import { createField, createSelect, mergeParts, type CloseReason, type SelectOption } from "@omnifront/ui"
+import { createField, createSelect, isSelectGroup, mergeParts, type CloseReason, type SelectGroup, type SelectItem, type SelectOption } from "@omnifront/ui"
 import { autoPosition } from "@omnifront/ui/position"
 import { bindMachine } from "./machine"
 import { OmniPart } from "./part"
 import { ElementPortal, OmniIds, ThemeScope, injectDefaults } from "./theme"
 
 export type SelectCloseReason = Extract<CloseReason, "escapeKeyDown" | "outsidePress" | "tab" | "select" | "trigger" | "programmatic">
+/** What `optionTemplate` receives: the option (`let-option`) and whether it is chosen (`let-selected="selected"`). */
+export interface SelectOptionContext {
+	$implicit: SelectOption
+	selected: boolean
+}
 export interface SelectCloseEvent {
 	reason: SelectCloseReason
 	event: Event | undefined
@@ -44,7 +50,7 @@ export interface SelectCloseEvent {
 @Component({
 	selector: "omni-select",
 	standalone: true,
-	imports: [OmniPart],
+	imports: [OmniPart, NgTemplateOutlet],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	providers: [{ provide: NG_VALUE_ACCESSOR, useExisting: forwardRef(() => OmniSelect), multi: true }],
 	host: {
@@ -86,8 +92,31 @@ export interface SelectCloseEvent {
 		}
 		@if (clientReady() && state().mounted) {
 			<ul #list class="omni-menu omni-select__listbox" [omniPart]="parts().listbox">
-				@for (option of options; track option.value) {
-					<li class="omni-menu__item" [omniPart]="select.option(option)">{{ option.label }}</li>
+				@for (item of options; track $index) {
+					@if (asGroup(item); as group) {
+						<li class="omni-select__group" [omniPart]="select.group($index).root">
+							<span class="omni-select__group-label" [omniPart]="select.group($index).label">{{ group.label }}</span>
+							<ul [omniPart]="select.group($index).list">
+								@for (option of group.options; track option.value) {
+									<li class="omni-menu__item" [omniPart]="select.option(option)">
+										@if (optionTemplate) {
+											<ng-container [ngTemplateOutlet]="optionTemplate" [ngTemplateOutletContext]="context(option)" />
+										} @else {
+											{{ option.label }}
+										}
+									</li>
+								}
+							</ul>
+						</li>
+					} @else {
+						<li class="omni-menu__item" [omniPart]="select.option(asOption(item))">
+							@if (optionTemplate) {
+								<ng-container [ngTemplateOutlet]="optionTemplate" [ngTemplateOutletContext]="context(asOption(item))" />
+							} @else {
+								{{ asOption(item).label }}
+							}
+						</li>
+					}
 				}
 			</ul>
 		}
@@ -95,8 +124,10 @@ export interface SelectCloseEvent {
 })
 export class OmniSelect<T extends string | readonly string[] = string> implements ControlValueAccessor, OnInit, OnChanges {
 	@Input() label: string | undefined
-	/** What can be chosen. `value` is what is reported; `label` is what the user sees. */
-	@Input() options: readonly SelectOption[] = []
+	/** What can be chosen: options, and groups of options (`{ label, options }`). `value` is what is reported; `label` is what the user sees. */
+	@Input() options: readonly SelectItem[] = []
+	/** What an option looks like in the open list (an icon, a second line): `<ng-template let-option let-selected="selected">`. The closed select still shows the `label`. */
+	@Input() optionTemplate: TemplateRef<SelectOptionContext> | undefined
 	/** The chosen value (a list when `multiple`). `""` means nothing is selected. */
 	@Input() set value(v: T | null | undefined) {
 		this.store(v)
@@ -243,6 +274,19 @@ export class OmniSelect<T extends string | readonly string[] = string> implement
 			this.detach = undefined
 		}
 		if (!this.list && !this.detach) this.portal.leave()
+	}
+
+	protected asGroup(item: SelectItem): SelectGroup | null {
+		return isSelectGroup(item) ? item : null
+	}
+
+	protected asOption(item: SelectItem): SelectOption {
+		return item as SelectOption
+	}
+
+	protected context(option: SelectOption): SelectOptionContext {
+		const s = this.state()
+		return { $implicit: option, selected: s.multiple ? s.values.includes(option.value) : option.value === s.value }
 	}
 
 	focus(): void {

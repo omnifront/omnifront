@@ -31,5 +31,17 @@
 
 	/* the list: the menu's paper, at least as wide as the select */
 	.omni-select__listbox { min-inline-size: var(--omni-anchor-width, 0); }
+	/* option groups: a quiet heading above the group's options */
+	.omni-select__group { list-style: none; margin: 0; padding: 0; }
+	.omni-select__group > ul { list-style: none; margin: 0; padding: 0; }
+	.omni-select__group-label {
+		display: block;
+		padding: 8px 16px;
+		font: var(--omni-typography-body2-font);
+		font-weight: 500;
+		color: var(--omni-palette-text-secondary);
+		cursor: default;
+		user-select: none;
+	}
 	@media (prefers-reduced-motion: reduce) { .omni-select__icon { transition: none; } }
 }
