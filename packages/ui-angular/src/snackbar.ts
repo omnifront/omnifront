@@ -1,4 +1,4 @@
-import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from "@angular/common"
+import { DOCUMENT, isPlatformBrowser } from "@angular/common"
 import {
 	ChangeDetectionStrategy,
 	Component,
@@ -47,7 +47,7 @@ export class OmniSnackbarAction {}
 @Component({
 	selector: "omni-snackbar",
 	standalone: true,
-	imports: [OmniPart, NgTemplateOutlet],
+	imports: [OmniPart],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	host: { style: "display: contents" },
 	template: `
