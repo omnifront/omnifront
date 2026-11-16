@@ -3,6 +3,7 @@ import { defineComponent, h, nextTick, ref, type VNodeChild } from "vue"
 import { ButtonGroup, Checkbox, Fab, IconButton, Radio, RadioGroup, Rating, Slider, Switch, ToggleButton, ToggleButtonGroup } from "../src"
 import { Accordion, AccordionDetails, AccordionSummary, AppBar, Avatar, Badge, Card, CardActions, CardContent, CardHeader, Chip, Divider, List, ListItem, ListItemButton, ListItemIcon, ListItemText, ListSubheader, Paper, SvgIcon, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, Toolbar, Tooltip, Typography } from "../src"
 import { Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Menu, MenuItem, Select, Tab, TabContext, TabList, TabPanel, TextField } from "../src"
+import { Alert, AlertTitle, AccordionGroup, AvatarGroup, Backdrop, BottomNavigation, BottomNavigationAction, Breadcrumbs, CardActionArea, CircularProgress, Drawer, LinearProgress, Link, ListItemAvatar, Pagination, Popover, Skeleton, Snackbar, SpeedDial, SpeedDialAction, Step, Stepper, TablePagination, TableSortLabel } from "../src"
 import { mount, slot } from "./mount"
 
 type Log = (event: string) => void
@@ -350,10 +351,224 @@ const AccordionsView = defineComponent({
 })
 
 const TooltipView = defineComponent({
-	props: { log: { type: Function, required: true }, title: { type: String, default: "Saves your work" } },
+	props: { log: { type: Function, required: true }, title: { type: String, default: "Saves your work" }, arrow: { type: Boolean, default: undefined } },
 	setup(props) {
 		const log = props.log as Log
-		return () => h(Tooltip, { title: props.title, placement: "top", enterDelay: 0, leaveDelay: 50, onOpen: () => log("open"), onClose: () => log("close") }, slot(h("button", "Save")))
+		return () => h(Tooltip, { title: props.title, arrow: props.arrow, placement: "top", enterDelay: 0, leaveDelay: 50, enterTouchDelay: 30, leaveTouchDelay: 30, onOpen: () => log("open"), onClose: () => log("close") }, slot(h("button", "Save")))
+	},
+})
+
+const svg = () => h("svg", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [h("path", { d: "M0 0h24v24H0z" })])
+const txt = (t: string) => slot(t)
+
+const AlertsView = defineComponent({
+	props: { log: { type: Function, required: true } },
+	setup(props) {
+		const log = props.log as Log
+		return () => [
+			h(Alert, { severity: "error" }, slot(h(AlertTitle, null, txt("Upload failed")), "The file is too big.")),
+			h(Alert, null, txt("Saved")),
+			h(Alert, { severity: "info", variant: "filled" }, txt("Heads up")),
+			h(Alert, { severity: "warning", variant: "outlined", icon: false, onClose: () => log("close:warning") }, txt("Careful")),
+			h(Alert, { severity: "success" }, { default: () => "Done", action: () => h(Button, { color: "inherit", size: "small", onClick: () => log("click:undo") }, txt("Undo")) }),
+		]
+	},
+})
+
+const SnackbarView = defineComponent({
+	props: { log: { type: Function, required: true }, autoHideDuration: { type: Number, default: undefined } },
+	setup(props) {
+		const open = ref(false)
+		const log = props.log as Log
+		return () => [
+			h("button", { onClick: () => (open.value = true) }, "Show"),
+			h(Snackbar, { open: open.value, autoHideDuration: props.autoHideDuration, message: "Saved", onClose: (_e: unknown, reason: string) => { log(`close:${reason}`); open.value = false } }, { action: () => h(Button, { size: "small", onClick: () => log("click:undo") }, txt("Undo")) }),
+		]
+	},
+})
+
+const ProgressView = defineComponent({
+	props: { log: { type: Function, required: true }, value: { type: Number, default: undefined }, open: { type: Boolean, default: undefined } },
+	setup(props) {
+		const log = props.log as Log
+		return () => [
+			h(CircularProgress, { "aria-label": "Loading" }),
+			h(CircularProgress, { "aria-label": "Upload", value: props.value ?? 40 }),
+			h(LinearProgress, { "aria-label": "Progress", variant: "determinate", value: props.value ?? 40 }),
+			h(LinearProgress, { "aria-label": "Buffering", variant: "buffer", value: 30, valueBuffer: 60 }),
+			h(LinearProgress, { "aria-label": "Working" }),
+			h(Skeleton),
+			h(Skeleton, { variant: "circular", width: 40 }),
+			h(Skeleton, { variant: "rectangular", width: 200, height: 60, animation: false }),
+			h(Backdrop, { open: props.open ?? true, onClick: () => log("click:backdrop") }),
+		]
+	},
+})
+
+const DrawerView = defineComponent({
+	props: { log: { type: Function, required: true }, variant: String, anchor: String },
+	setup(props) {
+		const open = ref(false)
+		const log = props.log as Log
+		return () => [
+			h("button", { onClick: () => (open.value = true) }, "Open"),
+			h(Drawer, { variant: props.variant as never, anchor: props.anchor as never, open: open.value, "aria-label": "Navigation", onClose: (_e: unknown, reason: string) => { log(`close:${reason}`); open.value = false } }, slot(
+				h(List, null, slot(
+					h(ListItem, { disablePadding: true }, slot(h(ListItemButton, null, txt("Home")))),
+					h(ListItem, { disablePadding: true }, slot(h(ListItemButton, null, txt("Settings")))),
+				)),
+			)),
+		]
+	},
+})
+
+const PopoverView = defineComponent({
+	props: { log: { type: Function, required: true } },
+	setup(props) {
+		const anchor = ref<HTMLElement | null>(null)
+		const log = props.log as Log
+		return () => [
+			h("button", { id: "popover-button", onClick: (e: MouseEvent) => (anchor.value = e.currentTarget as HTMLElement) }, "Filters"),
+			h(Popover, { open: anchor.value !== null, anchorEl: anchor.value, "aria-label": "Filter options", onClose: (_e: unknown, reason: string) => { log(`close:${reason}`); anchor.value = null } }, slot(
+				h("p", "Filter options"),
+				h("button", { onClick: () => log("click:apply") }, "Apply"),
+			)),
+		]
+	},
+})
+
+const BreadcrumbsView = defineComponent({
+	props: { maxItems: { type: Number, default: undefined } },
+	setup(props) {
+		return () => [
+			h(Breadcrumbs, { maxItems: props.maxItems }, slot(
+				h(Link, { href: "/" }, txt("Home")),
+				h(Link, { href: "/library" }, txt("Library")),
+				h(Link, { href: "/data" }, txt("Data")),
+				h(Link, { href: "/reports" }, txt("Reports")),
+				h(Link, { href: "/2026" }, txt("2026")),
+				h("span", "Current"),
+			)),
+			h(Link, { href: "/docs", underline: "hover", color: "secondary" }, txt("Docs")),
+		]
+	},
+})
+
+const PaginationView = defineComponent({
+	props: { log: { type: Function, required: true }, count: { type: Number, default: undefined }, disabled: { type: Boolean, default: undefined } },
+	setup(props) {
+		const page = ref(1)
+		const log = props.log as Log
+		return () => [
+			h(Pagination, { "aria-label": "Results", count: props.count ?? 10, page: page.value, disabled: props.disabled, showFirstButton: true, showLastButton: true, onChange: (_e: unknown, p: number) => { log(`change:${p}`); page.value = p } }),
+			h(Pagination, { "aria-label": "Uncontrolled", count: 5, defaultPage: 3, variant: "outlined", size: "small", onChange: (_e: unknown, p: number) => log(`uncontrolled:${p}`) }),
+		]
+	},
+})
+
+const StepperView = defineComponent({
+	props: { log: { type: Function, required: true }, activeStep: { type: Number, default: undefined } },
+	setup(props) {
+		const log = props.log as Log
+		return () => [
+			h(Stepper, { "aria-label": "Checkout", activeStep: props.activeStep ?? 1 }, slot(
+				h(Step, { label: "Cart", onClick: () => log("click:cart") }),
+				h(Step, { label: "Address", optional: "Optional" }),
+				h(Step, { label: "Payment" }),
+				h(Step, { label: "Done" }),
+			)),
+			h(Stepper, { "aria-label": "Build steps", orientation: "vertical", activeStep: 0 }, slot(
+				h(Step, { label: "Plan" }, txt("Plan details")),
+				h(Step, { label: "Build" }, txt("Build details")),
+			)),
+		]
+	},
+})
+
+const BottomNavigationView = defineComponent({
+	props: { log: { type: Function, required: true }, showLabels: { type: Boolean, default: undefined } },
+	setup(props) {
+		const value = ref<string | number>("recents")
+		const log = props.log as Log
+		return () =>
+			h(BottomNavigation, { "aria-label": "Main", showLabels: props.showLabels, value: value.value, onChange: (_e: unknown, v: string | number) => { log(`change:${v}`); value.value = v } }, slot(
+				h(BottomNavigationAction, { value: "recents", label: "Recents" }, { icon: () => svg() }),
+				h(BottomNavigationAction, { value: "favorites", label: "Favorites" }, { icon: () => svg() }),
+				h(BottomNavigationAction, { value: "nearby", label: "Nearby", disabled: true }, { icon: () => svg() }),
+			))
+	},
+})
+
+const SpeedDialView = defineComponent({
+	props: { log: { type: Function, required: true } },
+	setup(props) {
+		const log = props.log as Log
+		return () =>
+			h(SpeedDial, { ariaLabel: "Actions" }, slot(
+				h(SpeedDialAction, { tooltipTitle: "Copy", onClick: () => log("click:copy") }, slot(svg())),
+				h(SpeedDialAction, { tooltipTitle: "Save", onClick: () => log("click:save") }, slot(svg())),
+				h(SpeedDialAction, { tooltipTitle: "Print", onClick: () => log("click:print") }, slot(svg())),
+			))
+	},
+})
+
+const SortableTableView = defineComponent({
+	props: { log: { type: Function, required: true } },
+	setup(props) {
+		const by = ref<"name" | "calories">("name")
+		const dir = ref<"asc" | "desc">("asc")
+		const page = ref(0)
+		const rows = ref(10)
+		const log = props.log as Log
+		const sortBy = (column: "name" | "calories") => {
+			log(`sort:${column}`)
+			if (by.value === column) dir.value = dir.value === "asc" ? "desc" : "asc"
+			else { by.value = column; dir.value = "asc" }
+		}
+		const head = (column: "name" | "calories", label: string) =>
+			h(TableCell, { sortDirection: by.value === column ? dir.value : false }, slot(h(TableSortLabel, { active: by.value === column, direction: by.value === column ? dir.value : "asc", onClick: () => sortBy(column) }, txt(label))))
+		return () =>
+			h(Table, { "aria-label": "Desserts" }, slot(
+				h(TableHead, null, slot(h(TableRow, null, slot(head("name", "Name"), head("calories", "Calories"))))),
+				h(TableBody, null, slot(
+					h(TableRow, null, slot(h(TableCell, null, txt("Cupcake")), h(TableCell, null, txt("305")))),
+					h(TableRow, null, slot(h(TableCell, null, txt("Donut")), h(TableCell, null, txt("452")))),
+				)),
+				h(TableFooter, null, slot(h(TableRow, null, slot(
+					h(TablePagination, {
+						count: 23, page: page.value, rowsPerPage: rows.value, rowsPerPageOptions: [5, 10, 25], colSpan: 2,
+						onPageChange: (_e: unknown, p: number) => { log(`page:${p}`); page.value = p },
+						onRowsPerPageChange: (n: number) => { log(`rows:${n}`); rows.value = n; page.value = 0 },
+					}),
+				)))),
+			))
+	},
+})
+
+const CardsAndListsView = defineComponent({
+	props: { log: { type: Function, required: true } },
+	setup(props) {
+		const log = props.log as Log
+		return () => [
+			h(Card, null, slot(h(CardActionArea, { onClick: () => log("click:area") }, slot(h(CardContent, null, txt("Action card")))))),
+			h(Card, null, slot(h(CardActionArea, { href: "/card" }, slot(h(CardContent, null, txt("Link card")))))),
+			h(AvatarGroup, { max: 3 }, slot(...["A", "B", "C", "D", "E"].map((l) => h(Avatar, null, txt(l))))),
+			h(AvatarGroup, { max: 3, total: 6 }, slot(h(Avatar, null, txt("A")), h(Avatar, null, txt("B")))),
+			h(List, null, slot(
+				h(ListItem, { alignItems: "flex-start" }, slot(h(ListItemAvatar, null, slot(h(Avatar, null, txt("R")))), h(ListItemText, { primary: "Brunch", secondary: "Ali Connors" }))),
+				h(ListItem, { disablePadding: true }, slot(h(ListItemButton, { alignItems: "flex-start" }, slot(h(ListItemAvatar, null, slot(h(Avatar, null, txt("S")))), h(ListItemText, { primary: "Summer BBQ" }))))),
+			)),
+		]
+	},
+})
+
+const AccordionGroupView = defineComponent({
+	props: { log: { type: Function, required: true }, multiple: { type: Boolean, default: undefined } },
+	setup(props) {
+		const log = props.log as Log
+		const item = (value: string, name: string) => h(Accordion, { value }, slot(h(AccordionSummary, null, txt(name)), h(AccordionDetails, null, txt(`${name} body`))))
+		return () =>
+			h(AccordionGroup, { multiple: props.multiple, defaultValue: props.multiple ? ["a"] : "a", onChange: (_e: unknown, v: string | string[] | null) => log(`change:${Array.isArray(v) ? v.join(",") : (v ?? "")}`) }, slot(item("a", "Alpha"), item("b", "Beta"), item("c", "Gamma")))
 	},
 })
 
@@ -381,7 +596,22 @@ const harness: UiHarness = {
 	table: (props) => mountWith(props, (p) => h(TableView, { size: p.size as string })),
 	chips: (props, log) => mountWith(props, (p) => h(ChipsView, { log, disabled: p.disabled ?? false })),
 	accordions: (props, log) => mountWith(props, (p) => h(AccordionsView, { log, disabled: p.disabled ?? false })),
-	tooltip: (props, log) => mountWith(props, (p) => h(TooltipView, { log, title: p.title as string })),
+	tooltip: (props, log) => mountWith(props, (p) => h(TooltipView, { log, title: p.title as string, arrow: p.arrow as boolean | undefined } as never)),
+	alerts: (_props, log) => mountWith({}, () => h(AlertsView, { log })),
+	snackbar: (props, log) => mountWith(props, (p) => h(SnackbarView, { log, autoHideDuration: p.autoHideDuration } as never)),
+	progress: (props, log) => mountWith(props, (p) => h(ProgressView, { log, value: p.value, open: p.open } as never)),
+	drawer: (props, log) => mountWith(props, (p) => h(DrawerView, { log, variant: props.variant, anchor: props.anchor } as never)),
+	popover: (_props, log) => mountWith({}, () => h(PopoverView, { log })),
+	breadcrumbs: (props) => mountWith(props, (p) => h(BreadcrumbsView, { maxItems: p.maxItems } as never)),
+	pagination: (props, log) => mountWith(props, (p) => h(PaginationView, { log, count: p.count, disabled: p.disabled } as never)),
+	stepper: (props, log) => mountWith(props, (p) => h(StepperView, { log, activeStep: p.activeStep } as never)),
+	bottomNavigation: (props, log) => mountWith(props, (p) => h(BottomNavigationView, { log, showLabels: p.showLabels } as never)),
+	speedDial: (_props, log) => mountWith({}, () => h(SpeedDialView, { log })),
+	sortableTable: (_props, log) => mountWith({}, () => h(SortableTableView, { log })),
+	cardsAndLists: (_props, log) => mountWith({}, () => h(CardsAndListsView, { log })),
+	accordionGroup: (props, log) => mountWith(props, () => h(AccordionGroupView, { log, multiple: props.multiple } as never)),
+	chipDeleteIcon: (_props, log) => mountWith({}, () => h(Chip, { label: "Custom delete", onDelete: () => log("delete:custom") }, { deleteIcon: () => h("svg", { "data-custom-delete": "", viewBox: "0 0 24 24" }, [h("path", { d: "M0 0h24v24H0z" })]) })),
+	richTooltip: (_props, log) => mountWith({}, () => h(Tooltip, { enterDelay: 0, leaveDelay: 0, onOpen: () => log("open"), onClose: () => log("close") }, { default: () => h("button", "Info"), title: () => [h("strong", { "data-rich": "" }, "Rich"), " content"] })),
 	tabs: (props, log) => mountWith(props, (p) => h(TabsView, { log, selectionFollowsFocus: p.selectionFollowsFocus ?? false })),
 	settle: async () => {
 		await nextTick()

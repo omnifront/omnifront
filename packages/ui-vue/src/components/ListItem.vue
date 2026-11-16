@@ -12,12 +12,14 @@ const raw = defineProps<{
 	/** No padding: for a row whose ListItemButton does the padding. */
 	disablePadding?: boolean | undefined
 	disableGutters?: boolean | undefined
+	/** `flex-start` aligns the icon, avatar and action with the first line of multi-line text. */
+	alignItems?: "center" | "flex-start" | undefined
 }>()
 const props = useDefaultProps("OmniListItem", () => ({ ...raw }))
 const slots = useSlots()
 const bound = computed(() => {
 	const p = props.value
-	return toVueProps(displayPart("omni-list__item", { divider: p.divider || undefined, disablePadding: p.disablePadding || undefined, disableGutters: p.disableGutters || undefined, secondaryAction: slots["secondaryAction"] !== undefined }))
+	return toVueProps(displayPart("omni-list__item", { divider: p.divider || undefined, disablePadding: p.disablePadding || undefined, disableGutters: p.disableGutters || undefined, alignItems: p.alignItems === "flex-start" ? p.alignItems : undefined, secondaryAction: slots["secondaryAction"] !== undefined }))
 })
 </script>
 
