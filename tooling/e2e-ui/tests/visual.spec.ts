@@ -15,8 +15,8 @@ for (const scenario of scenarios) {
 		for (const framework of Object.keys(frameworks) as Framework[]) {
 			const context = await browser.newContext({ viewport: { width: 1000, height: 1500 }, reducedMotion: "reduce" })
 			const page = await context.newPage()
-			await open(page, framework, scenario.query)
-			shots[framework] = await page.screenshot({ animations: "disabled", caret: "hide" })
+			await open(page, framework, scenario.query, { rtl: "rtl" in scenario })
+			shots[framework] = await page.screenshot({ animations: "disabled", caret: "hide", fullPage: "fullPage" in scenario })
 			await context.close()
 		}
 		const reference = PNG.sync.read(shots.react)

@@ -5,9 +5,9 @@ import { frameworks, open, scenarios, type Framework } from "./pages"
 // axe in a real browser, so colour contrast is checked too (it needs real layout and paint, which
 // the jsdom conformance tests cannot do).
 for (const framework of Object.keys(frameworks) as Framework[]) {
-	for (const scenario of scenarios.filter((s) => ["light", "dark", "brand", "dialog", "menu", "select", "select-dark"].includes(s.name))) {
+	for (const scenario of scenarios.filter((s) => ["light", "dark", "brand", "dialog", "menu", "select", "select-dark", "display", "display-dark", "display-rtl", "display-tooltip", "display-accordion"].includes(s.name))) {
 		test(`axe: ${framework} ${scenario.name}`, async ({ page }) => {
-			await open(page, framework, scenario.query)
+			await open(page, framework, scenario.query, { rtl: "rtl" in scenario })
 			const result = await new AxeBuilder({ page })
 				.withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
 				.disableRules(["region"]) // page landmarks: about whole pages, not components

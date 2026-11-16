@@ -31,6 +31,7 @@ import {
 	type ColorSchemeMode,
 } from "@omnifront/ui-react"
 import { useEffect, useMemo, useState } from "react"
+import { Display } from "./Display"
 
 // The same page exists for Vue and Angular (examples/ui-vue, examples/ui-angular). The URL sets the
 // starting state (?scheme=dark&theme=brand&open=dialog&tab=queries) so the three can be compared
@@ -78,6 +79,13 @@ export function App() {
 		if (params.get("open") === "menu") setAnchor(document.getElementById("menu-button"))
 	}, [])
 
+	if (params.get("view") === "display") {
+		return (
+			<ThemeProvider theme={theme} colorScheme={mode} global>
+				<Display />
+			</ThemeProvider>
+		)
+	}
 	return (
 		<ThemeProvider theme={theme} colorScheme={mode} global>
 			<main style={{ maxWidth: 880, margin: "0 auto", padding: 24, display: "grid", gap: 32, color: "var(--omni-palette-text-primary)", font: "var(--omni-typography-body1-font)" }}>

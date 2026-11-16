@@ -200,6 +200,8 @@ describe("Tooltip", () => {
 		expect(tip.getSnapshot().open).toBe(true)
 		expect(trigger.getAttribute("aria-describedby")).toBe("t")
 		trigger.dispatchEvent(new Event("pointerleave"))
+		expect(tip.getSnapshot().open).toBe(true) // one tick of grace, so the pointer can reach the tooltip
+		clock.advance(0)
 		expect(tip.getSnapshot().open).toBe(false)
 		expect(tip.getSnapshot().mounted).toBe(true) // exit animation
 		clock.advance(200)
@@ -238,7 +240,31 @@ describe("Tooltip", () => {
 
 		const flat = createTooltip({ id: "u", scheduler: clock.scheduler, disableInteractive: true, defaultOpen: true })
 		flat.connect().tooltip.on.pointerleave?.(new Event("pointerleave"))
-		expect(flat.getSnapshot().open).toBe(true)
+		expect(flat.getSnapshot().open).toBe(true) // the tooltip itself is not a place to rest
+		const flatTrigger = document.createElement("button")
+		flat.attachTrigger(flatTrigger)
+		flatTrigger.dispatchEvent(new Event("pointerleave"))
+		expect(flat.getSnapshot().open).toBe(false) // no grace tick: it closes at once
+
+		const zero = createTooltip({ id: "z", scheduler: clock.scheduler, defaultOpen: true })
+		const zeroTrigger = document.createElement("button")
+		zero.attachTrigger(zeroTrigger)
+		zeroTrigger.dispatchEvent(new Event("pointerleave"))
+		zero.connect().tooltip.on.pointerenter?.(new Event("pointerenter")) // lands on the tooltip in the same move
+		clock.advance(0)
+		expect(zero.getSnapshot().open).toBe(true)
+
+		// React reports the tooltip as entered before the trigger's own pointerleave arrives
+		const react = createTooltip({ id: "r", scheduler: clock.scheduler, defaultOpen: true })
+		const reactTrigger = document.createElement("button")
+		react.attachTrigger(reactTrigger)
+		react.connect().tooltip.on.pointerenter?.(new Event("pointerenter"))
+		reactTrigger.dispatchEvent(new Event("pointerleave"))
+		clock.advance(100)
+		expect(react.getSnapshot().open).toBe(true)
+		react.connect().tooltip.on.pointerleave?.(new Event("pointerleave"))
+		clock.advance(100)
+		expect(react.getSnapshot().open).toBe(false)
 	})
 
 	it("ignores touch and does nothing when disabled; keeps other describedby ids", () => {

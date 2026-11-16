@@ -1,4 +1,5 @@
 import {
+	AfterContentInit,
 	ChangeDetectionStrategy,
 	Component,
 	Directive,
@@ -193,10 +194,10 @@ export class OmniDivider extends PartHost implements OnChanges {
 	template: `
 		@if (showImage()) {<img class="omni-avatar__img" [attr.src]="src" [attr.srcset]="srcSet ?? null" [attr.alt]="alt ?? ''" (error)="failed.set(true)" />}
 		<ng-content />
-		<svg class="omni-avatar__fallback" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path [attr.d]="personPath" /></svg>
+		@if (showFallback()) {<svg class="omni-avatar__fallback" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path [attr.d]="personPath" /></svg>}
 	`,
 })
-export class OmniAvatar extends PartHost implements OnChanges {
+export class OmniAvatar extends PartHost implements OnChanges, AfterContentInit {
 	@Input() variant: "circular" | "rounded" | "square" | undefined
 	@Input() src: string | undefined
 	@Input() srcSet: string | undefined
@@ -205,7 +206,17 @@ export class OmniAvatar extends PartHost implements OnChanges {
 	protected readonly failed = signal(false)
 	private lastSource: string | undefined
 
+	/** Whether the author put anything in the avatar (text or an element). Read once the content is in. */
+	private readonly hasContent = signal(false)
+
 	protected showImage = (): boolean => Boolean(this.src || this.srcSet) && !this.failed()
+	/** The generic person, when there is neither a picture that works nor content (React and Vue decide the same way in their render). */
+	protected showFallback = (): boolean => !this.showImage() && !this.hasContent()
+
+	ngAfterContentInit(): void {
+		const own = (n: Node): boolean => n.nodeType === 1 && ((n as Element).classList.contains("omni-avatar__img") || (n as Element).classList.contains("omni-avatar__fallback"))
+		this.hasContent.set(Array.from(this.element.childNodes).some((n) => (n.nodeType === 3 && (n.textContent ?? "").trim() !== "") || (n.nodeType === 1 && !own(n))))
+	}
 
 	ngOnChanges(): void {
 		const source = `${this.src}|${this.srcSet}`

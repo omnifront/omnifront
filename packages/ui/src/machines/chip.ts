@@ -45,7 +45,8 @@ export class Chip extends Machine<ChipProps, ChipState> {
 				{
 					role: clickable ? "button" : undefined,
 					tabindex: focusable ? 0 : undefined,
-					"aria-disabled": disabled && clickable ? "true" : undefined,
+					// Also on a chip that is not a button: a disabled, greyed-out chip is "unavailable" to assistive technology (and exempt from contrast checks).
+					"aria-disabled": disabled ? "true" : undefined,
 					"aria-keyshortcuts": deletable && !disabled ? "Backspace Delete" : undefined,
 					"data-clickable": clickable ? "" : undefined,
 					"data-deletable": deletable ? "" : undefined,

@@ -34,6 +34,8 @@ export interface TooltipElements {
  */
 export class Tooltip extends OpenMachine<TooltipProps, TooltipState> {
 	private delay: TimerHandle | undefined
+	/** The pointer is on the tooltip. React tells the tooltip it was entered before the trigger's own `pointerleave`, so a close cannot only be cancelled: it must not start. */
+	private overTooltip = false
 	protected override defaultExitDuration = 120
 
 	constructor(props: TooltipProps) {
@@ -62,14 +64,18 @@ export class Tooltip extends OpenMachine<TooltipProps, TooltipState> {
 		else this.delay = this.scheduler.setTimeout(run, ms)
 	}
 
-	private closeSoon(ms: number, event?: Event): void {
+	/**
+	 * Close after `ms`. A pointer that leaves the trigger always waits one tick even at 0: moving onto
+	 * the tooltip fires its `pointerenter` in the same move, and that must be able to cancel the close.
+	 */
+	private closeSoon(ms: number, event?: Event, pointer = false): void {
 		this.clearDelay()
 		const run = (): void => {
 			this.delay = undefined
 			this.hide("trigger", event)
 		}
-		if (ms <= 0) run()
-		else this.delay = this.scheduler.setTimeout(run, ms)
+		if (ms <= 0 && !(pointer && !this.props.disableInteractive)) run()
+		else this.delay = this.scheduler.setTimeout(run, Math.max(0, ms))
 	}
 
 	connect(): { tooltip: Part } {
@@ -79,10 +85,12 @@ export class Tooltip extends OpenMachine<TooltipProps, TooltipState> {
 				{ id: this.props.id, role: "tooltip", "data-state": state },
 				{
 					pointerenter: () => {
+						this.overTooltip = true
 						if (!this.props.disableInteractive) this.clearDelay() // still hovering: a pending close is off
 					},
 					pointerleave: (event) => {
-						if (!this.props.disableInteractive) this.closeSoon(this.props.leaveDelay ?? 0, event)
+						this.overTooltip = false
+						if (!this.props.disableInteractive) this.closeSoon(this.props.leaveDelay ?? 0, event, true)
 					},
 				},
 			),
@@ -102,9 +110,13 @@ export class Tooltip extends OpenMachine<TooltipProps, TooltipState> {
 		}
 		const onEnter = (event: Event): void => {
 			if ((event as PointerEvent).pointerType === "touch") return
+			this.overTooltip = false // the pointer is on the trigger now (a tooltip that vanished under it never said it left)
 			this.openSoon(this.props.enterDelay ?? 100, event)
 		}
-		const onLeave = (event: Event): void => this.closeSoon(this.props.leaveDelay ?? 0, event)
+		const onLeave = (event: Event): void => {
+			if (this.overTooltip && !this.props.disableInteractive) return // it already moved onto the tooltip
+			this.closeSoon(this.props.leaveDelay ?? 0, event, true)
+		}
 		const onFocus = (event: Event): void => {
 			// Focus from a mouse click is not a reason to show a hint; keyboard focus is.
 			let visible = true
