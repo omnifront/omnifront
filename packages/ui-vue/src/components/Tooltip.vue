@@ -26,8 +26,14 @@ const raw = withDefaults(
 		leaveDelay?: number | undefined
 		/** Close as soon as the pointer leaves the trigger, even towards the tooltip. */
 		disableInteractive?: boolean | undefined
+		/** A small pointer from the tooltip to the element. */
+		arrow?: boolean | undefined
+		/** Milliseconds a finger must rest on the element before it opens. Default 700. */
+		enterTouchDelay?: number | undefined
+		/** Milliseconds after the finger lifts before it closes. Default 1500. */
+		leaveTouchDelay?: number | undefined
 	}>(),
-	{ open: undefined, defaultOpen: undefined, disableInteractive: undefined },
+	{ open: undefined, defaultOpen: undefined, disableInteractive: undefined, arrow: undefined },
 )
 const emit = defineEmits<{ open: [event: Event | undefined]; close: [event: Event | undefined]; "update:open": [open: boolean] }>()
 const props = useDefaultProps("OmniTooltip", () => ({ ...raw }))
@@ -41,6 +47,8 @@ const { machine, state } = useMachine(
 		open: hasTitle.value ? props.value.open : false,
 		enterDelay: props.value.enterDelay,
 		leaveDelay: props.value.leaveDelay,
+		enterTouchDelay: props.value.enterTouchDelay,
+		leaveTouchDelay: props.value.leaveTouchDelay,
 		disableInteractive: props.value.disableInteractive || undefined,
 		disabled: !hasTitle.value,
 		onOpenChange: (open: boolean, _reason: CloseReason, event?: Event) => {
@@ -71,10 +79,10 @@ onMounted(syncTrigger)
 onUpdated(syncTrigger)
 onBeforeUnmount(() => detach?.())
 watch(
-	() => [state.value.mounted, floating.value, props.value.placement] as const,
-	([mounted, el, placement], _old, onCleanup) => {
+	() => [state.value.mounted, floating.value, props.value.placement, props.value.arrow] as const,
+	([mounted, el, placement, arrow], _old, onCleanup) => {
 		if (!mounted || !el || !(trigger instanceof HTMLElement)) return
-		onCleanup(machine.attach({ trigger, tooltip: el, position: (anchor, node) => autoPosition(anchor, node, { placement: placement ?? "bottom", offset: 8 }) }))
+		onCleanup(machine.attach({ trigger, tooltip: el, position: (anchor, node) => autoPosition(anchor, node, { placement: placement ?? "bottom", offset: arrow ? 10 : 8, arrow: arrow === true }) }))
 	},
 	{ flush: "post", immediate: true },
 )
@@ -83,6 +91,6 @@ watch(
 <template>
 	<span ref="wrapper" class="omni-tooltip-trigger"><slot /></span>
 	<Portal>
-		<div v-if="state.mounted && hasTitle" ref="floating" v-bind="tooltipPart" class="omni-tooltip"><slot name="title">{{ props.title }}</slot></div>
+		<div v-if="state.mounted && hasTitle" ref="floating" v-bind="tooltipPart" class="omni-tooltip"><slot name="title">{{ props.title }}</slot><span v-if="props.arrow" class="omni-tooltip__arrow" data-arrow="" aria-hidden="true" /></div>
 	</Portal>
 </template>

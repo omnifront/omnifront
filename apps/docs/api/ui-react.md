@@ -236,3 +236,114 @@ One collapsible section (`AccordionProps`: `expanded` / `defaultExpanded` / `onC
 
 A description for the one element inside (`TooltipProps`: `title`, `placement` (default `bottom`, flips when there is no room), `open` / `defaultOpen` / `onOpen` / `onClose`, `enterDelay` (default 100 ms), `leaveDelay`, `disableInteractive`, `className`). It opens when the pointer rests on the trigger or when it gets keyboard focus, closes on leave, blur or Escape (wherever the focus is), and stays while the pointer is on it (WCAG 1.4.13). The tooltip is a description, not a name: `aria-describedby` is set while it is open, so an icon-only trigger still needs its own `aria-label`. Touch does not open it. The trigger is wrapped in a `display: contents` span.
 
+## Wave 3: feedback and navigation
+
+### `Alert`, `AlertTitle`
+
+```tsx
+<Alert severity="error" onClose={() => setOpen(false)}>
+	<AlertTitle>Upload failed</AlertTitle>The file is too big.
+</Alert>
+```
+
+A short message with a status icon (`AlertProps`: `severity` (`error`, `warning`, `info`, `success`; default `success`), `variant` (`standard`, `filled`, `outlined`), `icon` (a node, or `false` for none), `action` (a node at the far end), `onClose` (adds a close button), `closeText` (its name, default "Close")). `error` and `warning` are announced at once (`role="alert"`); `info` and `success` politely (`role="status"`).
+
+### `Snackbar`
+
+```tsx
+<Snackbar open={open} autoHideDuration={4000} message="Saved" action={<Button size="small">Undo</Button>} onClose={(_e, reason) => setOpen(false)} />
+```
+
+A short message at the edge of the screen, a polite live region (`SnackbarProps`: `open`, `onClose(event, reason)` with `SnackbarCloseReason` `timeout`, `outsidePress`, `escapeKeyDown`, `autoHideDuration` (leave out to stay), `anchorOrigin`, `message`, `action`, `disableClickAway`; children replace `message` and `action`, usually an `Alert`). The timer pauses while the pointer is on it or focus is inside (WCAG 2.2.1) and counts half the time again afterwards. Showing several messages in turn is yours to do.
+
+### `Backdrop`, `CircularProgress`, `LinearProgress`, `Skeleton`
+
+```tsx
+<CircularProgress aria-label="Loading" />
+<LinearProgress aria-label="Upload" variant="determinate" value={40} />
+<Skeleton variant="rounded" width={120} height={48} />
+```
+
+Loading states. `CircularProgress` (`CircularProgressProps`: `value` 0 to 100, no value means a spinner; `size`, `thickness`, `color`) and `LinearProgress` (`LinearProgressProps`: `variant` `determinate`, `indeterminate` or `buffer`, `value`, `valueBuffer`, `color`) are `role="progressbar"`: name them with `aria-label`. `Skeleton` (`SkeletonProps`: `variant`, `animation` `pulse`, `wave` or `false`, `width`, `height`) is decorative; put `aria-busy` on the region that loads. `Backdrop` (`BackdropProps`: `open`, `invisible`) is a dimmed layer for your own modal pieces. With reduced motion the spinners slow down instead of stopping.
+
+### `Drawer`
+
+```tsx
+<Drawer open={open} onClose={() => setOpen(false)} aria-label="Navigation">…</Drawer>
+<Drawer variant="permanent" anchor="start" width={240}>…</Drawer>
+```
+
+A panel at the edge of the screen (`DrawerProps`: `variant`, `anchor`, `open`, `onClose(event, reason)` with `DrawerCloseReason`, `width`). `temporary` (the default) is a modal dialog: focus trap, Escape and a click outside close it, the page behind stops scrolling. `persistent` slides in and out and `permanent` is always there; both are an `<aside>` that does not take focus. `anchor` is `start`, `end`, `top` or `bottom`; `start` and `end` follow the writing direction.
+
+### `Popover`
+
+```tsx
+<Popover open={anchor !== null} anchorEl={anchor} onClose={() => setAnchor(null)} aria-label="Filters">…</Popover>
+```
+
+A panel next to an element that holds anything (`PopoverProps`: `open`, `anchorEl`, `onClose(event, reason)` with `PopoverCloseReason`, `placement` (default `bottom-start`)). It is not modal: the page stays usable. Escape and a press outside ask to close, focus moves in and goes back to the anchor. It is a `role="dialog"` and needs `aria-label` or `aria-labelledby`.
+
+### `Breadcrumbs`, `Link`
+
+```tsx
+<Breadcrumbs maxItems={4}><Link href="/">Home</Link><Link href="/docs">Docs</Link><span>Guide</span></Breadcrumbs>
+```
+
+`Breadcrumbs` (`BreadcrumbsProps`: `separator`, `maxItems` (default 8), `itemsBeforeCollapse`, `itemsAfterCollapse`, `expandText`) is a `nav` with an ordered list; the last item is `aria-current="page"`, and a long path folds its middle under a "…" button. `Link` (`LinkProps`: `underline` `always`, `hover` or `none`, `color`, `component`) is a real `<a>`.
+
+### `Pagination`
+
+```tsx
+<Pagination count={10} page={page} onChange={(_e, next) => setPage(next)} showFirstButton showLastButton />
+```
+
+Page buttons (`PaginationProps`: `count`, `page` / `defaultPage` (1-based), `onChange(event, page)`, `disabled`, `siblingCount`, `boundaryCount`, `showFirstButton`, `showLastButton`, `hidePrevButton`, `hideNextButton`, `variant`, `shape`, `size`, `color`). A `nav` of real buttons; the current page is `aria-current="page"`. The "…" never hides a single page.
+
+### `Stepper`, `Step`
+
+```tsx
+<Stepper activeStep={1}><Step label="Cart" /><Step label="Address" optional="Optional" /><Step label="Done" /></Stepper>
+```
+
+An ordered list of steps (`StepperProps`: `activeStep`, `orientation`, `alternativeLabel`, `nonLinear`; `StepProps`: `label`, `optional`, `completed`, `active`, `disabled`, `error`, `icon`, `onClick`, children). The step's number comes from its place among the children; the active one is `aria-current="step"`. With `onClick` the header is a button. In a vertical stepper the children of the active step show under its label.
+
+### `BottomNavigation`, `BottomNavigationAction`
+
+```tsx
+<BottomNavigation aria-label="Main" value={tab} onChange={(_e, v) => setTab(v)}>
+	<BottomNavigationAction value="home" label="Home" icon={<HomeIcon />} />
+</BottomNavigation>
+```
+
+A bar of 3 to 5 destinations (`BottomNavigationProps`: `value`, `onChange(event, value)`, `showLabels`; `BottomNavigationActionProps`: `value`, `label`, `icon`, `disabled`). Always controlled; the current action is `aria-current="page"`.
+
+### `SpeedDial`, `SpeedDialAction`
+
+```tsx
+<SpeedDial ariaLabel="Actions"><SpeedDialAction tooltipTitle="Copy" icon={<CopyIcon />} onClick={copy} /></SpeedDial>
+```
+
+A floating button that fans out actions (`SpeedDialProps`: `ariaLabel` (required), `icon`, `direction`, `open` / `defaultOpen`, `onOpen`, `onClose`; `SpeedDialActionProps`: `icon`, `tooltipTitle`, `onClick`). A `menu` of `menuitem`s: it opens on click and on hover, the arrow keys (in the direction of the fan) move between actions, Escape closes and refocuses the button, and choosing an action closes it.
+
+### `CardActionArea`, `AvatarGroup`, `ListItemAvatar`
+
+`CardActionArea` (`CardActionAreaProps`: `href`) is one `<button>` (or `<a>`) around the card's content: do not put another button or link inside it. `AvatarGroup` (`AvatarGroupProps`: `max` (default 5), `total`, `spacing`, `variant`) overlaps its Avatars and folds the extra ones into "+N". `ListItemAvatar` is the gap-keeping box for an `Avatar` at the start of a row; `ListItem` and `ListItemButton` take `alignItems="flex-start"` for multi-line text.
+
+### `TableSortLabel`, `TablePagination`
+
+```tsx
+<TableCell sortDirection={by === "name" ? dir : false}><TableSortLabel active={by === "name"} direction={dir} onClick={() => sortBy("name")}>Name</TableSortLabel></TableCell>
+<TablePagination count={23} page={page} rowsPerPage={rows} onPageChange={(_e, p) => setPage(p)} onRowsPerPageChange={setRows} colSpan={3} />
+```
+
+`TableSortLabel` (`TableSortLabelProps`: `active`, `direction`) is a button with an arrow; sorting the data is yours, and `TableCell` writes `aria-sort` from its `sortDirection`. `TablePagination` (`TablePaginationProps`: `count` (-1 when unknown), `page` (0-based), `rowsPerPage`, `rowsPerPageOptions`, `onPageChange(event, page)`, `onRowsPerPageChange(rows)`, `labelRowsPerPage`) is the footer row: a native `<select>`, "1–10 of 95" in a polite live region, and previous and next buttons. Always controlled.
+
+### `AccordionGroup`
+
+```tsx
+<AccordionGroup defaultValue="a"><Accordion value="a">…</Accordion><Accordion value="b">…</Accordion></AccordionGroup>
+```
+
+Keeps one Accordion open (`AccordionGroupProps`: `value` / `defaultValue` (a string, or a list with `multiple`), `onChange(event, value)`, `multiple`). Give each Accordion a `value`.
+
+`Chip` takes `deleteIcon` (a node that replaces the cross and keeps its role); `Tooltip` takes `arrow`, `enterTouchDelay` (default 700 ms) and `leaveTouchDelay` (default 1500 ms): a held finger opens it, a short tap does nothing.

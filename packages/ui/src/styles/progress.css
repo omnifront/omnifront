@@ -1,0 +1,35 @@
+@layer omnifront {
+	/* CircularProgress and LinearProgress. Reduced motion slows the spin to a crawl instead of stopping it: a still ring reads as "frozen". */
+	.omni-circular-progress, .omni-linear-progress { --_main: var(--omni-palette-primary-main); color: var(--_main); }
+	.omni-circular-progress[data-color="inherit"], .omni-linear-progress[data-color="inherit"] { --_main: currentColor; }
+	.omni-circular-progress { display: inline-block; inline-size: var(--_size, 40px); block-size: var(--_size, 40px); line-height: 1; }
+	.omni-circular-progress[data-variant="indeterminate"] { animation: omni-spin 1.4s linear infinite; }
+	.omni-circular-progress[data-variant="determinate"] { transition: transform var(--omni-duration-standard) linear; transform: rotate(-90deg); }
+	.omni-circular-progress__svg { display: block; inline-size: 100%; block-size: 100%; }
+	.omni-circular-progress__circle { stroke: currentColor; stroke-linecap: round; }
+	.omni-circular-progress[data-variant="determinate"] .omni-circular-progress__circle { transition: stroke-dashoffset var(--omni-duration-standard) var(--omni-easing-ease-in-out); }
+	.omni-circular-progress[data-variant="indeterminate"] .omni-circular-progress__circle { stroke-dasharray: 80px, 200px; stroke-dashoffset: 0; animation: omni-dash 1.4s ease-in-out infinite; }
+	@keyframes omni-spin { to { transform: rotate(360deg); } }
+	@keyframes omni-dash { 0% { stroke-dasharray: 1px, 200px; stroke-dashoffset: 0; } 50% { stroke-dasharray: 100px, 200px; stroke-dashoffset: -15px; } 100% { stroke-dasharray: 1px, 200px; stroke-dashoffset: -126px; } }
+
+	.omni-linear-progress { position: relative; display: block; block-size: 4px; overflow: hidden; z-index: 0; background-color: color-mix(in srgb, var(--_main) 28%, var(--omni-palette-background-paper)); --_dir: 1; }
+	[dir="rtl"] .omni-linear-progress { --_dir: -1; }
+	.omni-linear-progress__bar { position: absolute; inset: 0; background-color: var(--_main); transform-origin: 0 0; transition: transform 0.4s linear; }
+	[dir="rtl"] .omni-linear-progress__bar { transform-origin: 100% 0; }
+	.omni-linear-progress[data-variant="determinate"] .omni-linear-progress__bar1, .omni-linear-progress[data-variant="buffer"] .omni-linear-progress__bar1 { transform: translateX(calc((var(--_p, 0) - 100) * 1% * var(--_dir))); }
+	.omni-linear-progress[data-variant="determinate"] .omni-linear-progress__bar2 { display: none; }
+	.omni-linear-progress[data-variant="buffer"] { background-color: transparent; }
+	.omni-linear-progress[data-variant="buffer"]::before { content: ""; position: absolute; inset: 0; background-color: color-mix(in srgb, var(--_main) 28%, var(--omni-palette-background-paper)); }
+	.omni-linear-progress[data-variant="buffer"] .omni-linear-progress__bar2 { background-color: color-mix(in srgb, var(--_main) 45%, var(--omni-palette-background-paper)); transform: translateX(calc((var(--_p, 0) - 100) * 1% * var(--_dir))); z-index: -1; }
+	.omni-linear-progress[data-variant="indeterminate"] .omni-linear-progress__bar1 { inset-inline-end: auto; inline-size: auto; animation: omni-indeterminate1 2.1s cubic-bezier(0.65, 0.815, 0.735, 0.395) infinite; }
+	.omni-linear-progress[data-variant="indeterminate"] .omni-linear-progress__bar2 { animation: omni-indeterminate2 2.1s cubic-bezier(0.165, 0.84, 0.44, 1) 1.15s infinite; }
+	.omni-linear-progress[data-variant="buffer"] .omni-linear-progress__bar2 { display: block; }
+	@keyframes omni-indeterminate1 { 0% { inset-inline-start: -35%; inset-inline-end: 100%; } 60% { inset-inline-start: 100%; inset-inline-end: -90%; } 100% { inset-inline-start: 100%; inset-inline-end: -90%; } }
+	@keyframes omni-indeterminate2 { 0% { inset-inline-start: -200%; inset-inline-end: 100%; } 60% { inset-inline-start: 107%; inset-inline-end: -8%; } 100% { inset-inline-start: 107%; inset-inline-end: -8%; } }
+	@media (prefers-reduced-motion: reduce) {
+		.omni-circular-progress[data-variant="indeterminate"] { animation-duration: 4s; }
+		.omni-circular-progress[data-variant="indeterminate"] .omni-circular-progress__circle { animation: none; stroke-dasharray: 80px, 200px; }
+		.omni-linear-progress[data-variant="indeterminate"] .omni-linear-progress__bar1, .omni-linear-progress[data-variant="indeterminate"] .omni-linear-progress__bar2 { animation-duration: 6s; }
+		.omni-linear-progress__bar, .omni-circular-progress__circle { transition: none !important; }
+	}
+}

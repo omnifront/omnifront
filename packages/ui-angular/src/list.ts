@@ -36,6 +36,8 @@ export class OmniListItem extends PartHost implements OnChanges {
 	/** No padding: for a row whose `omni-list-item-button` does the padding. */
 	@Input({ transform: booleanAttribute }) disablePadding = false
 	@Input({ transform: booleanAttribute }) disableGutters = false
+	/** `flex-start` aligns the icon, avatar and action with the first line of multi-line text. */
+	@Input() alignItems: "center" | "flex-start" | undefined
 	@ContentChild(OmniListItemAction) protected action: OmniListItemAction | undefined
 
 	ngOnChanges(): void {
@@ -51,6 +53,7 @@ export class OmniListItem extends PartHost implements OnChanges {
 			divider: this.divider || undefined,
 			disablePadding: this.disablePadding || undefined,
 			disableGutters: this.disableGutters || undefined,
+			alignItems: this.alignItems === "flex-start" ? this.alignItems : undefined,
 			secondaryAction: this.action !== undefined,
 		})
 	}
@@ -60,6 +63,7 @@ export class OmniListItem extends PartHost implements OnChanges {
 @Directive({ selector: "button[omni-list-item-button], a[omni-list-item-button]", standalone: true })
 export class OmniListItemButton implements OnChanges, OnDestroy {
 	@Input({ transform: booleanAttribute }) selected = false
+	@Input() alignItems: "center" | "flex-start" | undefined
 	@Input({ transform: booleanAttribute }) disabled = false
 	@Input() type: "button" | "submit" | "reset" | undefined
 
@@ -91,13 +95,17 @@ export class OmniListItemButton implements OnChanges, OnDestroy {
 	private sync(): void {
 		const button = this.element.tagName === "BUTTON"
 		this.binding.apply(
-			displayPart("omni-list__button", { selected: this.selected || undefined, disabled: this.disabled || undefined }, {
+			displayPart("omni-list__button", { selected: this.selected || undefined, disabled: this.disabled || undefined, alignItems: this.alignItems === "flex-start" ? this.alignItems : undefined }, {
 				"aria-current": this.selected ? "true" : undefined,
 				...(button ? { type: this.type ?? "button", disabled: this.disabled || undefined } : { "aria-disabled": this.disabled ? "true" : undefined, tabindex: this.disabled ? -1 : undefined }),
 			}),
 		)
 	}
 }
+
+/** `<div omni-list-item-avatar>`: a picture (an `omni-avatar`) at the start of a row, with the same gap as the icon. */
+@Directive({ selector: "[omni-list-item-avatar]", standalone: true, host: { class: "omni-list__avatar" } })
+export class OmniListItemAvatar {}
 
 /** `<div omni-list-item-icon>`: the icon at the start of a row. */
 @Directive({ selector: "[omni-list-item-icon]", standalone: true, host: { class: "omni-list__icon" } })

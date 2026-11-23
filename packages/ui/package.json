@@ -75,7 +75,20 @@
 		"./tooltip.css": "./dist/tooltip.css",
 		"./svg-icon.css": "./dist/svg-icon.css",
 		"./accordion.css": "./dist/accordion.css",
-		"./app-bar.css": "./dist/app-bar.css"
+		"./app-bar.css": "./dist/app-bar.css",
+		"./alert.css": "./dist/alert.css",
+		"./backdrop.css": "./dist/backdrop.css",
+		"./progress.css": "./dist/progress.css",
+		"./skeleton.css": "./dist/skeleton.css",
+		"./link.css": "./dist/link.css",
+		"./breadcrumbs.css": "./dist/breadcrumbs.css",
+		"./pagination.css": "./dist/pagination.css",
+		"./stepper.css": "./dist/stepper.css",
+		"./bottom-navigation.css": "./dist/bottom-navigation.css",
+		"./snackbar.css": "./dist/snackbar.css",
+		"./popover.css": "./dist/popover.css",
+		"./drawer.css": "./dist/drawer.css",
+		"./speed-dial.css": "./dist/speed-dial.css"
 	},
 	"files": [
 		"dist"

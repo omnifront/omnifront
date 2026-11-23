@@ -1,4 +1,4 @@
-import { DOCUMENT, isPlatformBrowser } from "@angular/common"
+import { DOCUMENT, NgTemplateOutlet, isPlatformBrowser } from "@angular/common"
 import {
 	ChangeDetectionStrategy,
 	Component,
@@ -7,6 +7,7 @@ import {
 	ElementRef,
 	EventEmitter,
 	Input,
+	TemplateRef,
 	OnChanges,
 	OnDestroy,
 	OnInit,
@@ -25,25 +26,27 @@ import { ElementPortal, OmniIds, ThemeScope, injectDefaults } from "./theme"
 @Component({
 	selector: "omni-tooltip-panel",
 	standalone: true,
-	imports: [OmniPart],
+	imports: [OmniPart, NgTemplateOutlet],
 	changeDetection: ChangeDetectionStrategy.OnPush,
 	host: { style: "display: contents" },
-	template: `<div class="omni-tooltip" [omniPart]="part">{{ text }}</div>`,
+	template: `<div class="omni-tooltip" [omniPart]="part">@if (template) {<ng-container [ngTemplateOutlet]="template" />} @else {{{ text }}}@if (arrow) {<span class="omni-tooltip__arrow" data-arrow="" aria-hidden="true"></span>}</div>`,
 })
 export class OmniTooltipPanel {
 	@Input() part: Part | null = null
 	@Input() text = ""
+	@Input() template: TemplateRef<unknown> | null = null
+	@Input() arrow = false
 }
 
 /**
  * A short description that appears on hover and keyboard focus and goes on Escape:
  * `<button omni-icon-button omniTooltip="Delete" aria-label="Delete">`. The tooltip is wired to the
- * element with `aria-describedby` while it is open. Text only here; for rich content use a Popover (wave 3).
+ * element with `aria-describedby` while it is open. Give a string for text, or an `<ng-template>` (a `TemplateRef`) for markup.
  */
 @Directive({ selector: "[omniTooltip]", standalone: true })
 export class OmniTooltip implements OnInit, OnChanges, OnDestroy {
 	/** What it says. Empty means no tooltip. It describes the element; it is not its name. */
-	@Input("omniTooltip") title: string | null | undefined
+	@Input("omniTooltip") title: string | TemplateRef<unknown> | null | undefined
 	/** Default `bottom`; it flips when there is no room. */
 	@Input() tooltipPlacement: Placement | undefined
 	/** Controlled. Leave out for hover and focus to decide. */
@@ -53,6 +56,12 @@ export class OmniTooltip implements OnInit, OnChanges, OnDestroy {
 	@Input() tooltipLeaveDelay: number | undefined
 	/** Close as soon as the pointer leaves the trigger, even towards the tooltip. */
 	@Input({ transform: booleanAttribute }) tooltipDisableInteractive = false
+	/** A small pointer from the tooltip to the element. */
+	@Input({ transform: booleanAttribute }) tooltipArrow = false
+	/** Milliseconds a finger must rest on the element before it opens. Default 700. */
+	@Input() tooltipEnterTouchDelay: number | undefined
+	/** Milliseconds after the finger lifts before it closes. Default 1500. */
+	@Input() tooltipLeaveTouchDelay: number | undefined
 	@Output() tooltipOpened = new EventEmitter<Event | undefined>()
 	@Output() tooltipClosed = new EventEmitter<Event | undefined>()
 
@@ -102,6 +111,8 @@ export class OmniTooltip implements OnInit, OnChanges, OnDestroy {
 			open: this.hasTitle ? this.tooltipOpen : false,
 			enterDelay: this.tooltipEnterDelay,
 			leaveDelay: this.tooltipLeaveDelay,
+			enterTouchDelay: this.tooltipEnterTouchDelay,
+			leaveTouchDelay: this.tooltipLeaveTouchDelay,
 			disableInteractive: this.tooltipDisableInteractive || undefined,
 			disabled: !this.hasTitle,
 		})
@@ -119,12 +130,15 @@ export class OmniTooltip implements OnInit, OnChanges, OnDestroy {
 			this.portal.enter(this.panel.location.nativeElement as HTMLElement)
 		}
 		this.panel.setInput("part", this.machine.connect().tooltip)
-		this.panel.setInput("text", this.title ?? "")
+		this.panel.setInput("text", typeof this.title === "string" ? this.title : "")
+		this.panel.setInput("template", this.title instanceof TemplateRef ? this.title : null)
+		this.panel.setInput("arrow", this.tooltipArrow)
 		this.panel.changeDetectorRef.detectChanges()
 		if (!this.stopPosition) {
 			const tooltip = (this.panel.location.nativeElement as HTMLElement).querySelector<HTMLElement>(".omni-tooltip")
 			const placement = this.tooltipPlacement ?? "bottom"
-			if (tooltip) this.stopPosition = this.machine.attach({ trigger: this.element, tooltip, position: (anchor, el) => autoPosition(anchor, el, { placement, offset: 8 }) })
+			const arrow = this.tooltipArrow
+			if (tooltip) this.stopPosition = this.machine.attach({ trigger: this.element, tooltip, position: (anchor, el) => autoPosition(anchor, el, { placement, offset: arrow ? 10 : 8, arrow }) })
 		}
 	}
 

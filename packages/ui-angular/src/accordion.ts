@@ -12,16 +12,20 @@ import {
 	OnInit,
 	Output,
 	booleanAttribute,
+	computed,
 	effect,
 	forwardRef,
 	inject,
 	untracked,
 } from "@angular/core"
 import { NgTemplateOutlet } from "@angular/common"
-import { ICON_PATHS, createAccordion } from "@omnifront/ui"
+import { ICON_PATHS, createAccordion, createAccordionGroup, type AccordionGroup } from "@omnifront/ui"
 import { bindMachine } from "./machine"
 import { OmniPart, PartBinding } from "./part"
 import { OmniIds, injectDefaults } from "./theme"
+
+/** The AccordionGroup that accordions sit in. */
+export const OMNI_ACCORDION_GROUP = new InjectionToken<OmniAccordionGroup>("OMNI_ACCORDION_GROUP")
 
 /** The Accordion that a summary and its details sit in. */
 export const OMNI_ACCORDION = new InjectionToken<OmniAccordion>("OMNI_ACCORDION")
@@ -54,17 +58,22 @@ export class OmniAccordion implements OnInit, OnChanges, OnDestroy {
 	/** Open or closed. Use `[(expanded)]` for two-way binding. Without `expandedChange` it is controlled. */
 	@Input() expanded: boolean | undefined
 	@Input({ transform: booleanAttribute }) defaultExpanded = false
+	/** Inside an `omni-accordion-group`: the key that tells the group which panel this is. The group then decides `expanded`. */
+	@Input() value: string | undefined
 	@Input({ transform: booleanAttribute }) disabled = false
 	@Output() expandedChange = new EventEmitter<boolean>()
 
 	private readonly element = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement
 	private readonly binding = new PartBinding(this.element)
 	private readonly defaults = injectDefaults()
+	private readonly group = inject(OMNI_ACCORDION_GROUP, { optional: true })
 	private initializing = false
 	readonly machine = createAccordion({
 		id: inject(OmniIds).create(),
-		onExpandedChange: (expanded) => {
-			if (!this.initializing) this.expandedChange.emit(expanded)
+		onExpandedChange: (expanded, event) => {
+			if (this.initializing) return
+			if (this.group && this.value !== undefined) this.group.machine.set(this.value, expanded, event)
+			this.expandedChange.emit(expanded)
 		},
 	})
 	private readonly bound = bindMachine(this.machine, (m) => m.connect())
@@ -75,11 +84,16 @@ export class OmniAccordion implements OnInit, OnChanges, OnDestroy {
 			this.bound.state()
 			untracked(() => this.binding.apply(this.bound.parts().root))
 		})
+		// A group decides which panels are open: follow it when it changes.
+		effect(() => {
+			this.group?.open()
+			untracked(() => this.sync())
+		})
 	}
 
 	ngOnInit(): void {
 		// An uncontrolled accordion starts at `defaultExpanded`; the machine reads it only at creation, so open it now (not announced).
-		if (this.expanded === undefined && this.defaultExpanded) {
+		if (this.expanded === undefined && this.defaultExpanded && !(this.group && this.value !== undefined)) {
 			this.initializing = true
 			this.machine.toggle()
 			this.initializing = false
@@ -97,7 +111,8 @@ export class OmniAccordion implements OnInit, OnChanges, OnDestroy {
 
 	private sync(): void {
 		this.defaults("OmniAccordion", {})
-		this.machine.setProps({ expanded: this.expanded, disabled: this.disabled || undefined })
+		const grouped = this.group !== null && this.value !== undefined
+		this.machine.setProps({ expanded: grouped ? this.group?.isOpen(this.value as string) : this.expanded, disabled: this.disabled || undefined })
 	}
 }
 
@@ -152,4 +167,59 @@ export class OmniAccordionSummary {
 })
 export class OmniAccordionDetails {
 	protected readonly accordion = requireAccordion("omni-accordion-details")
+}
+
+export interface AccordionGroupChange {
+	value: string | string[] | null
+	event: Event | undefined
+}
+
+/**
+ * A stack of accordions of which one stays open (or several, with `multiple`). Give each accordion a `value`:
+ *
+ *     <div omni-accordion-group [(value)]="open">
+ *       <div omni-accordion value="a">…</div>
+ *       <div omni-accordion value="b">…</div>
+ *     </div>
+ */
+@Component({
+	selector: "div[omni-accordion-group]",
+	standalone: true,
+	changeDetection: ChangeDetectionStrategy.OnPush,
+	providers: [{ provide: OMNI_ACCORDION_GROUP, useExisting: forwardRef(() => OmniAccordionGroup) }],
+	template: "<ng-content />",
+})
+export class OmniAccordionGroup implements OnChanges, OnInit {
+	/** The open panel's `value` (a list with `multiple`). Leave out to let the group keep it. */
+	@Input() value: string | string[] | null | undefined
+	@Input() defaultValue: string | string[] | null | undefined
+	/** Let several stay open. Default: opening one closes the others. */
+	@Input({ transform: booleanAttribute }) multiple = false
+	@Output() valueChange = new EventEmitter<string | string[] | null>()
+	@Output() changed = new EventEmitter<AccordionGroupChange>()
+	readonly machine: AccordionGroup = createAccordionGroup({
+		onValueChange: (value, event) => {
+			this.changed.emit({ value, event })
+			this.valueChange.emit(value)
+		},
+	})
+	private readonly bound = bindMachine(this.machine, (m) => m)
+	/** The open panels, as a signal members read. */
+	readonly open = computed(() => this.bound.state().open)
+
+	isOpen(key: string): boolean {
+		return this.open().includes(key)
+	}
+
+	ngOnInit(): void {
+		this.sync()
+	}
+
+	ngOnChanges(): void {
+		this.sync()
+	}
+
+	private sync(): void {
+		this.machine.setProps({ value: this.value, defaultValue: this.defaultValue, multiple: this.multiple })
+	}
 }

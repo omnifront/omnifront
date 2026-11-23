@@ -33,4 +33,22 @@
 	.omni-table__cell[data-align="right"] { text-align: end; }
 	.omni-table__cell[data-align="center"] { text-align: center; }
 	.omni-table__cell[data-align="justify"] { text-align: justify; }
-	}
+	
+	/* TableSortLabel: the header text as a button with an arrow that appears on hover and stays on the active column */
+	.omni-table__sort { display: inline-flex; align-items: center; margin: 0; padding: 0; border: 0; border-radius: 2px; cursor: pointer; font: inherit; letter-spacing: inherit; color: inherit; background: none; text-align: start; -webkit-tap-highlight-color: transparent; }
+	.omni-table__sort:hover, .omni-table__sort[data-active] { color: var(--omni-palette-text-primary); }
+	.omni-table__sort:focus-visible { outline: 2px solid var(--omni-palette-primary-main); outline-offset: 2px; }
+	.omni-table__sort-icon { inline-size: 18px; block-size: 18px; margin-inline: 4px; fill: currentColor; opacity: 0; transition: opacity var(--omni-duration-shortest), transform var(--omni-duration-shorter); }
+	.omni-table__sort:hover .omni-table__sort-icon { opacity: 0.5; }
+	.omni-table__sort[data-active] .omni-table__sort-icon { opacity: 1; }
+	.omni-table__sort[data-direction="desc"] .omni-table__sort-icon { transform: rotate(180deg); }
+	@media (hover: none) { .omni-table__sort .omni-table__sort-icon { opacity: 0.3; } .omni-table__sort[data-active] .omni-table__sort-icon { opacity: 1; } }
+	/* TablePagination: the footer row's single cell */
+	.omni-table-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px 16px; padding: 4px 8px; font: var(--omni-typography-body2-font); letter-spacing: var(--omni-typography-body2-letter-spacing); color: var(--omni-palette-text-primary); }
+	.omni-table-pagination__spacer { flex: 1 1 10%; }
+	.omni-table-pagination__rows { display: flex; align-items: center; gap: 8px; }
+	.omni-table-pagination__select { box-sizing: border-box; padding: 4px 8px; border: 1px solid var(--omni-palette-divider); border-radius: 4px; font: inherit; color: var(--omni-palette-text-primary); background-color: var(--omni-palette-background-paper); }
+	.omni-table-pagination__select:focus-visible { outline: 2px solid var(--omni-palette-primary-main); outline-offset: 1px; }
+	.omni-table-pagination__actions { display: flex; align-items: center; }
+	@media (prefers-reduced-motion: reduce) { .omni-table__sort-icon { transition: none; } }
+}

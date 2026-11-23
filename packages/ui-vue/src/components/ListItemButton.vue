@@ -8,6 +8,7 @@ import { useDefaultProps } from "../theme"
 defineOptions({ name: "OmniListItemButton", inheritAttrs: false })
 const raw = defineProps<{
 	selected?: boolean | undefined
+	alignItems?: "center" | "flex-start" | undefined
 	disabled?: boolean | undefined
 	/** Renders an `<a>` instead of a `<button>`. */
 	href?: string | undefined
@@ -19,7 +20,7 @@ const props = useDefaultProps("OmniListItemButton", () => ({ ...raw }))
 const tag = computed(() => (props.value.href === undefined ? "button" : "a"))
 const bound = computed(() => {
 	const p = props.value
-	const part = displayPart("omni-list__button", { selected: p.selected || undefined, disabled: p.disabled || undefined }, {
+	const part = displayPart("omni-list__button", { selected: p.selected || undefined, disabled: p.disabled || undefined, alignItems: p.alignItems === "flex-start" ? p.alignItems : undefined }, {
 		"aria-current": p.selected ? "true" : undefined,
 		...(tag.value === "button" ? { type: p.type ?? "button", disabled: p.disabled || undefined } : { "aria-disabled": p.disabled ? "true" : undefined, tabindex: p.disabled ? -1 : undefined }),
 	})

@@ -1,0 +1,20 @@
+@layer omnifront {
+	.omni-bottom-navigation { display: flex; justify-content: center; block-size: 56px; background-color: var(--omni-palette-background-paper); }
+	.omni-bottom-navigation__action {
+		display: flex; flex: 1 1 0; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box;
+		min-inline-size: 80px; max-inline-size: 168px; margin: 0; padding: 8px 12px 10px; border: 0; outline: 0; cursor: pointer;
+		font: var(--omni-typography-caption-font); letter-spacing: var(--omni-typography-caption-letter-spacing);
+		color: var(--omni-palette-text-secondary); background: none; -webkit-tap-highlight-color: transparent;
+		transition: color var(--omni-duration-short) var(--omni-easing-ease-in-out), padding-top var(--omni-duration-short) var(--omni-easing-ease-in-out);
+	}
+	.omni-bottom-navigation__action:focus-visible { background-color: var(--omni-palette-action-focus); }
+	.omni-bottom-navigation__action:disabled { opacity: 0.38; pointer-events: none; }
+	.omni-bottom-navigation__action[data-selected] { color: var(--omni-palette-primary-main); }
+	.omni-bottom-navigation__action svg { inline-size: 24px; block-size: 24px; fill: currentColor; }
+	.omni-bottom-navigation__label { display: block; font-size: 0.75rem; line-height: 1.2; text-align: center; opacity: 1; transition: font-size var(--omni-duration-short), opacity var(--omni-duration-short); }
+	/* labels show only for the selected action unless showLabels is set */
+	.omni-bottom-navigation:not([data-show-labels]) .omni-bottom-navigation__action:not([data-selected]) .omni-bottom-navigation__label { font-size: 0; opacity: 0; }
+	.omni-bottom-navigation:not([data-show-labels]) .omni-bottom-navigation__action:not([data-selected]) { padding-block-start: 14px; }
+	.omni-bottom-navigation:not([data-show-labels]) .omni-bottom-navigation__action:not([data-selected]):focus-visible .omni-bottom-navigation__label { font-size: 0.75rem; opacity: 1; }
+	@media (prefers-reduced-motion: reduce) { .omni-bottom-navigation__action, .omni-bottom-navigation__label { transition: none; } }
+}

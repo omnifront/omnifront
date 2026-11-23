@@ -49,4 +49,11 @@
 	.omni-card__actions { display: flex; align-items: center; padding: 8px; }
 	.omni-card__actions > :not(:first-child) { margin-inline-start: 8px; }
 	.omni-card__media { display: block; inline-size: 100%; object-fit: cover; background-color: var(--omni-palette-grey-400); }
+	/* CardActionArea: one button (or link) that is the whole card, a focus ring and a hover shade over its content */
+	.omni-card__action-area { display: block; box-sizing: border-box; inline-size: 100%; margin: 0; padding: 0; border: 0; border-radius: inherit; outline: 0; cursor: pointer; text-align: inherit; text-decoration: none; font: inherit; letter-spacing: inherit; color: inherit; background: none; position: relative; -webkit-tap-highlight-color: transparent; }
+	.omni-card__action-area::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background-color: currentColor; opacity: 0; pointer-events: none; transition: opacity var(--omni-duration-short) var(--omni-easing-ease-in-out); }
+	.omni-card__action-area:hover::after { opacity: var(--omni-palette-action-hover-opacity, 0.04); }
+	.omni-card__action-area:focus-visible::after { opacity: 0.12; }
+	.omni-card__action-area:focus-visible { box-shadow: inset 0 0 0 2px var(--omni-palette-primary-main); }
+	@media (prefers-reduced-motion: reduce) { .omni-card__action-area::after { transition: none; } }
 }

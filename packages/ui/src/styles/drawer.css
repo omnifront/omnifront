@@ -1,0 +1,40 @@
+@layer omnifront {
+	/* Drawer: `temporary` is a modal (a Dialog), `persistent` slides in without taking focus, `permanent` is just a column. */
+	.omni-drawer { --_w: 240px; color: var(--omni-palette-text-primary); font: var(--omni-typography-body1-font); letter-spacing: var(--omni-typography-body1-letter-spacing); }
+	.omni-drawer[data-variant="temporary"] { position: fixed; inset: 0; z-index: var(--omni-z-drawer); }
+	.omni-drawer[hidden] { display: none; }
+	.omni-drawer__backdrop { position: fixed; inset: 0; background-color: rgba(0, 0, 0, 0.5); -webkit-tap-highlight-color: transparent; animation: omni-fade-in var(--omni-duration-entering-screen) var(--omni-easing-ease-in-out) both; }
+	.omni-drawer__backdrop[data-state="closed"] { animation: omni-fade-out var(--omni-duration-leaving-screen) var(--omni-easing-ease-in-out) both; }
+	.omni-drawer__container { position: fixed; inset: 0; z-index: var(--omni-z-drawer); outline: 0; }
+	.omni-drawer__paper {
+		display: flex; flex-direction: column; box-sizing: border-box; overflow-y: auto; outline: 0;
+		position: fixed; z-index: var(--omni-z-drawer); inset-block: 0; inline-size: var(--_w); max-inline-size: 100%;
+		color: var(--omni-palette-text-primary); background-color: var(--omni-palette-background-paper); background-image: var(--omni-overlay-24); box-shadow: var(--omni-shadow-16);
+	}
+	.omni-drawer[data-anchor="start"] .omni-drawer__paper { inset-inline-start: 0; }
+	.omni-drawer[data-anchor="end"] .omni-drawer__paper { inset-inline-end: 0; }
+	.omni-drawer[data-anchor="top"] .omni-drawer__paper, .omni-drawer[data-anchor="bottom"] .omni-drawer__paper { inset-block: auto; inset-inline: 0; inline-size: auto; max-block-size: 100%; block-size: auto; }
+	.omni-drawer[data-anchor="top"] .omni-drawer__paper { inset-block-start: 0; }
+	.omni-drawer[data-anchor="bottom"] .omni-drawer__paper { inset-block-end: 0; }
+	/* the slide: `--_from` is where the panel starts from (physical, so RTL flips it) */
+	.omni-drawer[data-anchor="start"] { --_from: translateX(-100%); }
+	.omni-drawer[data-anchor="end"] { --_from: translateX(100%); }
+	[dir="rtl"] .omni-drawer[data-anchor="start"] { --_from: translateX(100%); }
+	[dir="rtl"] .omni-drawer[data-anchor="end"] { --_from: translateX(-100%); }
+	.omni-drawer[data-anchor="top"] { --_from: translateY(-100%); }
+	.omni-drawer[data-anchor="bottom"] { --_from: translateY(100%); }
+	.omni-drawer[data-variant="temporary"] .omni-drawer__paper[data-state="open"] { animation: omni-drawer-in var(--omni-duration-entering-screen) var(--omni-easing-ease-out) both; }
+	.omni-drawer[data-variant="temporary"] .omni-drawer__paper[data-state="closed"] { animation: omni-drawer-out var(--omni-duration-leaving-screen) var(--omni-easing-ease-in) both; }
+	/* persistent: always in the DOM, slid away (and out of the tab order) while closed */
+	.omni-drawer[data-variant="persistent"] .omni-drawer__paper { transition: transform var(--omni-duration-entering-screen) var(--omni-easing-ease-out), visibility 0s; box-shadow: none; border-inline-end: 1px solid var(--omni-palette-divider); }
+	.omni-drawer[data-variant="persistent"][data-anchor="end"] .omni-drawer__paper { border-inline-end: 0; border-inline-start: 1px solid var(--omni-palette-divider); }
+	.omni-drawer[data-variant="persistent"][data-state="closed"] .omni-drawer__paper { transform: var(--_from); visibility: hidden; transition: transform var(--omni-duration-leaving-screen) var(--omni-easing-ease-in), visibility 0s var(--omni-duration-leaving-screen); }
+	/* permanent and persistent sit in the flow of the page's own layout unless the caller positions them */
+	.omni-drawer[data-variant="permanent"], .omni-drawer[data-variant="persistent"] { position: relative; flex: 0 0 auto; }
+	.omni-drawer[data-variant="permanent"] .omni-drawer__paper, .omni-drawer[data-variant="persistent"] .omni-drawer__paper { position: relative; box-shadow: none; }
+	.omni-drawer[data-variant="permanent"] .omni-drawer__paper { border-inline-end: 1px solid var(--omni-palette-divider); }
+	.omni-drawer[data-variant="permanent"][data-anchor="end"] .omni-drawer__paper { border-inline-end: 0; border-inline-start: 1px solid var(--omni-palette-divider); }
+	@keyframes omni-drawer-in { from { transform: var(--_from); } to { transform: none; } }
+	@keyframes omni-drawer-out { from { transform: none; } to { transform: var(--_from); } }
+	@media (prefers-reduced-motion: reduce) { .omni-drawer__backdrop, .omni-drawer__paper { animation-duration: 1ms !important; transition: none !important; } }
+}

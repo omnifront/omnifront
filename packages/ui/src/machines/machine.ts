@@ -108,7 +108,7 @@ export abstract class Machine<P extends object, S extends object> extends BaseSu
 	dispose(): void {}
 }
 
-export type CloseReason = "escapeKeyDown" | "backdropClick" | "outsidePress" | "select" | "tab" | "closeButton" | "trigger" | "programmatic"
+export type CloseReason = "escapeKeyDown" | "backdropClick" | "outsidePress" | "select" | "tab" | "closeButton" | "trigger" | "timeout" | "programmatic"
 
 export interface OpenProps {
 	/** Controlled value. Leave undefined to let the machine keep its own. */

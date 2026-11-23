@@ -6,7 +6,7 @@ import { useDefaultProps } from "../theme"
 
 /**
  * A compact tag, filter or choice. With a `click` listener it is a button (Enter and Space); with a
- * `delete` listener it shows a delete icon and Backspace / Delete on the focused chip removes it.
+ * `delete` listener it shows a delete icon (the `deleteIcon` slot replaces the cross) and Backspace / Delete on the focused chip removes it.
  */
 defineOptions({ name: "OmniChip" })
 const raw = defineProps<{
@@ -56,6 +56,7 @@ const deleteIcon = computed(() => toVueProps(parts.value.deleteIcon))
 		<slot name="avatar" />
 		<span v-if="$slots['icon']" class="omni-chip__icon"><slot name="icon" /></span>
 		<span class="omni-chip__label"><slot>{{ props.label }}</slot></span>
-		<svg v-if="hasDelete" v-bind="deleteIcon" viewBox="0 0 24 24" focusable="false"><path :d="ICON_PATHS.cancel" /></svg>
+		<span v-if="hasDelete && $slots['deleteIcon']" v-bind="deleteIcon"><slot name="deleteIcon" /></span>
+		<svg v-else-if="hasDelete" v-bind="deleteIcon" viewBox="0 0 24 24" focusable="false"><path :d="ICON_PATHS.cancel" /></svg>
 	</div>
 </template>

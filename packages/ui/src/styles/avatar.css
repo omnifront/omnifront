@@ -23,4 +23,10 @@
 	.omni-avatar__img { inline-size: 100%; block-size: 100%; object-fit: cover; text-align: center; color: transparent; text-indent: 10000px; }
 	/* the generic person, drawn only when the avatar has no picture and no content */
 	.omni-avatar__fallback { inline-size: 75%; block-size: 75%; fill: currentColor; }
+	.omni-avatar-group { display: flex; flex-direction: row; justify-content: flex-start; --_gap: -8px; }
+	.omni-avatar-group > .omni-avatar { box-sizing: content-box; border: 2px solid var(--omni-palette-background-paper); }
+	.omni-avatar-group > .omni-avatar:not(:first-child) { margin-inline-start: var(--_gap); }
+	.omni-avatar-group > .omni-avatar[hidden] { display: none; }
+	.omni-avatar-group[data-spacing="small"] { --_gap: -16px; }
+	.omni-avatar-group[data-spacing="large"] { --_gap: 0px; }
 }

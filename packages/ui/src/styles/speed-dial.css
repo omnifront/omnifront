@@ -1,0 +1,28 @@
+@layer omnifront {
+	.omni-speed-dial { position: relative; display: inline-flex; z-index: var(--omni-z-speed-dial, 1050); pointer-events: none; }
+	.omni-speed-dial > * { pointer-events: auto; }
+	.omni-speed-dial[data-direction="up"], .omni-speed-dial[data-direction="down"] { flex-direction: column; align-items: center; }
+	.omni-speed-dial[data-direction="up"] { flex-direction: column-reverse; }
+	.omni-speed-dial[data-direction="left"] { flex-direction: row-reverse; align-items: center; }
+	.omni-speed-dial[data-direction="right"] { flex-direction: row; align-items: center; }
+	[dir="rtl"] .omni-speed-dial[data-direction="left"] { flex-direction: row; }
+	[dir="rtl"] .omni-speed-dial[data-direction="right"] { flex-direction: row-reverse; }
+	.omni-speed-dial__actions { display: flex; align-items: center; gap: 16px; padding: 16px; margin: 0; }
+	.omni-speed-dial[data-direction="up"] .omni-speed-dial__actions { flex-direction: column-reverse; padding-block: 0 16px; }
+	.omni-speed-dial[data-direction="down"] .omni-speed-dial__actions { flex-direction: column; padding-block: 16px 0; }
+	.omni-speed-dial[data-direction="left"] .omni-speed-dial__actions, .omni-speed-dial[data-direction="right"] .omni-speed-dial__actions { flex-direction: row; padding-block: 0; }
+	.omni-speed-dial__actions[data-state="closed"] { visibility: hidden; pointer-events: none; }
+	.omni-speed-dial__action { position: relative; display: inline-flex; }
+	.omni-speed-dial__actions[data-state="open"] .omni-speed-dial__action { animation: omni-sd-in var(--omni-duration-shortest) var(--omni-easing-ease-out) both; }
+	.omni-speed-dial__actions[data-state="closed"] .omni-speed-dial__action { opacity: 0; transform: scale(0); }
+	.omni-speed-dial__trigger { transition: transform var(--omni-duration-short) var(--omni-easing-ease-in-out); }
+	.omni-speed-dial__trigger[aria-expanded="true"] { transform: rotate(45deg); }
+	/* the action's name, as a caption beside it, while the dial is open */
+	.omni-speed-dial__label { position: absolute; inset-block-start: 50%; transform: translateY(-50%); white-space: nowrap; padding: 4px 8px; border-radius: 4px; font: var(--omni-typography-caption-font); font-size: 0.75rem; color: var(--omni-palette-common-white); background-color: rgb(97 97 97 / 0.92); pointer-events: none; }
+	.omni-speed-dial[data-direction="up"] .omni-speed-dial__label, .omni-speed-dial[data-direction="down"] .omni-speed-dial__label { inset-inline-end: calc(100% + 12px); }
+	.omni-speed-dial[data-direction="left"] .omni-speed-dial__label, .omni-speed-dial[data-direction="right"] .omni-speed-dial__label { inset-block-start: calc(100% + 4px); inset-inline-start: 50%; transform: translateX(-50%); }
+	[dir="rtl"] .omni-speed-dial[data-direction="left"] .omni-speed-dial__label, [dir="rtl"] .omni-speed-dial[data-direction="right"] .omni-speed-dial__label { transform: translateX(50%); }
+	@keyframes omni-sd-in { from { opacity: 0; transform: scale(0); } to { opacity: 1; transform: none; } }
+	/* no transitions at all under reduced motion: a 1ms visibility transition would leave the actions unfocusable for a moment after they open */
+	@media (prefers-reduced-motion: reduce) { .omni-speed-dial__action { animation-duration: 1ms !important; } .omni-speed-dial__trigger { transition: none; } }
+}

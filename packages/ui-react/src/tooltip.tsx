@@ -21,6 +21,12 @@ export interface TooltipProps {
 	leaveDelay?: number | undefined
 	/** Close as soon as the pointer leaves the trigger, even towards the tooltip. */
 	disableInteractive?: boolean | undefined
+	/** A small pointer from the tooltip to the element. */
+	arrow?: boolean | undefined
+	/** Milliseconds a finger must rest on the element before it opens. Default 700. */
+	enterTouchDelay?: number | undefined
+	/** Milliseconds after the finger lifts before it closes. Default 1500. */
+	leaveTouchDelay?: number | undefined
 	className?: string | undefined
 }
 
@@ -29,7 +35,7 @@ export interface TooltipProps {
  * the single element inside; the tooltip is wired to it with `aria-describedby` while it is open.
  */
 export function Tooltip(rawProps: TooltipProps): ReactNode {
-	const { title, children, placement = "bottom", open, defaultOpen, onOpen, onClose, enterDelay, leaveDelay, disableInteractive, className } = useDefaultProps("OmniTooltip", rawProps)
+	const { title, children, placement = "bottom", open, defaultOpen, onOpen, onClose, enterDelay, leaveDelay, disableInteractive, arrow, enterTouchDelay, leaveTouchDelay, className } = useDefaultProps("OmniTooltip", rawProps)
 	const id = useId()
 	const hasTitle = title !== undefined && title !== null && title !== false && title !== ""
 	const [tooltip, state] = useMachine(() => createTooltip({ id, defaultOpen }), {
@@ -38,6 +44,8 @@ export function Tooltip(rawProps: TooltipProps): ReactNode {
 		enterDelay,
 		leaveDelay,
 		disableInteractive,
+		enterTouchDelay,
+		leaveTouchDelay,
 		disabled: !hasTitle,
 		onOpenChange: (next: boolean, _reason: unknown, event?: Event) => (next ? onOpen?.(event) : onClose?.(event)),
 	})
@@ -50,8 +58,8 @@ export function Tooltip(rawProps: TooltipProps): ReactNode {
 	useEffect(() => {
 		const trigger = wrapper?.firstElementChild
 		if (!state.mounted || !floating || !(trigger instanceof HTMLElement)) return undefined
-		return tooltip.attach({ trigger, tooltip: floating, position: (anchor, el) => autoPosition(anchor, el, { placement, offset: 8 }) })
-	}, [tooltip, state.mounted, floating, wrapper, placement])
+		return tooltip.attach({ trigger, tooltip: floating, position: (anchor, el) => autoPosition(anchor, el, { placement, offset: arrow ? 10 : 8, arrow: arrow === true }) })
+	}, [tooltip, state.mounted, floating, wrapper, placement, arrow])
 	return (
 		<>
 			<span className="omni-tooltip-trigger" ref={setWrapper}>
@@ -61,6 +69,7 @@ export function Tooltip(rawProps: TooltipProps): ReactNode {
 				<Portal>
 					<div {...mergeProps(toReactProps(tooltip.connect().tooltip), { className: ["omni-tooltip", className].filter(Boolean).join(" ") })} ref={setFloating}>
 						{title}
+						{arrow && <span className="omni-tooltip__arrow" data-arrow="" aria-hidden="true" />}
 					</div>
 				</Portal>
 			)}

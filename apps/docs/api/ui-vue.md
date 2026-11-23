@@ -180,3 +180,64 @@ Props: `expanded` (`v-model:expanded`) / `defaultExpanded`, `disabled`. Events: 
 
 Props: `title` (or the `title` slot for anything richer than text), `placement`, `open` (`v-model:open`) / `defaultOpen`, `enterDelay`, `leaveDelay`, `disableInteractive`. Events: `open`, `close`, `update:open`. The one element in the default slot is the trigger. Same behaviour as React.
 
+## Wave 3: feedback and navigation
+
+The same components and behaviour as React; props are the same names (kebab-case in templates), events are `@close`, `@change` and `v-model`.
+
+### `Alert`, `AlertTitle`
+
+```vue
+<Alert severity="error" @close="open = false"><AlertTitle>Upload failed</AlertTitle>The file is too big.</Alert>
+```
+
+Props `severity`, `variant`, `icon` (`false` removes it; the `icon` slot replaces it), `closeText`; the `action` slot sits at the far end. A `@close` listener adds a close button (Vue lets the component read whether anyone listens).
+
+### `Snackbar`
+
+```vue
+<Snackbar :open="open" :auto-hide-duration="4000" message="Saved" @close="(_e, reason) => (open = false)"><template #action><Button size="small">Undo</Button></template></Snackbar>
+```
+
+Props `open`, `autoHideDuration`, `anchorOrigin`, `message`, `disableClickAway`; `@close(event, reason)` with `timeout`, `outsidePress` or `escapeKeyDown`; the default slot replaces `message` (put an `Alert` there), the `action` slot sits at the end.
+
+### `Backdrop`, `CircularProgress`, `LinearProgress`, `Skeleton`
+
+Props as in React (`value`, `size`, `thickness`, `color`, `variant`, `valueBuffer`, `animation`, `width`, `height`, `open`, `invisible`). The two progress components are `role="progressbar"`: give them `aria-label`.
+
+### `Drawer`, `Popover`
+
+`Drawer`: props `variant`, `anchor`, `open`, `width`; `@close(event, reason)` or `v-model:open`. `Popover`: props `open`, `anchorEl`, `placement`; `@close(event, reason)`; it needs `aria-label`. Behaviour as in React.
+
+### `Breadcrumbs`, `Link`
+
+`Breadcrumbs` (props `maxItems`, `itemsBeforeCollapse`, `itemsAfterCollapse`, `expandText`; a `separator` slot) wraps each child of its default slot in a list item. `Link`: `underline`, `color`, `component`.
+
+### `Pagination`
+
+Props as in React; `@change(event, page)` and `v-model:page` (without `page` it keeps its own).
+
+### `Stepper`, `Step`
+
+`Stepper` gives each `Step` in its slot its position (you can use `v-for` and `v-if`). `Step`: `label`, `optional`, `completed`, `active`, `disabled`, `error`; slots `icon`, `label` and the default (content of the active step in a vertical stepper); a `@click` listener makes the header a button.
+
+### `BottomNavigation`, `BottomNavigationAction`
+
+`BottomNavigation`: `value`, `showLabels`; `@change(event, value)` or `v-model:value`. `BottomNavigationAction`: `value`, `label`, `disabled`, and an `icon` slot.
+
+### `SpeedDial`, `SpeedDialAction`
+
+`SpeedDial`: `ariaLabel` (required), `direction`, `open` / `defaultOpen`; `@open`, `@close`; an `icon` slot. `SpeedDialAction`: `tooltipTitle` and the icon in its default slot; `@click`.
+
+### `CardActionArea`, `AvatarGroup`, `ListItemAvatar`
+
+As in React. `ListItem` and `ListItemButton` take `align-items="flex-start"`.
+
+### `TableSortLabel`, `TablePagination`
+
+`TableSortLabel`: `active`, `direction`; `TableCell` takes `sort-direction` and writes `aria-sort`. `TablePagination`: `count`, `page`, `rowsPerPage`, `rowsPerPageOptions`, `colSpan`; `@page-change(event, page)` and `@rows-per-page-change(rows)`.
+
+### `AccordionGroup`
+
+Props `value` / `defaultValue`, `multiple`; `@change(event, value)` or `v-model:value`. Give each `Accordion` a `value`.
+
+`Chip` has a `deleteIcon` slot; `Tooltip` has `arrow`, `enterTouchDelay` and `leaveTouchDelay`.

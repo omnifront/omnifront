@@ -1,7 +1,7 @@
 import type { Machine, Part } from "@omnifront/ui"
 import { useEffect, useLayoutEffect, useRef, useSyncExternalStore } from "react"
 
-const ATTRS: Record<string, string> = { class: "className", for: "htmlFor", tabindex: "tabIndex", readonly: "readOnly" }
+const ATTRS: Record<string, string> = { class: "className", for: "htmlFor", tabindex: "tabIndex", readonly: "readOnly", "stroke-width": "strokeWidth" }
 // DOM event name to React prop name, where React capitalises the second word.
 const EVENTS: Record<string, string> = {
 	keydown: "onKeyDown",
@@ -14,13 +14,29 @@ const EVENTS: Record<string, string> = {
 	mouseleave: "onMouseLeave",
 	pointerenter: "onPointerEnter",
 	pointerleave: "onPointerLeave",
+	pointercancel: "onPointerCancel",
+	focusin: "onFocus",
+	focusout: "onBlur",
+}
+
+/** `"--x: 3px; width: 4px"` as a React style object (custom properties keep their name, the rest become camelCase). */
+function styleObject(css: string): Record<string, string> {
+	const style: Record<string, string> = {}
+	for (const rule of css.split(";")) {
+		const at = rule.indexOf(":")
+		if (at < 0) continue
+		const name = rule.slice(0, at).trim()
+		style[name.startsWith("--") ? name : name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase())] = rule.slice(at + 1).trim()
+	}
+	return style
 }
 
 /** A framework-free Part as React props: `class` becomes `className`, `keydown` becomes `onKeyDown`, and so on. */
 export function toReactProps(part: Part): Record<string, unknown> {
 	const props: Record<string, unknown> = {}
 	for (const [name, value] of Object.entries(part.attrs)) {
-		if (value !== undefined) props[ATTRS[name] ?? name] = value
+		if (value === undefined) continue
+		props[ATTRS[name] ?? name] = name === "style" && typeof value === "string" ? styleObject(value) : value
 	}
 	for (const [event, handler] of Object.entries(part.on)) {
 		props[EVENTS[event] ?? `on${event[0]?.toUpperCase()}${event.slice(1)}`] = handler

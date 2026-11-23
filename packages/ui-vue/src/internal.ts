@@ -1,6 +1,6 @@
 import { createIdGenerator, type Machine, type Part } from "@omnifront/ui"
 import * as vue from "vue"
-import { onScopeDispose, shallowRef, watch, type ShallowRef } from "vue"
+import { Comment, Fragment, onScopeDispose, shallowRef, watch, type ShallowRef, type VNode } from "vue"
 
 type PropsOf<M> = M extends Machine<infer P, object> ? P : never
 type StateOf<M> = M extends Machine<object, infer S> ? S : never
@@ -52,4 +52,19 @@ export function useMachine<M extends Machine<object, object>>(
 		})
 	}
 	return { machine, state }
+}
+
+/** The element vnodes of a slot, with fragments (`v-for`, `<template>`) opened up and comments dropped: what the author listed, in order. */
+export function slotItems(vnodes: VNode[] | undefined): VNode[] {
+	const out: VNode[] = []
+	for (const vnode of vnodes ?? []) {
+		if (vnode.type === Fragment) out.push(...slotItems(vnode.children as VNode[]))
+		else if (vnode.type !== Comment) out.push(vnode)
+	}
+	return out
+}
+
+/** Does this component instance's parent listen to `event`? Vue has no prop for it, but the listeners sit on the vnode. */
+export function hasListener(vnodeProps: Record<string, unknown> | null | undefined, event: string): boolean {
+	return vnodeProps?.[`on${event[0]?.toUpperCase()}${event.slice(1)}`] !== undefined
 }

@@ -1,0 +1,15 @@
+@layer omnifront {
+	.omni-popover {
+		position: fixed; inset-block-start: 0; inset-inline-start: 0; z-index: var(--omni-z-modal); box-sizing: border-box;
+		min-inline-size: 16px; min-block-size: 16px; max-inline-size: calc(100vw - 32px); max-block-size: var(--omni-available-height, calc(100vh - 32px)); overflow: auto; outline: 0;
+		border-radius: var(--omni-shape-border-radius); color: var(--omni-palette-text-primary);
+		background-color: var(--omni-palette-background-paper); background-image: var(--omni-overlay-8); box-shadow: var(--omni-shadow-8);
+		font: var(--omni-typography-body1-font); letter-spacing: var(--omni-typography-body1-letter-spacing);
+		animation: omni-popover-in var(--omni-duration-shortest) var(--omni-easing-ease-out) both;
+	}
+	.omni-popover[hidden] { display: none; }
+	.omni-popover[data-state="closed"] { animation: omni-popover-out var(--omni-duration-shortest) var(--omni-easing-ease-in) both; pointer-events: none; }
+	@keyframes omni-popover-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+	@keyframes omni-popover-out { from { opacity: 1; } to { opacity: 0; } }
+	@media (prefers-reduced-motion: reduce) { .omni-popover { animation-duration: 1ms !important; } }
+}
